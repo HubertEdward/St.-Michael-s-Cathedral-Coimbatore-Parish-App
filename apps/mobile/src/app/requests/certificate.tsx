@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { certificateInputSchema, certificateKinds, useSubmitCertificateRequest, type CertificateInput } from '@stmichaels/core';
+import { certificateInputSchema, certificateKinds, useSubmitCertificateRequest, type CertificateInput } from '@parish/core';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';

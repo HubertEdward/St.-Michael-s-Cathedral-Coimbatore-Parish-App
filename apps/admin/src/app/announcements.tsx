@@ -8,7 +8,7 @@ import {
   useSaveAnnouncement,
   type Announcement,
   type AnnouncementInput,
-} from '@stmichaels/core';
+} from '@parish/core';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { View } from 'react-native';

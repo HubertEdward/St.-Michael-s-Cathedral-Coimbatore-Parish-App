@@ -1,4 +1,4 @@
-import { prayers } from '@stmichaels/core';
+import { prayers } from '@parish/core';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { Text } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';

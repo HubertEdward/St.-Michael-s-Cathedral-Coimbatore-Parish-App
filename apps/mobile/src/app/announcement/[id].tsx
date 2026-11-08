@@ -1,4 +1,4 @@
-import { formatDate, parishDateTime, useAnnouncement } from '@stmichaels/core';
+import { formatDate, parishDateTime, useAnnouncement } from '@parish/core';
 import { useLocalSearchParams } from 'expo-router';
 import { Share } from 'react-native';
 import { Button, Text } from 'react-native-paper';

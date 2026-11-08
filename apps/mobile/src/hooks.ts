@@ -1,4 +1,4 @@
-import { addDays, formatDate, parishClock } from '@stmichaels/core';
+import { addDays, formatDate, parishClock } from '@parish/core';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -14,11 +14,11 @@ export function useNow(): Date {
   return now;
 }
 
-/** "Today", "Tomorrow" or "Sun, 9 Nov" for a Coimbatore date. */
+/** "Today", "Tomorrow" or "Sun, 9 Nov" for a date at the church. */
 export function useDayLabel(): (date: string) => string {
   const { t } = useTranslation();
   const language = useLanguage();
-  const today = parishClock(new Date()).date;
+  const today = parishClock().date;
   return (date) =>
     date === today ? t('common.today') : date === addDays(today, 1) ? t('common.tomorrow') : formatDate(date, language);
 }

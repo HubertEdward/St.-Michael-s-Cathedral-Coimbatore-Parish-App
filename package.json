@@ -1,13 +1,14 @@
 {
-  "name": "st-michaels-parish",
+  "name": "parish-app",
   "private": true,
   "workspaces": [
     "apps/*",
-    "packages/*"
+    "packages/*",
+    "parishes"
   ],
   "scripts": {
-    "mobile": "npm run start -w @stmichaels/mobile",
-    "admin": "npm run web -w @stmichaels/admin",
+    "mobile": "npm run start -w @parish/mobile",
+    "admin": "npm run web -w @parish/admin",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm test --workspaces --if-present"
   }

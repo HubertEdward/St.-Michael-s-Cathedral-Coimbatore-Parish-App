@@ -1,5 +1,5 @@
 {
-  "name": "@stmichaels/core",
+  "name": "@parish/core",
   "version": "0.1.0",
   "private": true,
   "main": "src/index.ts",

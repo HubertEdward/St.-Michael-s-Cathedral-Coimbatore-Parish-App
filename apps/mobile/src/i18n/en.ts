@@ -58,7 +58,7 @@ const en = {
     faith: 'Faith',
     requests: 'Requests',
     app: 'App',
-    about: 'About the cathedral',
+    about: 'About the parish',
     contact: 'Contact and directions',
     ministries: 'Ministries and associations',
     roster: 'Ministry duty rosters',
@@ -71,9 +71,9 @@ const en = {
   },
   about: {
     clergy: 'Clergy',
-    role: { bishop: 'Bishop of Coimbatore', 'parish-priest': 'Parish priest', 'assistant-priest': 'Assistant parish priest' },
+    role: { bishop: 'Bishop', 'parish-priest': 'Parish priest', 'assistant-priest': 'Assistant parish priest' },
     toBeConfirmed: 'To be confirmed',
-    feast: 'Patronal feast: 29 September',
+    feast: 'Patronal feast: {{date}}',
   },
   contact: {
     address: 'Address',
@@ -147,7 +147,7 @@ const en = {
     resetDemo: 'Reset preview data',
     resetDone: 'Preview data has been reset.',
     about: 'About this app',
-    aboutText: 'Phase 1 preview of the St. Michael’s Cathedral parish app. Content is being confirmed by the parish office.',
+    aboutText: 'Phase 1 preview of the {{name}} parish app. Content is being confirmed by the parish office.',
     version: 'Version {{version}}',
   },
   welcome: {

@@ -8,5 +8,5 @@ const messages: Record<string, string> = {
   massOutOfRange: 'Choose a Mass within the next 90 days.',
 };
 
-/** English text for validation and API error codes from @stmichaels/core. */
+/** English text for validation and API error codes from @parish/core. */
 export const errorText = (code: string | undefined) => (code && messages[code]) || 'Something went wrong. Please try again.';

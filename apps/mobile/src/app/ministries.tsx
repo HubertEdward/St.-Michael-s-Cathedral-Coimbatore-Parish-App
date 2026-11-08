@@ -1,4 +1,4 @@
-import { ministries, type MinistryKind } from '@stmichaels/core';
+import { ministries, type MinistryKind } from '@parish/core';
 import { Card, Text } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 

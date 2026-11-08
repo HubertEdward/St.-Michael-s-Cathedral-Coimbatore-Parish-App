@@ -1,4 +1,4 @@
-import { formatDate, formatTime, useCertificateRequests, useIntentions, useServices } from '@stmichaels/core';
+import { formatDate, formatTime, useCertificateRequests, useIntentions, useServices } from '@parish/core';
 import { Card, Text } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 

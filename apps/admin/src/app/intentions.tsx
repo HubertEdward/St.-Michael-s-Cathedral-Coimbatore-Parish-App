@@ -2,6 +2,7 @@ import {
   addDays,
   formatDate,
   formatTime,
+  parish,
   parishClock,
   useIntentions,
   useServices,
@@ -10,7 +11,7 @@ import {
   type MassIntention,
   type RequestStatus,
   type Service,
-} from '@stmichaels/core';
+} from '@parish/core';
 import { useState } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 import { Button, Card, DataTable, SegmentedButtons, Text, useTheme } from 'react-native-paper';
@@ -171,7 +172,7 @@ function printList(date: string, masses: Service[], approved: MassIntention[]) {
   const page = window.open('', '_blank');
   if (!page) return;
   page.document.write(
-    `<html><head><title>Mass intentions ${date}</title><style>body{font-family:serif;margin:32px}h1{font-size:22px}h2{font-size:18px;margin-top:24px}li{font-size:16px;margin:6px 0}</style></head><body><h1>St. Michael’s Cathedral · Mass intentions · ${formatDate(date, 'en')} ${date.slice(0, 4)}</h1>${sections}</body></html>`,
+    `<html><head><title>Mass intentions ${date}</title><style>body{font-family:serif;margin:32px}h1{font-size:22px}h2{font-size:18px;margin-top:24px}li{font-size:16px;margin:6px 0}</style></head><body><h1>${parish.name.en} · Mass intentions · ${formatDate(date, 'en')} ${date.slice(0, 4)}</h1>${sections}</body></html>`,
   );
   page.document.close();
   page.print();

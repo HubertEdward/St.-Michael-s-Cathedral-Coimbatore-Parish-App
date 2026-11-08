@@ -1,4 +1,4 @@
-import type { RequestStatus } from '@stmichaels/core';
+import type { RequestStatus } from '@parish/core';
 import { Chip, useTheme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 

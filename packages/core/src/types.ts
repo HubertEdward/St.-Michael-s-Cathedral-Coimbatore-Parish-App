@@ -6,12 +6,12 @@ export type Weekday = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 export type ServiceKind = 'mass' | 'confession' | 'adoration' | 'novena';
 export type ServiceLanguage = 'ta' | 'en' | 'ml';
 
-/** A weekly, recurring service in the cathedral timetable. */
+/** A weekly, recurring service in the parish timetable. */
 export interface Service {
   id: string;
   kind: ServiceKind;
   day: Weekday;
-  /** 24-hour "HH:mm", Coimbatore time. */
+  /** 24-hour "HH:mm", local time at the church. */
   time: string;
   language?: ServiceLanguage;
   place?: Localized;

@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { pick, type Language, type Localized } from '@stmichaels/core';
+import { parish, pick, type Language, type Localized } from '@parish/core';
 import { getLocales } from 'expo-localization';
 import i18n from 'i18next';
 import { createContext, use, useEffect, useState, type ReactNode } from 'react';
@@ -14,11 +14,19 @@ declare module 'i18next' {
   }
 }
 
-const STORAGE_KEY = 'stmichaels.language';
+/** Each language's name in that language, for the language picker. */
+export const languageNames: Record<Language, string> = { ta: 'தமிழ்', en: 'English' };
+
+/** The languages this parish's app offers; the first is the default. */
+export const languages = parish.languages;
+
+const STORAGE_KEY = `${parish.id}.language`;
+const offered = (code: string | null | undefined): code is Language => languages.some((l) => l === code);
+const deviceLanguage = getLocales()[0]?.languageCode;
 
 i18n.use(initReactI18next).init({
   resources: { en: { translation: en }, ta: { translation: ta } },
-  lng: getLocales()[0]?.languageCode === 'ta' ? 'ta' : 'en',
+  lng: offered(deviceLanguage) ? deviceLanguage : languages[0],
   fallbackLng: 'en',
   interpolation: { escapeValue: false },
 });
@@ -34,13 +42,15 @@ interface LanguageState {
 const LanguageContext = createContext<LanguageState | null>(null);
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState({ ready: false, chosen: false });
+  // With a single language there is nothing to choose.
+  const [state, setState] = useState({ ready: languages.length === 1, chosen: languages.length === 1 });
 
   useEffect(() => {
+    if (languages.length === 1) return;
     AsyncStorage.getItem(STORAGE_KEY)
       .then(async (saved) => {
-        if (saved === 'en' || saved === 'ta') await i18n.changeLanguage(saved);
-        setState({ ready: true, chosen: saved !== null });
+        if (offered(saved)) await i18n.changeLanguage(saved);
+        setState({ ready: true, chosen: offered(saved) });
       })
       .catch(() => setState({ ready: true, chosen: false }));
   }, []);
@@ -62,10 +72,10 @@ export function useLanguageState(): LanguageState {
 
 export function useLanguage(): Language {
   const { i18n: instance } = useTranslation();
-  return instance.language === 'ta' ? 'ta' : 'en';
+  return offered(instance.language) ? instance.language : languages[0];
 }
 
-/** Picks the current language from bilingual parish content. */
+/** Picks the current language from parish content. */
 export function useLocalized(): (text: Localized) => string {
   const language = useLanguage();
   return (text) => pick(text, language);

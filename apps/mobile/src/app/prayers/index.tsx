@@ -1,4 +1,4 @@
-import { parishClock, prayers, rosaryFor } from '@stmichaels/core';
+import { parishClock, prayers, rosaryFor } from '@parish/core';
 import { router } from 'expo-router';
 import { Card, List, Text } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';

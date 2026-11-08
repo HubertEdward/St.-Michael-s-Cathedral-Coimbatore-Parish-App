@@ -1,4 +1,4 @@
-import { formatTime, type Service } from '@stmichaels/core';
+import { formatTime, type Service } from '@parish/core';
 import { StyleSheet, View } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';

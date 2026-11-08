@@ -1,0 +1,12 @@
+{
+  "name": "@parish/parishes",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@parish/core": "*",
+    "typescript": "~6.0.3"
+  }
+}

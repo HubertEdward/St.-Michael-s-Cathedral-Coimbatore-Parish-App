@@ -1,50 +1,48 @@
-import { parish } from '@stmichaels/core';
+import { parish, pick } from '@parish/core';
 import { StyleSheet, View } from 'react-native';
 import { Button, Icon, Text, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useLanguageState } from '@/i18n';
+import { languageNames, languages, useLanguageState } from '@/i18n';
 import en from '@/i18n/en';
 import ta from '@/i18n/ta';
 
-/** First launch: choose Tamil or English. Both prompts are shown, since we don't know the reader yet. */
+const strings = { en, ta };
+
+/** First launch: choose a language. Every prompt is shown in each offered language, since we don't know the reader yet. */
 export default function Welcome() {
   const theme = useTheme();
   const { choose } = useLanguageState();
+  const onPrimary = { color: theme.colors.onPrimary };
+  const names = [...new Set(languages.map((language) => pick(parish.name, language)))];
   return (
     <SafeAreaView style={[styles.page, { backgroundColor: theme.colors.primary }]}>
       <View style={styles.body}>
         <Icon source="church" size={72} color={theme.colors.onPrimary} />
-        <Text variant="headlineMedium" style={[styles.center, { color: theme.colors.onPrimary }]}>
-          {parish.name.ta}
+        {names.map((name, index) => (
+          <Text key={name} variant={index === 0 ? 'headlineMedium' : 'titleLarge'} style={[styles.center, onPrimary]}>
+            {name}
+          </Text>
+        ))}
+        <Text variant="titleMedium" style={[styles.center, onPrimary]}>
+          {pick(parish.place, languages[0])}
         </Text>
-        <Text variant="titleLarge" style={[styles.center, { color: theme.colors.onPrimary }]}>
-          {parish.name.en}, {parish.place.en}
-        </Text>
-        <Text variant="bodyLarge" style={[styles.center, { color: theme.colors.onPrimary }]}>
-          {ta.welcome.subtitle}
-          {'\n'}
-          {en.welcome.subtitle}
+        <Text variant="bodyLarge" style={[styles.center, onPrimary]}>
+          {languages.map((language) => strings[language].welcome.subtitle).join('\n')}
         </Text>
         <View style={styles.buttons}>
-          <Button
-            mode="contained"
-            buttonColor={theme.colors.onPrimary}
-            textColor={theme.colors.primary}
-            contentStyle={styles.button}
-            labelStyle={styles.label}
-            onPress={() => choose('ta')}>
-            தமிழ்
-          </Button>
-          <Button
-            mode="contained"
-            buttonColor={theme.colors.onPrimary}
-            textColor={theme.colors.primary}
-            contentStyle={styles.button}
-            labelStyle={styles.label}
-            onPress={() => choose('en')}>
-            English
-          </Button>
+          {languages.map((language) => (
+            <Button
+              key={language}
+              mode="contained"
+              buttonColor={theme.colors.onPrimary}
+              textColor={theme.colors.primary}
+              contentStyle={styles.button}
+              labelStyle={styles.label}
+              onPress={() => choose(language)}>
+              {languageNames[language]}
+            </Button>
+          ))}
         </View>
       </View>
     </SafeAreaView>

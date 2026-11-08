@@ -1,0 +1,14 @@
+{
+  "mobile": {
+    "name": "St. Michael's Cathedral",
+    "slug": "st-michaels-cathedral-coimbatore",
+    "scheme": "stmichaels",
+    "bundleIdentifier": "in.stmichaelscathedral.parish"
+  },
+  "admin": {
+    "name": "St. Michael's Parish Office",
+    "slug": "st-michaels-parish-admin",
+    "scheme": "stmichaelsadmin"
+  },
+  "brandColor": "#8C1D2C"
+}

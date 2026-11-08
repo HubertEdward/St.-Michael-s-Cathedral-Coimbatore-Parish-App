@@ -1,19 +1,23 @@
-import { clergy, history, parish } from '@stmichaels/core';
+import { clergy, formatDayOfYear, history, parish } from '@parish/core';
 import { Card, List, Text } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 
 import { Notice } from '@/components/Notice';
 import { Screen } from '@/components/Screen';
-import { useLocalized } from '@/i18n';
+import { useLanguage, useLocalized } from '@/i18n';
 
 export default function About() {
   const { t } = useTranslation();
   const text = useLocalized();
+  const language = useLanguage();
   return (
     <Screen>
       <Text variant="headlineSmall">{text(parish.name)}</Text>
       <Text variant="bodyLarge">{text(parish.diocese)}</Text>
-      <Notice text={t('about.feast')} icon="star-four-points-outline" />
+      <Notice
+        text={t('about.feast', { date: formatDayOfYear(parish.feast.month, parish.feast.day, language) })}
+        icon="star-four-points-outline"
+      />
 
       <Card mode="outlined">
         <Card.Title title={t('about.clergy')} titleVariant="titleMedium" />
@@ -21,7 +25,7 @@ export default function About() {
           <List.Item
             key={member.role}
             title={member.name ?? t('about.toBeConfirmed')}
-            description={t(`about.role.${member.role}`)}
+            description={member.title ? text(member.title) : t(`about.role.${member.role}`)}
             titleNumberOfLines={2}
             left={(props) => <List.Icon {...props} icon="account-tie" />}
           />

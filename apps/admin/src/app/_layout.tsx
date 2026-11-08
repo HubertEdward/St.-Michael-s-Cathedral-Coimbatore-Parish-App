@@ -1,4 +1,4 @@
-import { configureDemoStore, darkTheme, lightTheme } from '@stmichaels/core';
+import { configureDemoStore, darkTheme, lightTheme, parish } from '@parish/core';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { router, Slot, usePathname, type Href } from 'expo-router';
 import { ScrollView, StyleSheet, useColorScheme, useWindowDimensions, View } from 'react-native';
@@ -38,7 +38,7 @@ function Shell() {
   return (
     <View style={[styles.page, { backgroundColor: theme.colors.background }]}>
       <Appbar.Header style={{ backgroundColor: theme.colors.primary }}>
-        <Appbar.Content title="St. Michael's Cathedral · Parish office" color={theme.colors.onPrimary} />
+        <Appbar.Content title={`${parish.name.en} · Parish office`} color={theme.colors.onPrimary} />
         <Chip compact icon="flask-outline" style={styles.demo}>
           Demo data in this browser
         </Chip>

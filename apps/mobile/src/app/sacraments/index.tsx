@@ -1,4 +1,4 @@
-import { sacraments } from '@stmichaels/core';
+import { sacraments } from '@parish/core';
 import { router } from 'expo-router';
 import { Card, List } from 'react-native-paper';
 

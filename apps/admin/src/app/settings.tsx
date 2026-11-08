@@ -1,4 +1,4 @@
-import { useResetDemoData } from '@stmichaels/core';
+import { useResetDemoData } from '@parish/core';
 import { Button, Card, Text } from 'react-native-paper';
 
 import { Page } from '@/components/Page';

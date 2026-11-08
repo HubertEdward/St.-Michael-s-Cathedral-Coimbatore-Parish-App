@@ -1,4 +1,4 @@
-import { configureDemoStore } from '@stmichaels/core';
+import { configureDemoStore } from '@parish/core';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';

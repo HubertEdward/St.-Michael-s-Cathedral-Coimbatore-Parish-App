@@ -1,34 +1,57 @@
-// Pure date logic for the timetable. Everything is computed on Coimbatore time
-// (IST, UTC+05:30, no daylight saving) so a visitor abroad still sees the
-// cathedral's local "next Mass". Only type imports, so it runs under `node --test`.
+// Pure date logic for the timetable. Everything is computed in the church's own
+// time zone, so a visitor abroad still sees the parish's local "next Mass".
+// Only type imports, so it runs under `node --test`; parish.ts binds it to the
+// parish's time zone.
 import type { Language } from './localized';
 import type { Service, ServiceKind, Weekday } from './types';
 
-const IST_OFFSET_MS = 330 * 60_000;
 const DAY_MS = 86_400_000;
 
 export interface ParishClock {
-  /** "YYYY-MM-DD" in Coimbatore. */
+  /** "YYYY-MM-DD" at the church. */
   date: string;
   weekday: Weekday;
-  /** Minutes since midnight in Coimbatore. */
+  /** Minutes since midnight at the church. */
   minutes: number;
 }
 
-export function parishClock(now: Date): ParishClock {
-  const ist = new Date(now.getTime() + IST_OFFSET_MS);
-  return {
-    date: ist.toISOString().slice(0, 10),
-    weekday: ist.getUTCDay() as Weekday,
-    minutes: ist.getUTCHours() * 60 + ist.getUTCMinutes(),
-  };
+const formatters = new Map<string, Intl.DateTimeFormat>();
+
+function formatterFor(timeZone: string): Intl.DateTimeFormat {
+  let formatter = formatters.get(timeZone);
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone,
+      hourCycle: 'h23',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    formatters.set(timeZone, formatter);
+  }
+  return formatter;
 }
 
-/** Date and 24-hour time in Coimbatore for an ISO timestamp. */
-export function parishDateTime(iso: string): { date: string; time: string } {
-  const { date, minutes } = parishClock(new Date(iso));
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return { date, time: `${pad(Math.floor(minutes / 60))}:${pad(minutes % 60)}` };
+/** Wall-clock date and time in an IANA time zone. */
+export function clockIn(timeZone: string, now: Date): ParishClock {
+  const parts: Record<string, string> = {};
+  for (const part of formatterFor(timeZone).formatToParts(now)) parts[part.type] = part.value;
+  const date = `${parts.year}-${parts.month}-${parts.day}`;
+  return { date, weekday: weekdayOf(date), minutes: (Number(parts.hour) % 24) * 60 + Number(parts.minute) };
+}
+
+/** The instant a wall-clock "YYYY-MM-DD" date and "HH:mm" time occur in an IANA time zone, as ISO. */
+export function zonedToIso(timeZone: string, date: string, time: string): string {
+  const wall = Date.parse(`${date}T${time}:00Z`);
+  const offset = (instant: number) => {
+    const clock = clockIn(timeZone, new Date(instant));
+    return Date.parse(`${clock.date}T00:00:00Z`) + clock.minutes * 60_000 - Math.floor(instant / 60_000) * 60_000;
+  };
+  // A second pass corrects the guess when the offset changes near a daylight-saving switch.
+  const guess = wall - offset(wall);
+  return new Date(wall - offset(guess)).toISOString();
 }
 
 export function toMinutes(time: string): number {
@@ -52,17 +75,16 @@ export function servicesOn(services: Service[], day: Weekday, kind?: ServiceKind
 
 export interface UpcomingService {
   service: Service;
-  /** "YYYY-MM-DD" in Coimbatore. */
+  /** "YYYY-MM-DD" at the church. */
   date: string;
 }
 
 /** The next services of a kind that have not started yet, looking `days` ahead (default a week). */
 export function upcomingServices(
   services: Service[],
-  now: Date,
+  clock: ParishClock,
   { kind = 'mass', limit = 3, days = 7 }: { kind?: ServiceKind; limit?: number; days?: number } = {},
 ): UpcomingService[] {
-  const clock = parishClock(now);
   const upcoming: UpcomingService[] = [];
   for (let offset = 0; offset <= days && upcoming.length < limit; offset++) {
     const date = addDays(clock.date, offset);
@@ -75,13 +97,16 @@ export function upcomingServices(
   return upcoming;
 }
 
-/** Whole days from today (Coimbatore) until the next occurrence of a month/day; 0 on the day itself. */
-export function daysUntil(month: number, day: number, now: Date): number {
-  const today = parishClock(now).date;
+/** "YYYY-MM-DD" of the next occurrence of a month/day on or after `today`. */
+export function nextOccurrence(month: number, day: number, today: string): string {
   const year = Number(today.slice(0, 4));
   const on = (y: number) => `${y}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-  const target = on(year) >= today ? on(year) : on(year + 1);
-  return Math.round((Date.parse(target) - Date.parse(today)) / DAY_MS);
+  return on(year) >= today ? on(year) : on(year + 1);
+}
+
+/** Whole days from `today` ("YYYY-MM-DD") until the next occurrence of a month/day; 0 on the day itself. */
+export function daysUntil(month: number, day: number, today: string): number {
+  return Math.round((Date.parse(nextOccurrence(month, day, today)) - Date.parse(today)) / DAY_MS);
 }
 
 /** "6:30 AM" in English; "காலை 6:30" style in Tamil. */
@@ -112,6 +137,17 @@ const monthNames: Record<Language, string[]> = {
 /** Short month name for "YYYY-MM-DD". */
 export function monthName(date: string, language: Language): string {
   return monthNames[language][Number(date.slice(5, 7)) - 1];
+}
+
+const longMonthNames: Record<Language, string[]> = {
+  en: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+  ta: ['ஜனவரி', 'பிப்ரவரி', 'மார்ச்', 'ஏப்ரல்', 'மே', 'ஜூன்', 'ஜூலை', 'ஆகஸ்ட்', 'செப்டம்பர்', 'அக்டோபர்', 'நவம்பர்', 'டிசம்பர்'],
+};
+
+/** A yearly date such as a feast: "29 September" in English, "செப்டம்பர் 29" in Tamil. */
+export function formatDayOfYear(month: number, day: number, language: Language): string {
+  const name = longMonthNames[language][month - 1];
+  return language === 'en' ? `${day} ${name}` : `${name} ${day}`;
 }
 
 /** "Sun, 9 Nov" from "YYYY-MM-DD". */

@@ -1,7 +1,7 @@
 import { DarkTheme as NavDark, DefaultTheme as NavLight, type Theme as NavTheme } from 'expo-router';
 import type { MD3Theme } from 'react-native-paper';
 
-export { darkTheme, lightTheme } from '@stmichaels/core';
+export { darkTheme, lightTheme } from '@parish/core';
 
 export function navigationTheme(theme: MD3Theme): NavTheme {
   const base = theme.dark ? NavDark : NavLight;

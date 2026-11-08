@@ -6,7 +6,7 @@ import {
   upcomingServices,
   useAnnouncements,
   useServices,
-} from '@stmichaels/core';
+} from '@parish/core';
 import { router } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 import { Button, Card, Divider, Text, useTheme } from 'react-native-paper';
@@ -30,8 +30,9 @@ export default function Home() {
   const now = useNow();
   const services = useServices();
   const announcements = useAnnouncements();
-  const feastIn = daysUntil(parish.feast.month, parish.feast.day, now);
-  const rosary = rosaryFor(parishClock(now).weekday);
+  const clock = parishClock(now);
+  const feastIn = daysUntil(parish.feast.month, parish.feast.day, clock.date);
+  const rosary = rosaryFor(clock.weekday);
 
   return (
     <View style={styles.page}>
@@ -55,7 +56,7 @@ export default function Home() {
             </Text>
             <QueryState query={services}>
               {(list) => {
-                const [next, ...later] = upcomingServices(list, now, { limit: 4 });
+                const [next, ...later] = upcomingServices(list, clock, { limit: 4 });
                 if (!next) return <Text variant="bodyMedium">{t('home.noUpcoming')}</Text>;
                 return (
                   <View style={styles.gap}>

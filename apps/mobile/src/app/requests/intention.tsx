@@ -3,11 +3,12 @@ import {
   formatTime,
   intentionInputSchema,
   intentionTypes,
+  parishClock,
   upcomingServices,
   useServices,
   useSubmitIntention,
   type IntentionInput,
-} from '@stmichaels/core';
+} from '@parish/core';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -79,7 +80,7 @@ export default function IntentionRequest() {
 
       <QueryState query={services}>
         {(list) => {
-          const upcoming = upcomingServices(list, new Date(), { days: 30, limit: 500 });
+          const upcoming = upcomingServices(list, parishClock(), { days: 30, limit: 500 });
           const dates = [...new Set(upcoming.map((u) => u.date))];
           return (
             <View style={{ gap: 12 }}>

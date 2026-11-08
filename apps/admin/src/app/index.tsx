@@ -2,12 +2,13 @@ import {
   formatDate,
   formatTime,
   parishDateTime,
+  parishClock,
   upcomingServices,
   useCertificateRequests,
   useEvents,
   useIntentions,
   useServices,
-} from '@stmichaels/core';
+} from '@parish/core';
 import { router } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 import { Button, Card, List, Text, useTheme } from 'react-native-paper';
@@ -23,7 +24,7 @@ export default function Dashboard() {
   const now = new Date();
   const newIntentions = intentions.data?.filter((i) => i.status === 'submitted').length ?? 0;
   const newCertificates = certificates.data?.filter((c) => c.status === 'submitted').length ?? 0;
-  const nextMasses = services.data ? upcomingServices(services.data, now, { limit: 5 }) : [];
+  const nextMasses = services.data ? upcomingServices(services.data, parishClock(now), { limit: 5 }) : [];
   const nextEvents = (events.data ?? []).filter((e) => Date.parse(e.startsAt) >= now.getTime()).slice(0, 5);
 
   return (

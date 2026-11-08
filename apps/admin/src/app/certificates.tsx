@@ -6,7 +6,7 @@ import {
   type CertificateKind,
   type CertificateRequest,
   type RequestStatus,
-} from '@stmichaels/core';
+} from '@parish/core';
 import { useState } from 'react';
 import { View } from 'react-native';
 import { Button, Card, Dialog, Portal, SegmentedButtons, Text, TextInput } from 'react-native-paper';

@@ -10,6 +10,14 @@
     },
     "production": {
       "autoIncrement": true
+    },
+    "st-michaels-coimbatore-preview": {
+      "extends": "preview",
+      "env": { "PARISH": "st-michaels-coimbatore" }
+    },
+    "st-michaels-coimbatore-production": {
+      "extends": "production",
+      "env": { "PARISH": "st-michaels-coimbatore" }
     }
   },
   "submit": {

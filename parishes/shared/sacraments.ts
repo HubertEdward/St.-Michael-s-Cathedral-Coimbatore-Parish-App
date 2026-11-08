@@ -1,16 +1,9 @@
-import type { Localized } from '../localized';
+import type { SacramentGuide } from '@parish/core';
 
-export interface SacramentGuide {
-  id: string;
-  name: Localized;
-  summary: Localized;
-  steps: Localized[];
-  documents: Localized[];
-}
-
-// General guidance from common practice in Indian Latin-rite parishes.
-// TO CONFIRM: the parish office must review every step and document.
-export const sacraments: SacramentGuide[] = [
+// General guidance from common practice in Indian Latin-rite parishes, for a
+// parish profile to start from. TO CONFIRM: each parish office must review
+// every step and document before its app is released.
+export const indianLatinRiteSacraments: SacramentGuide[] = [
   {
     id: 'baptism',
     name: { en: 'Baptism', ta: 'திருமுழுக்கு' },

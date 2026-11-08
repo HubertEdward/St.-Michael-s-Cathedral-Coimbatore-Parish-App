@@ -1,4 +1,4 @@
-import { parish } from '@stmichaels/core';
+import { parish } from '@parish/core';
 import { Button, Card, List } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 
@@ -31,12 +31,14 @@ export default function Contact() {
           left={(props) => <List.Icon {...props} icon="email-outline" />}
           onPress={emailOffice}
         />
-        <List.Item
-          title={t('contact.website')}
-          description={parish.website.replace('https://', '')}
-          left={(props) => <List.Icon {...props} icon="web" />}
-          onPress={openWebsite}
-        />
+        {parish.website && (
+          <List.Item
+            title={t('contact.website')}
+            description={parish.website.replace(/^https?:\/\//, '')}
+            left={(props) => <List.Icon {...props} icon="web" />}
+            onPress={openWebsite}
+          />
+        )}
       </Card>
       <Button mode="contained" icon="map-marker-radius" contentStyle={{ height: 56 }} onPress={openDirections}>
         {t('contact.directions')}

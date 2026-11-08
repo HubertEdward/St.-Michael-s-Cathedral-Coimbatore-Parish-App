@@ -17,9 +17,12 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
-      - name: Bundle the parishioner app (Android)
-        run: npx expo export --platform android --output-dir ../../dist/mobile-android
-        working-directory: apps/mobile
-      - name: Build the admin web app
-        run: npx expo export --platform web --output-dir ../../dist/admin-web
-        working-directory: apps/admin
+      - name: Bundle both apps for every parish
+        run: |
+          for build in parishes/*/build.json; do
+            parish=$(basename "$(dirname "$build")")
+            echo "::group::$parish"
+            (cd apps/mobile && PARISH=$parish npx expo export --platform android --output-dir "../../dist/$parish/mobile-android")
+            (cd apps/admin && PARISH=$parish npx expo export --platform web --output-dir "../../dist/$parish/admin-web")
+            echo "::endgroup::"
+          done

@@ -1,6 +1,7 @@
 // The only functions screens use to read and change parish data.
 // Thrown Error messages are codes the apps translate: 'massNotOnDate', 'massOutOfRange'.
-import { addDays, parishClock, weekdayOf } from '../schedule';
+import { parishClock, parishTimeToIso } from '../parish';
+import { addDays, weekdayOf } from '../schedule';
 import type {
   Announcement,
   CertificateRequest,
@@ -101,7 +102,7 @@ export const saveEvent = (input: EventInput, id?: string) =>
       id: id ?? newId(),
       title: parsed.title,
       description: parsed.description,
-      startsAt: new Date(`${parsed.date}T${parsed.time}:00+05:30`).toISOString(),
+      startsAt: parishTimeToIso(parsed.date, parsed.time),
       place: parsed.place ? { en: parsed.place } : undefined,
     };
     upsert(d.events, event);
@@ -121,7 +122,7 @@ export const submitIntention = (input: IntentionInput) =>
     if (!service || weekdayOf(parsed.massDate) !== service.day) {
       throw new Error('massNotOnDate');
     }
-    const today = parishClock(new Date()).date;
+    const today = parishClock().date;
     if (parsed.massDate < today || parsed.massDate > addDays(today, 90)) {
       throw new Error('massOutOfRange');
     }

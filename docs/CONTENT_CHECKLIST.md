@@ -1,10 +1,10 @@
-# Content checklist for the parish office
+# Content checklist: St. Michael's Cathedral, Coimbatore
 
 Everything the app shows that came from public web listings, or is a placeholder, is listed here.
 Each item must be confirmed or corrected by the parish office before the first store release (Gate A).
 In the code, the same items are marked `TO CONFIRM`.
 
-## Facts — `packages/core/src/content/parish.ts`
+## Facts — `parishes/st-michaels-coimbatore/index.ts`
 
 - [ ] Postal address: Big Bazaar Street, Coimbatore 641 001
 - [ ] Office phone: +91 422 239 2854
@@ -14,7 +14,7 @@ In the code, the same items are marked `TO CONFIRM`.
 - [ ] Assistant parish priest(s)
 - [ ] History: blessed 28 April 1867 (some sources say consecrated 1869); first bishop Melchior de Marion Brésillac; Bishop Gladius Maria Depommier; Bishop Bardou consecrated 30 April 1874; diocese erected 1 September 1886
 
-## Timetable — `packages/core/src/data/seed.ts`
+## Timetable — `timetable` in `parishes/st-michaels-coimbatore/index.ts`
 
 From the parish website (page dated June 2025):
 
@@ -27,11 +27,11 @@ From the parish website (page dated June 2025):
 - [ ] Eucharistic adoration times
 - [ ] Novena days and times
 
-## Guidance — `packages/core/src/content/sacraments.ts`
+## Guidance — `parishes/shared/sacraments.ts`
 
 - [ ] Steps and documents for baptism, First Holy Communion, confirmation, marriage, anointing, funeral
 
-## Lists — `packages/core/src/content/ministries.ts`
+## Lists — `ministries` in `parishes/st-michaels-coimbatore/index.ts`
 
 - [ ] The parish's real ministries, associations and Anbiyams, with a contact person for each
 

@@ -9,7 +9,7 @@ import {
   useSaveEvent,
   type EventInput,
   type ParishEvent,
-} from '@stmichaels/core';
+} from '@parish/core';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { View } from 'react-native';

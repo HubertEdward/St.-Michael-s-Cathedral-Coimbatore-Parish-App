@@ -1,4 +1,4 @@
-import { sacraments } from '@stmichaels/core';
+import { sacraments } from '@parish/core';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { Button, Card, Text } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';

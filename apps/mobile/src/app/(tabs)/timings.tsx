@@ -1,4 +1,4 @@
-import { addDays, formatDate, parish, parishClock, servicesOn, useServices, weekdayName, weekdayOf } from '@stmichaels/core';
+import { addDays, formatDate, parish, parishClock, servicesOn, useServices, weekdayName, weekdayOf } from '@parish/core';
 import { StyleSheet, View } from 'react-native';
 import { Card, Text, useTheme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';

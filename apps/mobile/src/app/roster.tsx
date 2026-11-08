@@ -1,4 +1,4 @@
-import { formatTime, ministries, parishClock, useRoster, useServices } from '@stmichaels/core';
+import { formatTime, ministries, parishClock, useRoster, useServices } from '@parish/core';
 import { useState } from 'react';
 import { Card, List, Text } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';

@@ -10,7 +10,8 @@ import {
   type Service,
   type ServiceInput,
   type Weekday,
-} from '@stmichaels/core';
+  parish,
+} from '@parish/core';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { StyleSheet, View } from 'react-native';
@@ -58,7 +59,7 @@ export default function Timetable() {
   return (
     <Page
       title="Mass timetable"
-      description="The weekly schedule shown in the app. Times are Coimbatore time, 24-hour."
+      description={`The weekly schedule shown in the app. Times are local time in ${parish.place.en}, 24-hour.`}
       actions={
         <Button mode="contained" icon="plus" onPress={() => open()}>
           Add service
@@ -128,7 +129,7 @@ export default function Timetable() {
         />
         <View style={styles.fields}>
           <FormField grow control={control} name="time" label="Time (HH:mm)" hint="e.g. 06:30 or 17:30" />
-          <FormField grow control={control} name="place" label="Place (if not the cathedral)" />
+          <FormField grow control={control} name="place" label="Place (if not the church)" />
         </View>
         <FormField control={control} name="note" label="Note" />
         {save.isError && <Text style={{ color: theme.colors.error }}>{errorText(save.error.message)}</Text>}

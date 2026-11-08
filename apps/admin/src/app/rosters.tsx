@@ -13,7 +13,7 @@ import {
   useServices,
   weekdayOf,
   type RosterInput,
-} from '@stmichaels/core';
+} from '@parish/core';
 import { Controller, useForm } from 'react-hook-form';
 import { StyleSheet, View } from 'react-native';
 import { Button, Card, IconButton, List } from 'react-native-paper';

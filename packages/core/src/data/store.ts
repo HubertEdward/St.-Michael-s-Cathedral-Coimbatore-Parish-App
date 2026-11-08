@@ -3,9 +3,10 @@
 // client; the functions in api.ts keep their signatures.
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import { parish } from '../parish';
 import { createSeed, type ParishData } from './seed';
 
-const STORAGE_KEY = 'stmichaels.demo.v1';
+const STORAGE_KEY = `${parish.id}.demo.v1`;
 
 let options = { sampleRequests: false };
 let cache: Promise<ParishData> | null = null;
