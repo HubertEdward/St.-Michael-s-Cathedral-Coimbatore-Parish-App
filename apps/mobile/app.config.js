@@ -37,6 +37,8 @@ module.exports = ({ projectRoot }) => {
     experiments: {
       typedRoutes: true,
       reactCompiler: true,
+      // Set by the demo build, which serves this app under /app (see demo/run.js).
+      ...(process.env.WEB_BASE_URL && { baseUrl: process.env.WEB_BASE_URL }),
     },
   };
 };

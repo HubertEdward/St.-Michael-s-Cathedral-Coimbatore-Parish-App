@@ -1,24 +1,22 @@
 // Phase 1 demo store: the whole dataset as one JSON document in AsyncStorage
 // (localStorage on the web). Phase 2 replaces this file with the backend
 // client; the functions in api.ts keep their signatures.
+//
+// On the web, the parishioner and office apps served from one origin (the demo
+// page, see demo/) share this document, and each sees the other's changes live.
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { parish } from '../parish';
 import { createSeed, type ParishData } from './seed';
 
-const STORAGE_KEY = `${parish.id}.demo.v1`;
+const STORAGE_KEY = `${parish.id}.demo.v2`;
 
-let options = { sampleRequests: false };
 let cache: Promise<ParishData> | null = null;
-
-/** Call once at app start. The admin app shows sample requests; the parishioner app starts empty. */
-export function configureDemoStore(next: { sampleRequests: boolean }) {
-  options = next;
-}
+const listeners = new Set<() => void>();
 
 function load(): Promise<ParishData> {
   cache ??= AsyncStorage.getItem(STORAGE_KEY).then((raw) =>
-    raw ? (JSON.parse(raw) as ParishData) : createSeed(new Date(), options),
+    raw ? (JSON.parse(raw) as ParishData) : createSeed(new Date()),
   );
   return cache;
 }
@@ -37,6 +35,21 @@ export async function write<T>(change: (data: ParishData) => T): Promise<T> {
 export async function resetDemoData(): Promise<void> {
   await AsyncStorage.removeItem(STORAGE_KEY);
   cache = null;
+}
+
+/** Calls `listener` when another app or tab changes the demo data (web only). Returns an unsubscribe function. */
+export function subscribeToDemoData(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+// The browser fires `storage` in every other tab and frame of the origin when the document changes.
+if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+  window.addEventListener('storage', (event) => {
+    if (event.key !== STORAGE_KEY && event.key !== null) return;
+    cache = null;
+    listeners.forEach((listener) => listener());
+  });
 }
 
 export function newId(): string {

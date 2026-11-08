@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{APP_NAME}} · Demo</title>
+  <link rel="icon" href="/app/favicon.ico">
+  <style>
+    :root {
+      --brand: {{BRAND_COLOR}};
+      --bg: #f6f3f2;
+      --surface: #ffffff;
+      --text: #231a19;
+      --muted: #6b5d5c;
+      --line: #e3d9d8;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #161112; --surface: #221b1b; --text: #f2e9e8; --muted: #b9a9a8; --line: #3a2f2f; }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    header { background: var(--brand); color: #fff; padding: 16px 24px; display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; }
+    header h1 { margin: 0; font-size: 20px; font-weight: 650; }
+    header p { margin: 0; opacity: .85; font-size: 14px; }
+    header .spacer { flex: 1; }
+    button { font: inherit; font-size: 14px; border: 1px solid rgba(255,255,255,.6); background: transparent; color: #fff; border-radius: 999px; padding: 6px 16px; cursor: pointer; }
+    button:hover { background: rgba(255,255,255,.15); }
+    main { display: grid; grid-template-columns: 300px 400px minmax(520px, 1fr); gap: 24px; padding: 24px; align-items: start; }
+    .panel-title { margin: 0 0 8px; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+    .panel-title a { color: inherit; }
+    ol { margin: 0; padding-left: 20px; }
+    ol li { margin: 0 0 12px; }
+    ol b { display: block; }
+    .note { margin-top: 16px; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--muted); font-size: 14px; }
+    .phone { width: 400px; height: 820px; border-radius: 44px; background: #111; padding: 14px; box-shadow: 0 12px 40px rgba(0,0,0,.25); }
+    .phone iframe { width: 100%; height: 100%; border: 0; border-radius: 32px; background: #fff; }
+    .office { height: 820px; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--surface); box-shadow: 0 8px 28px rgba(0,0,0,.12); }
+    .office iframe { width: 100%; height: 100%; border: 0; }
+    @media (max-width: 1320px) {
+      main { grid-template-columns: 400px minmax(0, 1fr); }
+      .steps { grid-column: 1 / -1; }
+      ol { columns: 2; column-gap: 32px; }
+      ol li { break-inside: avoid; }
+    }
+    @media (max-width: 960px) {
+      main { grid-template-columns: 1fr; padding: 16px; }
+      ol { columns: 1; }
+      .phone { width: 100%; max-width: 400px; height: 760px; margin: 0 auto; }
+      .office { height: 720px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>{{APP_NAME}} · Parish app demo</h1>
+      <p>The parishioner app and the parish office app, side by side. Changes in one show up in the other.</p>
+    </div>
+    <div class="spacer"></div>
+    <button id="reset" type="button">Start the demo again</button>
+  </header>
+  <main>
+    <section class="steps">
+      <h2 class="panel-title">Try this</h2>
+      <ol>
+        <li><b>Choose a language</b>Pick Tamil or English on the phone. Change it later in More → Language and settings.</li>
+        <li><b>Request a Mass intention</b>On the phone: Mass intention, choose the day and Mass, enter the names, Submit.</li>
+        <li><b>Approve it in the office</b>Office: Mass intentions. The new request is at the top; approve it, then print the priest's list for that day.</li>
+        <li><b>See the answer on the phone</b>Phone: More → My requests shows it as Approved.</li>
+        <li><b>Request a certificate</b>Phone: More → Request a certificate. In the office, approve it under Certificates and add a note such as "Collect on Friday"; the note appears in My requests.</li>
+        <li><b>Publish an announcement</b>Office: Announcements → New, with Tamil and English text. It appears on the phone's Home and News at once.</li>
+        <li><b>Change the timetable</b>Office: Mass timetable. Add or edit a Mass; the phone's Next Mass and Mass times follow.</li>
+        <li><b>Plan an event and a roster</b>Office: Events and Ministry rosters. The phone shows them under News and More → Ministry duty rosters.</li>
+      </ol>
+      <p class="note">This is a preview with sample data, kept in this browser only. Nothing is sent anywhere. Facts about the parish still need the office's confirmation.</p>
+    </section>
+    <section>
+      <h2 class="panel-title">Parishioner app · <a href="/app/" target="_blank" rel="noopener">open alone</a></h2>
+      <div class="phone"><iframe id="phone" src="/app/" title="Parishioner app"></iframe></div>
+    </section>
+    <section>
+      <h2 class="panel-title">Parish office app · <a href="/office/" target="_blank" rel="noopener">open alone</a></h2>
+      <div class="office"><iframe id="office" src="/office/" title="Parish office app"></iframe></div>
+    </section>
+  </main>
+  <script>
+    // Clears this parish's demo data and language choice, then reloads both apps.
+    document.getElementById('reset').addEventListener('click', () => {
+      try {
+        Object.keys(localStorage)
+          .filter((key) => key.startsWith('{{PARISH_ID}}.'))
+          .forEach((key) => localStorage.removeItem(key));
+      } catch (error) {
+        console.warn('Could not clear the demo data', error);
+      }
+      document.getElementById('phone').src = '/app/';
+      document.getElementById('office').src = '/office/';
+    });
+  </script>
+</body>
+</html>

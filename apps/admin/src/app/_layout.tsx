@@ -1,10 +1,9 @@
-import { configureDemoStore, darkTheme, lightTheme, parish } from '@parish/core';
+import { darkTheme, lightTheme, parish, useDemoDataSync } from '@parish/core';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { router, Slot, usePathname, type Href } from 'expo-router';
 import { ScrollView, StyleSheet, useColorScheme, useWindowDimensions, View } from 'react-native';
 import { Appbar, Chip, Drawer, PaperProvider, useTheme } from 'react-native-paper';
 
-configureDemoStore({ sampleRequests: true });
 const queryClient = new QueryClient();
 
 const nav: { label: string; icon: string; href: Href }[] = [
@@ -32,6 +31,7 @@ export default function RootLayout() {
 function Shell() {
   const theme = useTheme();
   const pathname = usePathname();
+  useDemoDataSync();
   const wide = useWindowDimensions().width >= 900;
   const active = (href: Href) => (href === '/' ? pathname === '/' : pathname.startsWith(String(href)));
 

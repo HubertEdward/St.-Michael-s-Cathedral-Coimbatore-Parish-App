@@ -20,6 +20,8 @@ export interface ParishData {
   intentions: MassIntention[];
   certificates: CertificateRequest[];
   roster: RosterEntry[];
+  /** Ids of the requests made in this parishioner app ("My requests"); Phase 2 replaces this with accounts. */
+  mine: string[];
 }
 
 function nextWeekday(from: string, day: Weekday): string {
@@ -27,7 +29,7 @@ function nextWeekday(from: string, day: Weekday): string {
   return addDays(from, offset);
 }
 
-export function createSeed(now: Date, { sampleRequests }: { sampleRequests: boolean }): ParishData {
+export function createSeed(now: Date): ParishData {
   const today = parishClock(now).date;
   const sunday = nextWeekday(today, 0);
   const saturday = nextWeekday(today, 6);
@@ -61,7 +63,7 @@ export function createSeed(now: Date, { sampleRequests }: { sampleRequests: bool
     {
       id: 'intentions',
       title: { en: 'Sample: request Mass intentions from your phone', ta: 'மாதிரி: திருப்பலி கருத்துகளைச் செயலியில் கோரலாம்' },
-      body: { en: 'Open More → Request a Mass intention, choose the Mass and enter the names. In this preview the request stays on your phone.' },
+      body: { en: 'Open More → Request a Mass intention, choose the Mass and enter the names. The parish office confirms it, and you can follow it in My requests.' },
       publishedAt: parishTimeToIso(addDays(today, -5), '18:00'),
       pinned: false,
     },
@@ -91,9 +93,8 @@ export function createSeed(now: Date, { sampleRequests }: { sampleRequests: bool
     },
   ];
 
-  const withSundayMass = sampleRequests && sundayMasses.length > 0;
-
-  const intentions: MassIntention[] = withSundayMass
+  // Requests from other parishioners, so the office has a queue to work on.
+  const intentions: MassIntention[] = sundayMasses.length > 0
     ? [
         { id: 'int-1', type: 'thanksgiving', names: 'Joseph family', massDate: sunday, serviceId: sundayMass(0).id, requesterName: 'Mary Joseph', phone: '+91 98430 00001', status: 'submitted', createdAt: parishTimeToIso(today, '08:10') },
         { id: 'int-2', type: 'departed', names: 'Late Antony Raj', massDate: sunday, serviceId: sundayMass(1).id, requesterName: 'Paul Antony', phone: '+91 98430 00002', status: 'approved', createdAt: parishTimeToIso(addDays(today, -1), '19:20') },
@@ -101,12 +102,10 @@ export function createSeed(now: Date, { sampleRequests }: { sampleRequests: bool
       ]
     : [];
 
-  const certificates: CertificateRequest[] = sampleRequests
-    ? [
-        { id: 'cert-1', kind: 'baptism', personName: 'Annie Thomas', sacramentDate: '1998-06-14', fatherName: 'Thomas', motherName: 'Lilly', purpose: 'Marriage', requesterName: 'Annie Thomas', phone: '+91 98430 00004', status: 'submitted', createdAt: parishTimeToIso(today, '09:30') },
-        { id: 'cert-2', kind: 'marriage', personName: 'Xavier and Grace', purpose: 'Passport', requesterName: 'Xavier', phone: '+91 98430 00005', status: 'approved', officeNote: 'Ready for collection on Friday', createdAt: parishTimeToIso(addDays(today, -3), '11:00') },
-      ]
-    : [];
+  const certificates: CertificateRequest[] = [
+    { id: 'cert-1', kind: 'baptism', personName: 'Annie Thomas', sacramentDate: '1998-06-14', fatherName: 'Thomas', motherName: 'Lilly', purpose: 'Marriage', requesterName: 'Annie Thomas', phone: '+91 98430 00004', status: 'submitted', createdAt: parishTimeToIso(today, '09:30') },
+    { id: 'cert-2', kind: 'marriage', personName: 'Xavier and Grace', purpose: 'Passport', requesterName: 'Xavier', phone: '+91 98430 00005', status: 'approved', officeNote: 'Ready for collection on Friday', createdAt: parishTimeToIso(addDays(today, -3), '11:00') },
+  ];
 
   const members = ['Arul', 'Benedict', 'Celine', 'David', 'Esther'];
   const roster: RosterEntry[] =
@@ -123,5 +122,5 @@ export function createSeed(now: Date, { sampleRequests }: { sampleRequests: bool
   // Copied, because the demo store edits its data in place.
   const services = parish.timetable.map((service) => ({ ...service }));
 
-  return { services, announcements, events, intentions, certificates, roster };
+  return { services, announcements, events, intentions, certificates, roster, mine: [] };
 }

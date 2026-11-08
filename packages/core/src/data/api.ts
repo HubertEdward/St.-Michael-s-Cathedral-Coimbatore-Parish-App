@@ -134,8 +134,13 @@ export const submitIntention = (input: IntentionInput) =>
       createdAt: new Date().toISOString(),
     };
     d.intentions.push(intention);
+    d.mine.push(intention.id);
     return intention;
   });
+
+/** Intentions requested in this parishioner app. */
+export const listMyIntentions = () =>
+  read((d) => d.intentions.filter((i) => d.mine.includes(i.id)).sort(newestFirst));
 
 export const setIntentionStatus = (id: string, status: RequestStatus) =>
   write((d) => {
@@ -158,8 +163,13 @@ export const submitCertificateRequest = (input: CertificateInput) =>
       createdAt: new Date().toISOString(),
     };
     d.certificates.push(request);
+    d.mine.push(request.id);
     return request;
   });
+
+/** Certificate requests made in this parishioner app. */
+export const listMyCertificateRequests = () =>
+  read((d) => d.certificates.filter((c) => d.mine.includes(c.id)).sort(newestFirst));
 
 export const updateCertificateRequest = (id: string, status: RequestStatus, officeNote?: string) =>
   write((d) => {

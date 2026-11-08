@@ -1,8 +1,9 @@
 // TanStack Query bindings for api.ts. Mutations refresh the lists they touch.
 import { useMutation, useQuery, useQueryClient, type QueryKey } from '@tanstack/react-query';
+import { useEffect } from 'react';
 
 import * as api from './api';
-import { resetDemoData } from './store';
+import { resetDemoData, subscribeToDemoData } from './store';
 
 export const queryKeys = {
   services: ['services'],
@@ -20,8 +21,11 @@ export const useAnnouncement = (id: string) =>
 export const useEvents = () => useQuery({ queryKey: queryKeys.events, queryFn: api.listEvents });
 export const useEvent = (id: string) => useQuery({ queryKey: [...queryKeys.events, id], queryFn: () => api.getEvent(id) });
 export const useIntentions = () => useQuery({ queryKey: queryKeys.intentions, queryFn: api.listIntentions });
+export const useMyIntentions = () => useQuery({ queryKey: [...queryKeys.intentions, 'mine'], queryFn: api.listMyIntentions });
 export const useCertificateRequests = () =>
   useQuery({ queryKey: queryKeys.certificates, queryFn: api.listCertificateRequests });
+export const useMyCertificateRequests = () =>
+  useQuery({ queryKey: [...queryKeys.certificates, 'mine'], queryFn: api.listMyCertificateRequests });
 export const useRoster = () => useQuery({ queryKey: queryKeys.roster, queryFn: api.listRoster });
 
 function useChange<TArgs extends unknown[], TResult>(key: QueryKey, change: (...args: TArgs) => Promise<TResult>) {
@@ -48,4 +52,10 @@ export const useDeleteRosterEntry = () => useChange(queryKeys.roster, api.delete
 export function useResetDemoData() {
   const client = useQueryClient();
   return useMutation({ mutationFn: resetDemoData, onSuccess: () => client.invalidateQueries() });
+}
+
+/** Refreshes every query when the other app changes the shared demo data. Call once, in the root layout. */
+export function useDemoDataSync() {
+  const client = useQueryClient();
+  useEffect(() => subscribeToDemoData(() => void client.invalidateQueries()), [client]);
 }

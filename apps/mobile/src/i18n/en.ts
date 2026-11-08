@@ -120,7 +120,7 @@ const en = {
     phone: 'Phone number',
     note: 'Note for the office (optional)',
     offering: 'For now, please make the Mass offering at the parish office.',
-    submitted: 'Request saved. In this preview it stays on your phone; the parish office will receive requests once the app goes live.',
+    submitted: 'Request sent. Follow its status in More → My requests.',
   },
   certificate: {
     intro: 'Request a copy of a sacramental certificate from the parish register. Collect it from the parish office once it is ready.',
@@ -133,11 +133,11 @@ const en = {
     purpose: 'Purpose (e.g. marriage, passport)',
     yourName: 'Your name',
     phone: 'Phone number',
-    submitted: 'Request saved. In this preview it stays on your phone; the parish office will receive requests once the app goes live.',
+    submitted: 'Request sent. Follow its status in More → My requests.',
   },
   requests: {
     empty: 'You have not made any requests yet.',
-    previewNote: 'In this preview, requests are stored only on this phone.',
+    previewNote: 'Preview: requests stay in this demo. Once the app goes live they reach the parish office directly.',
     intentions: 'Mass intentions',
     certificates: 'Certificates',
     status: { submitted: 'Submitted', approved: 'Approved', declined: 'Declined', completed: 'Completed' },

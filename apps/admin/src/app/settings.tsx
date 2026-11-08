@@ -11,8 +11,9 @@ export default function Settings() {
         <Card.Title title="Demo data" titleVariant="titleMedium" />
         <Card.Content style={{ gap: 8 }}>
           <Text variant="bodyMedium">
-            In this Phase 1 preview, everything you change is saved only in this browser. The parishioner app does not see these
-            changes until the shared backend arrives in Phase 2.
+            In this Phase 1 preview, everything you change is saved only in this browser. On the demo page, the parishioner app
+            beside this one shares the same data and shows your changes straight away. Across devices, that arrives with the
+            backend in Phase 2.
           </Text>
           <Text variant="bodyMedium">Resetting restores the sample timetable, announcements, events and requests.</Text>
         </Card.Content>

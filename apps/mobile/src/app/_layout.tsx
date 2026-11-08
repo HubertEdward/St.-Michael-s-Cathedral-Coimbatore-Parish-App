@@ -1,4 +1,4 @@
-import { configureDemoStore } from '@parish/core';
+import { useDemoDataSync } from '@parish/core';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -12,7 +12,6 @@ import { LanguageProvider, useLanguageState } from '@/i18n';
 import { darkTheme, lightTheme, navigationTheme } from '@/theme';
 
 SplashScreen.preventAutoHideAsync();
-configureDemoStore({ sampleRequests: false });
 const queryClient = new QueryClient();
 
 export default function RootLayout() {
@@ -34,6 +33,7 @@ export default function RootLayout() {
 function RootStack() {
   const { ready, chosen } = useLanguageState();
   const { t } = useTranslation();
+  useDemoDataSync();
 
   useEffect(() => {
     if (ready) SplashScreen.hideAsync();

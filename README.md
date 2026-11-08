@@ -52,6 +52,18 @@ npm run typecheck  # all workspaces, including every parish profile
 npm test           # schedule logic tests
 ```
 
+## Clickable demo
+
+```bash
+npm run demo       # builds both apps (a few minutes), then serves the demo at http://localhost:8095
+```
+
+The demo page shows the parishioner app in a phone frame beside the parish office app, with a short list of
+things to try. Both apps run in the same browser and share the demo data, so a Mass intention requested on the
+phone appears in the office queue at once, and the office's approval, announcements and timetable changes appear
+on the phone. "Start the demo again" restores the sample data. `npm run demo -- --no-build` serves the last
+build; `PORT` and `PARISH` work as usual. Nothing is sent anywhere: the data stays in that browser.
+
 For another parish, set `PARISH` first: `PARISH=<folder> npm run mobile`, or in PowerShell
 `$env:PARISH='<folder>'; npm run mobile`.
 

@@ -1,4 +1,4 @@
-import { formatDate, formatTime, useCertificateRequests, useIntentions, useServices } from '@parish/core';
+import { formatDate, formatTime, useMyCertificateRequests, useMyIntentions, useServices } from '@parish/core';
 import { Card, Text } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 
@@ -7,12 +7,12 @@ import { Screen } from '@/components/Screen';
 import { StatusChip } from '@/components/StatusChip';
 import { useLanguage } from '@/i18n';
 
-/** Requests made from this phone (in Phase 1 they are stored only on the device). */
+/** Requests made from this app, with the office's decision on each. */
 export default function MyRequests() {
   const { t } = useTranslation();
   const language = useLanguage();
-  const intentions = useIntentions();
-  const certificates = useCertificateRequests();
+  const intentions = useMyIntentions();
+  const certificates = useMyCertificateRequests();
   const services = useServices();
   const none = (intentions.data?.length ?? 0) + (certificates.data?.length ?? 0) === 0;
 

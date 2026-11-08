@@ -9,6 +9,7 @@
   "scripts": {
     "mobile": "npm run start -w @parish/mobile",
     "admin": "npm run web -w @parish/admin",
+    "demo": "node demo/run.js",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm test --workspaces --if-present"
   }
