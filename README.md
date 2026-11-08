@@ -5,6 +5,10 @@ One codebase serves many parishes: each parish has its own folder under `parishe
 for one of them, with that parish's name, icon, store identifiers, colours, languages and content.
 The first parish is St. Michael's Cathedral, Coimbatore.
 
+The plan is one shared app in the stores, where each parishioner joins one parish and that parish's admin approves
+them. Until the Supabase backend (milestone M4), parish profiles are bundled and each build carries one parish;
+from M4 the profiles move into a `parishes` table and the app chooses the parish at run time.
+
 The analysis, decisions and the full development plan are in the project document:
 [St. Michael's Cathedral Parish App — Analysis & Development Plan](https://claude.ai/artifact/VBdCWYEbpVvnV1Q9wE22xW).
 
@@ -69,8 +73,9 @@ For another parish, set `PARISH` first: `PARISH=<folder> npm run mobile`, or in 
 
 ## Build for the stores
 
-Each parish is its own app in the stores. The parishioner app builds with EAS, with a pair of profiles per
-parish in `apps/mobile/eas.json` that set `PARISH`:
+The parishioner app builds with EAS, with a pair of profiles per parish in `apps/mobile/eas.json` that set
+`PARISH`. These make the per-parish preview and pilot builds; the store release uses the shared app's name and
+package id (see the plan).
 
 ```bash
 cd apps/mobile
@@ -93,8 +98,8 @@ cd android
 The APK is at `apps\mobile\android\app\build\outputs\apk\release\app-release.apk`. It is signed with the debug key,
 which is fine for installing on your own phone but not for the store.
 
-St. Michael's bundle identifier `in.stmichaelscathedral.parish` is a proposal; confirm it before the first store
-upload, because it cannot be changed afterwards.
+St. Michael's bundle identifier `in.stmichaelscathedral.parish` is for preview builds only. The shared app needs
+its own name and package id before the first store upload, because a package id cannot be changed afterwards.
 
 ## Adding a parish
 
