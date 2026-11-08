@@ -78,6 +78,21 @@ npx eas build --profile st-michaels-coimbatore-preview --platform android   # in
 npx eas build --profile st-michaels-coimbatore-production --platform all    # store builds
 ```
 
+To build a test APK on a Windows PC instead (needs JDK 17 and the Android SDK), work from a copy of the repository
+at a short path without spaces or apostrophes, such as `C:\pb\parish`; the native build fails on long or unusual
+paths, and a `subst` drive does not help because React Native's code generator resolves the real path:
+
+```powershell
+npm ci
+cd apps\mobile
+npx expo prebuild --platform android
+cd android
+.\gradlew.bat assembleRelease -PreactNativeArchitectures=arm64-v8a   # about an hour the first time
+```
+
+The APK is at `apps\mobile\android\app\build\outputs\apk\release\app-release.apk`. It is signed with the debug key,
+which is fine for installing on your own phone but not for the store.
+
 St. Michael's bundle identifier `in.stmichaelscathedral.parish` is a proposal; confirm it before the first store
 upload, because it cannot be changed afterwards.
 
