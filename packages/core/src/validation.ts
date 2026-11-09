@@ -2,9 +2,9 @@
 // Messages are codes (see ValidationCode); each app translates them.
 import { z } from 'zod';
 
-import { certificateKinds, intentionTypes } from './types';
+import { certificateKinds, givingPurposes, intentionTypes } from './types';
 
-export type ValidationCode = 'required' | 'tooLong' | 'phone' | 'date' | 'time';
+export type ValidationCode = 'required' | 'tooLong' | 'phone' | 'date' | 'time' | 'amountMin' | 'amountMax';
 
 const required = (max = 200) => z.string().trim().min(1, 'required').max(max, 'tooLong');
 const optionalText = z.string().trim().max(500, 'tooLong').optional();
@@ -74,3 +74,14 @@ export const rosterInputSchema = z.object({
   memberName: required(100),
 });
 export type RosterInput = z.infer<typeof rosterInputSchema>;
+
+export const subscriptionAmountSchema = z.number().int().min(50, 'amountMin').max(100000, 'amountMax');
+
+export const subscriptionInputSchema = z.object({
+  amount: subscriptionAmountSchema,
+  purpose: z.enum(givingPurposes),
+  debitDay: z.number().int().min(1).max(28),
+  name: required(100),
+  phone: phoneSchema,
+});
+export type SubscriptionInput = z.infer<typeof subscriptionInputSchema>;

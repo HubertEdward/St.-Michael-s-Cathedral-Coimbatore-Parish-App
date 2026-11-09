@@ -1,5 +1,6 @@
 // The only functions screens use to read and change parish data.
 // Thrown Error messages are codes the apps translate: 'massNotOnDate', 'massOutOfRange'.
+import { nextDebitOn } from '../giving';
 import { parishClock, parishTimeToIso } from '../parish';
 import { addDays, weekdayOf } from '../schedule';
 import type {
@@ -10,6 +11,8 @@ import type {
   RequestStatus,
   RosterEntry,
   Service,
+  Subscription,
+  SubscriptionStatus,
 } from '../types';
 import {
   announcementInputSchema,
@@ -18,12 +21,15 @@ import {
   intentionInputSchema,
   rosterInputSchema,
   serviceInputSchema,
+  subscriptionAmountSchema,
+  subscriptionInputSchema,
   type AnnouncementInput,
   type CertificateInput,
   type EventInput,
   type IntentionInput,
   type RosterInput,
   type ServiceInput,
+  type SubscriptionInput,
 } from '../validation';
 import { newId, read, write } from './store';
 
@@ -190,3 +196,38 @@ export const saveRosterEntry = (input: RosterInput) =>
   });
 
 export const deleteRosterEntry = (id: string) => write((d) => remove(d.roster, id));
+
+// Monthly subscriptions (no money moves in the demo)
+
+export const listSubscriptions = () => read((d) => [...d.subscriptions].sort(newestFirst));
+
+/** Subscriptions set up in this parishioner app, newest first. */
+export const listMySubscriptions = () =>
+  read((d) => d.subscriptions.filter((s) => d.mine.includes(s.id)).sort(newestFirst));
+
+export const startSubscription = (input: SubscriptionInput) =>
+  write((d) => {
+    const parsed = subscriptionInputSchema.parse(input);
+    const subscription: Subscription = {
+      id: newId(),
+      ...parsed,
+      status: 'active',
+      startsOn: nextDebitOn(parsed.debitDay, parishClock().date),
+      createdAt: new Date().toISOString(),
+    };
+    d.subscriptions.push(subscription);
+    d.mine.push(subscription.id);
+    return subscription;
+  });
+
+export const setSubscriptionStatus = (id: string, status: SubscriptionStatus) =>
+  write((d) => {
+    const subscription = d.subscriptions.find((s) => s.id === id);
+    if (subscription) subscription.status = status;
+  });
+
+export const changeSubscriptionAmount = (id: string, amount: number) =>
+  write((d) => {
+    const subscription = d.subscriptions.find((s) => s.id === id);
+    if (subscription) subscription.amount = subscriptionAmountSchema.parse(amount);
+  });

@@ -11,11 +11,12 @@ import {
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Card, Chip, SegmentedButtons, Text, useTheme } from 'react-native-paper';
+import { Chip, SegmentedButtons, Text, useTheme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 
 import { QueryState } from '@/components/QueryState';
 import { Screen } from '@/components/Screen';
+import { Panel } from '@/components/design/Panel';
 import { useNow } from '@/hooks';
 import { useLanguage, useLocalized } from '@/i18n';
 
@@ -69,8 +70,7 @@ function AnnouncementCard({ announcement }: { announcement: Announcement }) {
   const text = useLocalized();
   const language = useLanguage();
   return (
-    <Card mode="elevated" onPress={() => router.push({ pathname: '/announcement/[id]', params: { id: announcement.id } })}>
-      <Card.Content style={styles.gap}>
+    <Panel onPress={() => router.push({ pathname: '/announcement/[id]', params: { id: announcement.id } })}>
         <View style={styles.meta}>
           {announcement.pinned && (
             <Chip compact icon="pin">
@@ -83,8 +83,7 @@ function AnnouncementCard({ announcement }: { announcement: Announcement }) {
         <Text variant="bodyMedium" numberOfLines={3}>
           {text(announcement.body)}
         </Text>
-      </Card.Content>
-    </Card>
+    </Panel>
   );
 }
 
@@ -94,8 +93,7 @@ function EventCard({ event }: { event: ParishEvent }) {
   const language = useLanguage();
   const { date, time } = parishDateTime(event.startsAt);
   return (
-    <Card mode="outlined" onPress={() => router.push({ pathname: '/event/[id]', params: { id: event.id } })}>
-      <Card.Content style={styles.eventRow}>
+    <Panel onPress={() => router.push({ pathname: '/event/[id]', params: { id: event.id } })} style={styles.eventRow}>
         <View style={[styles.dateBlock, { backgroundColor: theme.colors.primaryContainer }]}>
           <Text variant="headlineSmall" style={{ color: theme.colors.onPrimaryContainer }}>
             {Number(date.slice(8, 10))}
@@ -112,8 +110,7 @@ function EventCard({ event }: { event: ParishEvent }) {
               .join(' · ')}
           </Text>
         </View>
-      </Card.Content>
-    </Card>
+    </Panel>
   );
 }
 

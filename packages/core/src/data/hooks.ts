@@ -12,6 +12,7 @@ export const queryKeys = {
   intentions: ['intentions'],
   certificates: ['certificates'],
   roster: ['roster'],
+  subscriptions: ['subscriptions'],
 } as const;
 
 export const useServices = () => useQuery({ queryKey: queryKeys.services, queryFn: api.listServices });
@@ -26,6 +27,9 @@ export const useCertificateRequests = () =>
   useQuery({ queryKey: queryKeys.certificates, queryFn: api.listCertificateRequests });
 export const useMyCertificateRequests = () =>
   useQuery({ queryKey: [...queryKeys.certificates, 'mine'], queryFn: api.listMyCertificateRequests });
+export const useSubscriptions = () => useQuery({ queryKey: queryKeys.subscriptions, queryFn: api.listSubscriptions });
+export const useMySubscriptions = () =>
+  useQuery({ queryKey: [...queryKeys.subscriptions, 'mine'], queryFn: api.listMySubscriptions });
 export const useRoster = () => useQuery({ queryKey: queryKeys.roster, queryFn: api.listRoster });
 
 function useChange<TArgs extends unknown[], TResult>(key: QueryKey, change: (...args: TArgs) => Promise<TResult>) {
@@ -48,6 +52,10 @@ export const useSubmitCertificateRequest = () => useChange(queryKeys.certificate
 export const useUpdateCertificateRequest = () => useChange(queryKeys.certificates, api.updateCertificateRequest);
 export const useSaveRosterEntry = () => useChange(queryKeys.roster, api.saveRosterEntry);
 export const useDeleteRosterEntry = () => useChange(queryKeys.roster, api.deleteRosterEntry);
+
+export const useStartSubscription = () => useChange(queryKeys.subscriptions, api.startSubscription);
+export const useSetSubscriptionStatus = () => useChange(queryKeys.subscriptions, api.setSubscriptionStatus);
+export const useChangeSubscriptionAmount = () => useChange(queryKeys.subscriptions, api.changeSubscriptionAmount);
 
 export function useResetDemoData() {
   const client = useQueryClient();

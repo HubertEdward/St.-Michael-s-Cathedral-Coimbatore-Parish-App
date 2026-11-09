@@ -1,6 +1,8 @@
 import {
   formatDate,
+  formatRupees,
   formatTime,
+  monthlyTotal,
   parishDateTime,
   parishClock,
   upcomingServices,
@@ -8,6 +10,7 @@ import {
   useEvents,
   useIntentions,
   useServices,
+  useSubscriptions,
 } from '@parish/core';
 import { router } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
@@ -21,6 +24,7 @@ export default function Dashboard() {
   const certificates = useCertificateRequests();
   const services = useServices();
   const events = useEvents();
+  const subscriptions = useSubscriptions();
   const now = new Date();
   const newIntentions = intentions.data?.filter((i) => i.status === 'submitted').length ?? 0;
   const newCertificates = certificates.data?.filter((c) => c.status === 'submitted').length ?? 0;
@@ -40,6 +44,12 @@ export default function Dashboard() {
           <Card.Content>
             <Text variant="displaySmall">{newCertificates}</Text>
             <Text variant="titleMedium">New certificate requests</Text>
+          </Card.Content>
+        </Card>
+        <Card mode="contained" style={[styles.stat, { backgroundColor: theme.colors.tertiaryContainer }]} onPress={() => router.navigate('/subscriptions')}>
+          <Card.Content>
+            <Text variant="displaySmall">{formatRupees(monthlyTotal(subscriptions.data ?? []), 'en')}</Text>
+            <Text variant="titleMedium">Monthly offerings committed</Text>
           </Card.Content>
         </Card>
       </View>

@@ -14,6 +14,7 @@ const nav: { label: string; icon: string; href: Href }[] = [
   { label: 'Mass intentions', icon: 'candle', href: '/intentions' },
   { label: 'Certificates', icon: 'file-certificate-outline', href: '/certificates' },
   { label: 'Ministry rosters', icon: 'clipboard-text-clock-outline', href: '/rosters' },
+  { label: 'Monthly offerings', icon: 'hand-heart-outline', href: '/subscriptions' },
   { label: 'Settings', icon: 'cog-outline', href: '/settings' },
 ];
 

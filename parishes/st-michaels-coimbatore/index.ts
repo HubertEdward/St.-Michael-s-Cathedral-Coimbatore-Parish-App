@@ -90,6 +90,19 @@ export default {
     ...weekdays.filter((day) => day !== 1).map((day) => mass(day, '18:30')),
   ],
 
+  images: {
+    patron: {
+      source: require('./assets/saint.jpg'),
+      credit: {
+        en: 'St. Michael the Archangel, Guido Reni, 1635 (public domain, via Wikimedia Commons)',
+        ta: 'புனித மிக்கேல் அதிதூதர், குய்டோ ரேனி, 1635 (பொது உரிமை, விக்கிமீடியா காமன்ஸ்)',
+      },
+    },
+    // TO CONFIRM: add the parish's own photo of the cathedral as assets/church.jpg, then:
+    // church: { source: require('./assets/church.jpg') },
+  },
+  patronPrayer: 'st-michael',
+
   // Archangel red, gold and sky blue.
   colors: {
     light: {

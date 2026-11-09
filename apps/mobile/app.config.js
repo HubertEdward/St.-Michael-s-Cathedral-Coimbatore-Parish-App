@@ -32,6 +32,7 @@ module.exports = ({ projectRoot }) => {
     plugins: [
       'expo-router',
       'expo-localization',
+      'expo-image',
       ['expo-splash-screen', { backgroundColor: brandColor, image: asset('splash-icon.png'), imageWidth: 160 }],
     ],
     experiments: {

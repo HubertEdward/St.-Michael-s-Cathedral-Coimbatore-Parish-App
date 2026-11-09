@@ -13,6 +13,14 @@ export interface ClergyMember {
   title?: Localized;
 }
 
+/** A picture bundled with the parish profile. */
+export interface ParishImage {
+  /** `require('./assets/…')` */
+  source: number;
+  /** Shown in About; required for anything that is not the parish's own photo. */
+  credit?: Localized;
+}
+
 export interface SacramentGuide {
   id: string;
   name: Localized;
@@ -50,6 +58,13 @@ export interface ParishProfile {
   sacraments: SacramentGuide[];
   /** The weekly timetable the app starts with. */
   timetable: Service[];
+  /**
+   * `patron`: the patron saint. `church`: a photo of the church, used for the home and About headers;
+   * without one, those headers show the patron.
+   */
+  images: { patron: ParishImage; church?: ParishImage };
+  /** Id of the prayer to the patron saint in the shared prayers, if there is one. */
+  patronPrayer?: string;
   /** Material 3 colours laid over the default light and dark themes. */
   colors: { light: Partial<MD3Theme['colors']>; dark: Partial<MD3Theme['colors']> };
   /** "YYYY-MM-DD" the facts in the profile were last checked; shown in the app. */

@@ -1,6 +1,7 @@
 // Demo data for Phase 1. The timetable comes from the parish profile; the
 // announcements, events, requests and roster are samples built around it, with
 // dates relative to the first launch so the demo never looks stale.
+import { nextDebitOn } from '../giving';
 import { parish, parishClock, parishTimeToIso } from '../parish';
 import { addDays, formatDayOfYear, nextOccurrence, servicesOn, weekdayOf } from '../schedule';
 import type {
@@ -10,6 +11,7 @@ import type {
   ParishEvent,
   RosterEntry,
   Service,
+  Subscription,
   Weekday,
 } from '../types';
 
@@ -20,7 +22,8 @@ export interface ParishData {
   intentions: MassIntention[];
   certificates: CertificateRequest[];
   roster: RosterEntry[];
-  /** Ids of the requests made in this parishioner app ("My requests"); Phase 2 replaces this with accounts. */
+  subscriptions: Subscription[];
+  /** Ids of the requests and subscriptions made in this parishioner app ("My requests"); Phase 2 replaces this with accounts. */
   mine: string[];
 }
 
@@ -119,8 +122,36 @@ export function createSeed(now: Date): ParishData {
         }))
       : [];
 
+  // Monthly supporters, so the office has a list and totals to show.
+  const supporter = (
+    n: number,
+    name: string,
+    amount: number,
+    purpose: Subscription['purpose'],
+    debitDay: number,
+    monthsAgo: number,
+    status: Subscription['status'] = 'active',
+  ): Subscription => ({
+    id: `sub-${n}`,
+    name,
+    phone: `+91 98430 1000${n}`,
+    amount,
+    purpose,
+    debitDay,
+    status,
+    startsOn: nextDebitOn(debitDay, addDays(today, -30 * monthsAgo)),
+    createdAt: parishTimeToIso(addDays(today, -30 * monthsAgo - 3), '20:00'),
+  });
+  const subscriptions: Subscription[] = [
+    supporter(1, 'Joseph family', 1000, 'parish', 5, 8),
+    supporter(2, 'Mary Arul', 500, 'restoration', 1, 5),
+    supporter(3, 'Antony and Rita', 250, 'charity', 10, 3),
+    supporter(4, 'Francis Xavier', 2500, 'restoration', 15, 11),
+    supporter(5, 'Celine Paul', 250, 'parish', 5, 6, 'paused'),
+  ];
+
   // Copied, because the demo store edits its data in place.
   const services = parish.timetable.map((service) => ({ ...service }));
 
-  return { services, announcements, events, intentions, certificates, roster, mine: [] };
+  return { services, announcements, events, intentions, certificates, roster, subscriptions, mine: [] };
 }

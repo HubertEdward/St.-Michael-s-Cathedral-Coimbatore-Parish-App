@@ -1,6 +1,6 @@
 import type { TFunction } from 'i18next';
 
-const codes = ['required', 'tooLong', 'phone', 'date', 'time', 'massNotOnDate', 'massOutOfRange'] as const;
+const codes = ['required', 'tooLong', 'phone', 'date', 'time', 'amountMin', 'amountMax', 'massNotOnDate', 'massOutOfRange'] as const;
 type Code = (typeof codes)[number];
 
 /** Turns a validation or API error code from @parish/core into a translated sentence. */
