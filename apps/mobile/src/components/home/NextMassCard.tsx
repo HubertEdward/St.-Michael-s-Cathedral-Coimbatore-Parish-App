@@ -1,4 +1,4 @@
-import { formatTime, toMinutes, upcomingServices, type ParishClock, type Service, type UpcomingService } from '@parish/core';
+import { formatTime, parishClock, toMinutes, upcomingServices, type ParishClock, type Service, type UpcomingService } from '@parish/core';
 import { router } from 'expo-router';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { Icon, Text, useTheme } from 'react-native-paper';
@@ -8,7 +8,7 @@ import { Display } from '@/components/design/Display';
 import { Eyebrow } from '@/components/design/Eyebrow';
 import { Panel } from '@/components/design/Panel';
 import { Tap } from '@/components/design/Tap';
-import { useDayLabel } from '@/hooks';
+import { useDayLabel, useNow } from '@/hooks';
 import { useLanguage, useLocalized } from '@/i18n';
 
 import { Pulse } from './Pulse';
@@ -21,8 +21,10 @@ function minutesUntil(upcoming: UpcomingService, clock: ParishClock): number {
   return days * 1440 + toMinutes(upcoming.service.time) - clock.minutes;
 }
 
-/** The next Mass, large, with a live countdown and the few after it as chips. */
-export function NextMassCard({ services, clock }: { services: Service[]; clock: ParishClock }) {
+/** The next Mass, large, with a countdown that ticks by the second in the last hour, and the few after it as chips. */
+export function NextMassCard({ services }: { services: Service[] }) {
+  const now = useNow(1000);
+  const clock = parishClock(now);
   const { t } = useTranslation();
   const theme = useTheme();
   const language = useLanguage();
@@ -41,11 +43,13 @@ export function NextMassCard({ services, clock }: { services: Service[]; clock: 
 
   const minutes = minutesUntil(next, clock);
   const soon = minutes <= 60;
+  const secondsLeft = minutes * 60 - now.getSeconds();
+  const mmss = `${Math.floor(secondsLeft / 60)}:${String(secondsLeft % 60).padStart(2, '0')}`;
   const countdown =
-    minutes < 1
+    secondsLeft <= 0
       ? t('home.startingNow')
-      : minutes < 60
-        ? t('home.inMinutes', { count: minutes })
+      : minutes <= 60
+        ? t('home.inClock', { time: mmss })
         : minutes < 24 * 60
           ? t('home.inHours', { hours: Math.floor(minutes / 60), minutes: minutes % 60 })
           : dayLabel(next.date);
@@ -60,7 +64,7 @@ export function NextMassCard({ services, clock }: { services: Service[]; clock: 
         <Eyebrow>{t('home.nextMass')}</Eyebrow>
         <View style={[styles.countdown, { backgroundColor: soon ? theme.colors.primary : theme.colors.primaryContainer }]}>
           {soon && <Pulse color={theme.colors.onPrimary} />}
-          <Text variant="labelLarge" style={{ color: soon ? theme.colors.onPrimary : theme.colors.onPrimaryContainer }}>
+          <Text variant="labelLarge" style={{ color: soon ? theme.colors.onPrimary : theme.colors.onPrimaryContainer, fontVariant: ['tabular-nums'] }}>
             {countdown}
           </Text>
         </View>

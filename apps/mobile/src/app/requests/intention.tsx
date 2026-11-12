@@ -16,6 +16,8 @@ import { View } from 'react-native';
 import { Button, HelperText, Snackbar, Text } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 
+import { GradientButton } from '@/components/design/GradientButton';
+import { SuccessMark } from '@/components/design/SuccessMark';
 import { ChoiceChips } from '@/components/ChoiceChips';
 import { FormField } from '@/components/FormField';
 import { Notice } from '@/components/Notice';
@@ -49,11 +51,10 @@ export default function IntentionRequest() {
   if (saved) {
     return (
       <Screen>
+        <SuccessMark />
         <Notice text={t('intention.submitted')} icon="check-circle-outline" />
         <Notice text={t('intention.offering')} icon="cash" />
-        <Button mode="contained" onPress={() => router.replace('/requests')}>
-          {t('more.myRequests')}
-        </Button>
+        <GradientButton label={t('more.myRequests')} icon="inbox-full" onPress={() => router.replace('/requests')} />
         <Button onPress={() => setSaved(false)}>{t('more.intention')}</Button>
       </Screen>
     );
@@ -135,9 +136,7 @@ export default function IntentionRequest() {
       <FormField control={control} name="phone" label={t('intention.phone')} keyboardType="phone-pad" />
       <FormField control={control} name="note" label={t('intention.note')} multiline />
       <Notice text={t('intention.offering')} icon="cash" />
-      <Button mode="contained" contentStyle={{ height: 56 }} loading={formState.isSubmitting} onPress={onSubmit}>
-        {t('common.submit')}
-      </Button>
+      <GradientButton label={t('common.submit')} icon="send" loading={formState.isSubmitting} onPress={onSubmit} />
       <Snackbar visible={submit.isError} onDismiss={() => submit.reset()}>
         {translateError(t, submit.error?.message)}
       </Snackbar>

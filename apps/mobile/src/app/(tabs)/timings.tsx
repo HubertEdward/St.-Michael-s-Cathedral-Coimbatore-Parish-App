@@ -39,7 +39,7 @@ export default function Timings() {
   const day = week.includes(selected) ? selected : clock.date;
 
   return (
-    <Screen onRefresh={() => services.refetch()}>
+    <Screen title={t('tabs.timings')} eyebrow={t('timings.eyebrow')} onRefresh={() => services.refetch()}>
       <DayPicker week={week} selected={day} today={clock.date} onSelect={setSelected} />
       <QueryState query={services}>
         {(list) => {

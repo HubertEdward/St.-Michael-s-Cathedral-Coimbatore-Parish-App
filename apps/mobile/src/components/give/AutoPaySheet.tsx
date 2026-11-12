@@ -1,11 +1,11 @@
-import * as Haptics from 'expo-haptics';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { ActivityIndicator, Button, Icon, Modal, Portal, Text, useTheme } from 'react-native-paper';
-import Animated, { ZoomIn } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
 
 import { Display } from '@/components/design/Display';
+import { GradientButton } from '@/components/design/GradientButton';
+import { SuccessMark } from '@/components/design/SuccessMark';
 import { radius } from '@/components/design/tokens';
 
 type Step = 'review' | 'waiting' | 'done';
@@ -32,7 +32,6 @@ export function AutoPaySheet({ visible, summary, maxAmount, onApprove, onClose }
     setStep('waiting');
     await new Promise((resolve) => setTimeout(resolve, 1600));
     await onApprove();
-    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => undefined);
     setStep('done');
   };
 
@@ -50,9 +49,7 @@ export function AutoPaySheet({ visible, summary, maxAmount, onApprove, onClose }
         contentContainerStyle={[styles.sheet, { backgroundColor: theme.dark ? theme.colors.elevation.level3 : '#FFFFFF' }]}>
         {step === 'done' ? (
           <View style={styles.center}>
-            <Animated.View entering={ZoomIn.springify().damping(12)} style={[styles.success, { backgroundColor: theme.colors.primary }]}>
-              <Icon source="check-bold" size={48} color={theme.colors.onPrimary} />
-            </Animated.View>
+            <SuccessMark />
             <Display size={30} style={styles.centerText}>
               {t('give.doneTitle')}
             </Display>
@@ -82,9 +79,7 @@ export function AutoPaySheet({ visible, summary, maxAmount, onApprove, onClose }
               </View>
             ) : (
               <View style={styles.buttons}>
-                <Button mode="contained" icon="check" onPress={approve} contentStyle={styles.button}>
-                  {t('give.approve')}
-                </Button>
+                <GradientButton label={t('give.approve')} icon="check" onPress={approve} />
                 <Button onPress={close}>{t('give.cancel')}</Button>
               </View>
             )}
@@ -105,6 +100,5 @@ const styles = StyleSheet.create({
   button: { height: 52 },
   center: { alignItems: 'center', gap: 14 },
   centerText: { textAlign: 'center' },
-  success: { width: 96, height: 96, borderRadius: 48, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
   full: { alignSelf: 'stretch' },
 });

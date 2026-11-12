@@ -30,7 +30,7 @@ export default function PrayerDetail() {
         <Stack.Screen options={{ headerShown: false }} />
         <ParallaxScreen
           back
-          image={parish.images.patron.source}
+          images={[parish.images.patron.source]}
           imagePosition="top"
           height={460}
           eyebrow={t('about.patron')}

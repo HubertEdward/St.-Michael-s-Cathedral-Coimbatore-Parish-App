@@ -47,7 +47,7 @@ export function FeatureCards({ clock }: { clock: ParishClock }) {
         }
       />
       <FeatureCard
-        href="/prayers"
+        href="/pray"
         icon="hands-pray"
         eyebrow={t('home.rosaryToday')}
         title={text(rosary.name)}

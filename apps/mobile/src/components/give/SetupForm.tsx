@@ -10,12 +10,13 @@ import {
 } from '@parish/core';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { StyleSheet, View } from 'react-native';
-import { Button, Text, useTheme } from 'react-native-paper';
+import { Text, useTheme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 
 import { ChoiceChips } from '@/components/ChoiceChips';
 import { FormField } from '@/components/FormField';
 import { Eyebrow } from '@/components/design/Eyebrow';
+import { GradientButton } from '@/components/design/GradientButton';
 import { Panel } from '@/components/design/Panel';
 import { translateError } from '@/components/translateError';
 import { useLanguage } from '@/i18n';
@@ -93,9 +94,7 @@ export function SetupForm({ onReview }: { onReview: (input: SubscriptionInput) =
         <Text variant="titleMedium" style={{ color: theme.colors.onPrimaryContainer }}>
           {summary({ amount, debitDay })}
         </Text>
-        <Button mode="contained" icon="cellphone-check" contentStyle={styles.button} onPress={handleSubmit(onReview)}>
-          {t('give.setUp')}
-        </Button>
+        <GradientButton label={t('give.setUp')} icon="cellphone-check" onPress={handleSubmit(onReview)} />
       </Panel>
     </View>
   );
@@ -103,5 +102,4 @@ export function SetupForm({ onReview }: { onReview: (input: SubscriptionInput) =
 
 const styles = StyleSheet.create({
   form: { gap: 14 },
-  button: { height: 56 },
 });

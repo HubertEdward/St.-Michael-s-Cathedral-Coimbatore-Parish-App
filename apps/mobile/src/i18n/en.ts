@@ -1,5 +1,5 @@
 const en = {
-  tabs: { home: 'Home', timings: 'Mass times', give: 'Give', news: 'News', more: 'More' },
+  tabs: { home: 'Home', timings: 'Mass times', pray: 'Pray', give: 'Give', more: 'More' },
   common: {
     today: 'Today',
     tomorrow: 'Tomorrow',
@@ -25,6 +25,12 @@ const en = {
   },
   home: {
     greeting: 'Praised be Jesus Christ',
+    morning: 'Good morning',
+    afternoon: 'Good afternoon',
+    evening: 'Good evening',
+    stories: 'Parish stories',
+    news: 'News',
+    inClock: 'in {{time}}',
     nextMass: 'Next Mass',
     laterMasses: 'Coming up',
     noUpcoming: 'No Mass found in the coming week. Please check with the parish office.',
@@ -56,6 +62,7 @@ const en = {
     language: { ta: 'Tamil', en: 'English', ml: 'Malayalam' },
   },
   timings: {
+    eyebrow: 'This week',
     masses: 'Masses',
     otherServices: 'Confession and adoration',
     otherServicesPending: 'Confession and adoration times are being confirmed. Please ask a priest after Mass or call the parish office.',
@@ -83,6 +90,7 @@ const en = {
     intention: 'Request a Mass intention',
     certificate: 'Request a certificate',
     myRequests: 'My requests',
+    news: 'News and events',
     give: 'Monthly offering',
     settings: 'Language and settings',
   },
@@ -119,6 +127,26 @@ const en = {
   roster: {
     all: 'All',
     empty: 'No duties scheduled.',
+  },
+  pray: {
+    eyebrow: 'Prayer corner',
+    title: 'Pray',
+    subtitle: 'Today’s Rosary, a candle for your intentions, and the prayers of the Church.',
+  },
+  candle: {
+    eyebrow: 'Light a candle',
+    title: 'Place your intentions before the Lord',
+    body: 'Light a candle and it burns for a day, a sign of your prayer.',
+    light: 'Light a candle',
+    litTitle: 'Your candle is burning',
+    litBody: 'It burns for your intentions until {{time}} tomorrow.',
+  },
+  stories: {
+    news: 'Parish news',
+    open: 'Read more',
+    next: 'Next story',
+    previous: 'Previous story',
+    close: 'Close',
   },
   rosary: {
     decade: 'Decade {{number}} of {{total}}',

@@ -3,9 +3,11 @@ import { certificateInputSchema, certificateKinds, useSubmitCertificateRequest, 
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Button, Snackbar, Text } from 'react-native-paper';
+import { Snackbar, Text } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 
+import { GradientButton } from '@/components/design/GradientButton';
+import { SuccessMark } from '@/components/design/SuccessMark';
 import { ChoiceChips } from '@/components/ChoiceChips';
 import { FormField } from '@/components/FormField';
 import { Notice } from '@/components/Notice';
@@ -41,10 +43,9 @@ export default function CertificateRequestScreen() {
   if (saved) {
     return (
       <Screen>
+        <SuccessMark />
         <Notice text={t('certificate.submitted')} icon="check-circle-outline" />
-        <Button mode="contained" onPress={() => router.replace('/requests')}>
-          {t('more.myRequests')}
-        </Button>
+        <GradientButton label={t('more.myRequests')} icon="inbox-full" onPress={() => router.replace('/requests')} />
       </Screen>
     );
   }
@@ -76,9 +77,7 @@ export default function CertificateRequestScreen() {
       <FormField control={control} name="purpose" label={t('certificate.purpose')} />
       <FormField control={control} name="requesterName" label={t('certificate.yourName')} />
       <FormField control={control} name="phone" label={t('certificate.phone')} keyboardType="phone-pad" />
-      <Button mode="contained" contentStyle={{ height: 56 }} loading={formState.isSubmitting} onPress={onSubmit}>
-        {t('common.submit')}
-      </Button>
+      <GradientButton label={t('common.submit')} icon="send" loading={formState.isSubmitting} onPress={onSubmit} />
       <Snackbar visible={submit.isError} onDismiss={() => submit.reset()}>
         {translateError(t, submit.error?.message)}
       </Snackbar>

@@ -58,11 +58,14 @@ export interface ParishProfile {
   sacraments: SacramentGuide[];
   /** The weekly timetable the app starts with. */
   timetable: Service[];
-  /**
-   * `patron`: the patron saint. `church`: a photo of the church, used for the home and About headers;
-   * without one, those headers show the patron.
-   */
-  images: { patron: ParishImage; church?: ParishImage };
+  images: {
+    /** The patron saint. */
+    patron: ParishImage;
+    /** Photos of the church, the main one first; the home screen cycles through them. Without any, the patron is shown. */
+    church: ParishImage[];
+    /** The church lit at night, shown on the home screen in the evening. */
+    night?: ParishImage;
+  };
   /** Id of the prayer to the patron saint in the shared prayers, if there is one. */
   patronPrayer?: string;
   /** Material 3 colours laid over the default light and dark themes. */

@@ -4,13 +4,13 @@ import { useTranslation } from 'react-i18next';
 
 import { useLanguage } from '@/i18n';
 
-/** The current time, refreshed every minute so "next Mass" moves on by itself. */
-export function useNow(): Date {
+/** The current time, refreshed every everyMs milliseconds (a minute by default) so "next Mass" moves on by itself. */
+export function useNow(everyMs = 60_000): Date {
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {
-    const timer = setInterval(() => setNow(new Date()), 60_000);
+    const timer = setInterval(() => setNow(new Date()), everyMs);
     return () => clearInterval(timer);
-  }, []);
+  }, [everyMs]);
   return now;
 }
 

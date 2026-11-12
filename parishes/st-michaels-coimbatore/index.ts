@@ -98,8 +98,13 @@ export default {
         ta: 'புனித மிக்கேல் அதிதூதர், குய்டோ ரேனி, 1635 (பொது உரிமை, விக்கிமீடியா காமன்ஸ்)',
       },
     },
-    // TO CONFIRM: add the parish's own photo of the cathedral as assets/church.jpg, then:
-    // church: { source: require('./assets/church.jpg') },
+    // Photos supplied for the preview on 2026-11-12. TO CONFIRM: photographer and permission to publish.
+    church: [
+      { source: require('./assets/church.webp') },
+      { source: require('./assets/church-steps.webp') },
+      { source: require('./assets/church-avenue.webp') },
+    ],
+    night: { source: require('./assets/church-night.jpg') },
   },
   patronPrayer: 'st-michael',
 

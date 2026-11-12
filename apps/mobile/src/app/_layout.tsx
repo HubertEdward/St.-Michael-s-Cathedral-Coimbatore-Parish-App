@@ -60,7 +60,6 @@ function RootStack() {
           <Stack.Screen name="roster" options={{ title: t('more.roster') }} />
           <Stack.Screen name="sacraments/index" options={{ title: t('more.sacraments') }} />
           <Stack.Screen name="sacraments/[id]" options={{ title: '' }} />
-          <Stack.Screen name="prayers/index" options={{ title: t('more.prayers') }} />
           <Stack.Screen name="prayers/[id]" options={{ title: '' }} />
           <Stack.Screen name="announcement/[id]" options={{ title: t('news.announcements') }} />
           <Stack.Screen name="event/[id]" options={{ title: t('news.events') }} />
@@ -68,6 +67,8 @@ function RootStack() {
           <Stack.Screen name="requests/certificate" options={{ title: t('more.certificate') }} />
           <Stack.Screen name="requests/index" options={{ title: t('more.myRequests') }} />
           <Stack.Screen name="settings" options={{ title: t('more.settings') }} />
+          <Stack.Screen name="news" options={{ title: t('more.news') }} />
+          <Stack.Screen name="story" options={{ headerShown: false, presentation: 'fullScreenModal', animation: 'fade' }} />
         </Stack.Protected>
         <Stack.Protected guard={!chosen}>
           <Stack.Screen name="welcome" options={{ headerShown: false }} />
@@ -78,4 +79,4 @@ function RootStack() {
 }
 
 /** Routes whose top edge is a picture or the crimson header, so the status bar text is white. */
-const overPicture = ['/', '/welcome', '/about', '/give'];
+const overPicture = ['/', '/welcome', '/about', '/give', '/pray', '/story'];

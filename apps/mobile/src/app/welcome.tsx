@@ -1,5 +1,4 @@
-import { parish, pick } from '@parish/core';
-import { Image } from 'expo-image';
+import { churchPhotos, parish, pick } from '@parish/core';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
@@ -7,8 +6,9 @@ import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { displayFonts } from '@/components/design/Display';
+import { KenBurns } from '@/components/design/KenBurns';
 import { Tap } from '@/components/design/Tap';
-import { gold, photoScrim, radius } from '@/components/design/tokens';
+import { gold, radius } from '@/components/design/tokens';
 import { languageNames, languages, useLanguageState } from '@/i18n';
 import en from '@/i18n/en';
 import ta from '@/i18n/ta';
@@ -18,12 +18,11 @@ const strings = { en, ta };
 /** First launch: choose a language. Every prompt is shown in each offered language, since we don't know the reader yet. */
 export default function Welcome() {
   const { choose } = useLanguageState();
-  const hero = parish.images.church ?? parish.images.patron;
 
   return (
     <View style={styles.page}>
-      <Image source={hero.source} contentFit="cover" contentPosition="top" style={StyleSheet.absoluteFill} transition={600} />
-      <LinearGradient colors={photoScrim} locations={[0, 0.3, 0.85]} style={StyleSheet.absoluteFill} />
+      <KenBurns images={churchPhotos.map((p) => p.source)} position="top" dots={false} />
+      <LinearGradient colors={['rgba(15,4,6,0.25)', 'rgba(15,4,6,0.6)', 'rgba(15,4,6,0.96)']} locations={[0, 0.42, 0.78]} style={StyleSheet.absoluteFill} />
       <SafeAreaView style={styles.safe}>
         <View style={styles.body}>
           <Animated.View entering={FadeInUp.duration(700)} style={styles.names}>

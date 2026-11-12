@@ -1,11 +1,12 @@
-import { Image, type ImageContentPosition } from 'expo-image';
+import type { ImageContentPosition } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import type { ReactNode } from 'react';
+import { Children, isValidElement, type ReactNode } from 'react';
 import { RefreshControl, StyleSheet, View } from 'react-native';
 import { IconButton, Text, useTheme } from 'react-native-paper';
 import Animated, {
   Extrapolation,
+  FadeInDown,
   interpolate,
   useAnimatedScrollHandler,
   useAnimatedStyle,
@@ -15,12 +16,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Display } from './Display';
 import { Eyebrow } from './Eyebrow';
+import { TAB_BAR_SPACE } from './FloatingTabBar';
+import { KenBurns } from './KenBurns';
 import { crimson, gold, photoScrim } from './tokens';
 
 interface Props {
-  /** A bundled image; without one the header is the crimson gradient. */
-  image?: number;
-  /** Which part of the image stays in view, as CSS object-position. */
+  /** Bundled pictures; several crossfade with a slow zoom. Without any, the header is the crimson gradient. */
+  images?: number[];
+  /** Which part of the pictures stays in view, as CSS object-position. */
   imagePosition?: ImageContentPosition;
   height?: number;
   eyebrow?: string;
@@ -28,6 +31,8 @@ interface Props {
   subtitle?: string;
   /** Shows a back button, for screens opened on top of the tabs. */
   back?: boolean;
+  /** A row over the top of the picture, such as a greeting and a language switch. */
+  topBar?: ReactNode;
   /** A card that sits half over the bottom of the picture, such as the next Mass. */
   floating?: ReactNode;
   children: ReactNode;
@@ -41,15 +46,17 @@ const FLOAT_OVER = 72;
 /**
  * A page that opens on a full-bleed picture. The picture drifts slower than the page as you
  * scroll, the title fades with it, and a slim crimson bar with the title takes over at the top.
+ * The page's sections rise into place one after another.
  */
 export function ParallaxScreen({
-  image,
+  images = [],
   imagePosition = 'center',
   height = 380,
   eyebrow,
   title,
   subtitle,
   back,
+  topBar,
   floating,
   children,
   onRefresh,
@@ -59,6 +66,7 @@ export function ParallaxScreen({
   const scrollY = useSharedValue(0);
   const onScroll = useAnimatedScrollHandler((event) => scrollY.set(event.contentOffset.y));
   const barAt = height - insets.top - BAR - 40;
+  const sections = Children.toArray(children).filter(isValidElement);
 
   const pictureStyle = useAnimatedStyle(() => {
     const y = scrollY.get();
@@ -83,17 +91,22 @@ export function ParallaxScreen({
         onScroll={onScroll}
         scrollEventThrottle={16}
         contentContainerStyle={styles.content}
-        refreshControl={onRefresh ? <RefreshControl refreshing={false} onRefresh={onRefresh} tintColor={gold} progressViewOffset={insets.top} /> : undefined}>
+        refreshControl={
+          onRefresh ? <RefreshControl refreshing={false} onRefresh={onRefresh} tintColor={gold} progressViewOffset={insets.top} /> : undefined
+        }>
         <View style={[styles.hero, { height }]}>
           <Animated.View style={[StyleSheet.absoluteFill, pictureStyle]}>
-            {image ? (
-              <Image source={image} contentFit="cover" contentPosition={imagePosition} transition={400} style={StyleSheet.absoluteFill} />
+            {images.length > 0 ? (
+              <KenBurns images={images} position={imagePosition} dotsBottom={floating ? FLOAT_OVER + 16 : 44} />
             ) : (
               <LinearGradient colors={crimson} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
             )}
           </Animated.View>
-          <LinearGradient colors={photoScrim} locations={[0, 0.4, 1]} style={StyleSheet.absoluteFill} />
-          <Animated.View style={[styles.heroText, floating ? styles.heroTextOver : null, titleStyle]}>
+          <LinearGradient pointerEvents="none" colors={photoScrim} locations={[0, 0.4, 1]} style={StyleSheet.absoluteFill} />
+          {topBar && (
+            <Animated.View style={[styles.topBar, { top: insets.top + 8 }, titleStyle]}>{topBar}</Animated.View>
+          )}
+          <Animated.View pointerEvents="none" style={[styles.heroText, floating ? styles.heroTextOver : null, titleStyle]}>
             {eyebrow && <Eyebrow color={gold}>{eyebrow}</Eyebrow>}
             <Display size={40} color="#FFFFFF">
               {title}
@@ -107,12 +120,18 @@ export function ParallaxScreen({
           </Animated.View>
         </View>
         {floating && (
-          <View style={styles.floating}>
+          <Animated.View entering={FadeInDown.delay(150).springify().damping(15)} style={styles.floating}>
             <View style={styles.inner}>{floating}</View>
-          </View>
+          </Animated.View>
         )}
         <View style={[styles.sheet, floating ? styles.sheetUnder : { backgroundColor: theme.colors.background }]}>
-          <View style={styles.inner}>{children}</View>
+          <View style={styles.inner}>
+            {sections.map((section, index) => (
+              <Animated.View key={section.key ?? index} entering={FadeInDown.delay(220 + index * 70).springify().damping(16)}>
+                {section}
+              </Animated.View>
+            ))}
+          </View>
         </View>
       </Animated.ScrollView>
 
@@ -139,15 +158,16 @@ export function ParallaxScreen({
 
 const styles = StyleSheet.create({
   page: { flex: 1 },
-  content: { paddingBottom: 40 },
+  content: { paddingBottom: TAB_BAR_SPACE + 40 },
   hero: { overflow: 'hidden', justifyContent: 'flex-end' },
+  topBar: { position: 'absolute', left: 20, right: 20 },
   heroText: { paddingHorizontal: 24, paddingBottom: 52, gap: 6 },
   heroTextOver: { paddingBottom: FLOAT_OVER + 24 },
-  floating: { marginTop: -FLOAT_OVER, paddingHorizontal: 16, alignItems: 'center', zIndex: 1 },
-  sheetUnder: { marginTop: 0, paddingTop: 18 },
   rule: { width: 56, height: 2, backgroundColor: gold, borderRadius: 1, marginVertical: 4 },
   subtitle: { color: 'rgba(255,255,255,0.88)' },
+  floating: { marginTop: -FLOAT_OVER, paddingHorizontal: 16, alignItems: 'center', zIndex: 1 },
   sheet: { marginTop: -28, borderTopLeftRadius: 28, borderTopRightRadius: 28, paddingTop: 20, paddingHorizontal: 16, alignItems: 'center' },
+  sheetUnder: { marginTop: 0, paddingTop: 18 },
   inner: { width: '100%', maxWidth: 720, gap: 18 },
   bar: { position: 'absolute', left: 0, right: 0, top: 0, justifyContent: 'center' },
   barTitle: { paddingHorizontal: 20 },

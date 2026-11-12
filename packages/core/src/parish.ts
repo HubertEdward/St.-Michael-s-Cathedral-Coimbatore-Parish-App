@@ -19,3 +19,9 @@ export function parishDateTime(iso: string): { date: string; time: string } {
 
 /** ISO timestamp for a "YYYY-MM-DD" date and "HH:mm" time at the church. */
 export const parishTimeToIso = (date: string, time: string): string => zonedToIso(parish.timeZone, date, time);
+
+/** Pictures of the church for headers and the home carousel; the patron stands in when there are none. */
+export const churchPhotos = profile.images.church.length > 0 ? profile.images.church : [profile.images.patron];
+
+/** Whether it is evening or night at the church, when the night photo (if any) leads the home screen. */
+export const isEvening = (clock: ParishClock): boolean => clock.minutes >= 18 * 60 + 15 || clock.minutes < 5 * 60;
