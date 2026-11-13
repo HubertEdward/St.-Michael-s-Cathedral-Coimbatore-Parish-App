@@ -20,8 +20,9 @@ module.exports = ({ projectRoot }) => {
       package: mobile.bundleIdentifier,
       adaptiveIcon: {
         backgroundColor: brandColor,
+        backgroundImage: asset('adaptive-background.png'),
         foregroundImage: asset('adaptive-icon.png'),
-        monochromeImage: asset('adaptive-icon.png'),
+        monochromeImage: asset('monochrome-icon.png'),
       },
       predictiveBackGestureEnabled: false,
     },
