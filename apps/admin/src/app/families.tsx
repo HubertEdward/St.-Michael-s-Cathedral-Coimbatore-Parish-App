@@ -3,6 +3,7 @@ import {
   monthName,
   parishDateTime,
   useFamilies,
+  useIssuePinReset,
   useSetFamilyStatus,
   useSetMemberStatus,
   type FamilyMember,
@@ -12,7 +13,7 @@ import {
 } from '@parish/core';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Avatar, Button, Card, Chip, Searchbar, SegmentedButtons, Text, useTheme } from 'react-native-paper';
+import { Avatar, Button, Card, Chip, Dialog, Portal, Searchbar, SegmentedButtons, Text, useTheme } from 'react-native-paper';
 
 import { Page } from '@/components/Page';
 
@@ -44,6 +45,9 @@ export default function Families() {
   const setMember = useSetMemberStatus();
   const [tab, setTab] = useState<Tab>('requests');
   const [query, setQuery] = useState('');
+  const [reset, setReset] = useState<{ member: FamilyMember; code: string; expiresAt: string }>();
+  const issueReset = useIssuePinReset();
+  const resetPin = async (member: FamilyMember) => setReset({ member, ...(await issueReset.mutateAsync([member.phone!])) });
   const list = families.data ?? [];
 
   const newFamilies = list.filter((f) => f.status === 'pending');
@@ -130,10 +134,40 @@ export default function Families() {
                   </Chip>
                 ))}
               </Card.Content>
+              <Card.Actions style={styles.resets}>
+                {family.members
+                  .filter((m) => m.phone)
+                  .map((m) => (
+                    <Button key={m.id} compact icon="lock-reset" onPress={() => void resetPin(m)}>
+                      {`Reset PIN · ${m.name.split(' ')[0]}`}
+                    </Button>
+                  ))}
+              </Card.Actions>
             </Card>
           ))}
         </>
       )}
+      <Portal>
+        <Dialog visible={!!reset} onDismiss={() => setReset(undefined)} style={styles.dialog}>
+          <Dialog.Icon icon="lock-reset" />
+          <Dialog.Title style={styles.center}>Reset code for {reset?.member.name}</Dialog.Title>
+          <Dialog.Content style={styles.gap}>
+            <Text variant="displayMedium" style={[styles.center, styles.code]}>
+              {reset ? `${reset.code.slice(0, 3)} ${reset.code.slice(3)}` : ''}
+            </Text>
+            <Text variant="bodyMedium">
+              Give this code only to {reset?.member.name} in person, or call them back on {reset?.member.phone} before reading it out. They
+              enter it in the app under Sign in → Forgot your PIN, with a new PIN of their choice.
+            </Text>
+            <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+              It works once, until {reset ? parishDateTime(reset.expiresAt).time : ''} tomorrow. A new code replaces this one.
+            </Text>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setReset(undefined)}>Done</Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
     </Page>
   );
 }
@@ -185,4 +219,8 @@ const styles = StyleSheet.create({
   stat: { flexGrow: 1, flexBasis: 220 },
   gap: { gap: 4 },
   members: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  resets: { flexWrap: 'wrap', justifyContent: 'flex-start' },
+  dialog: { maxWidth: 480, alignSelf: 'center' },
+  center: { textAlign: 'center' },
+  code: { fontVariant: ['tabular-nums'], letterSpacing: 4 },
 });

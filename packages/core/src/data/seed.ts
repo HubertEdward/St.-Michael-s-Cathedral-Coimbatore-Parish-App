@@ -12,6 +12,7 @@ import type {
   FamilyMember,
   MassIntention,
   ParishEvent,
+  PinReset,
   RosterEntry,
   Service,
   Subscription,
@@ -28,6 +29,10 @@ export interface ParishData {
   subscriptions: Subscription[];
   families: Family[];
   members: FamilyMember[];
+  /** The PINs people chose, by phone number. Preview only: Phase 2 keeps them (hashed) in Supabase Auth. */
+  logins: { phone: string; pin: string }[];
+  /** Reset codes the parish office has handed out and not yet used. */
+  pinResets: PinReset[];
   /** Who is signed in on this phone; null when signed out. */
   account: Account | null;
   /** Ids of the requests and subscriptions made in this parishioner app ("My requests"); Phase 2 replaces this with accounts. */
@@ -215,11 +220,17 @@ export function createSeed(now: Date): ParishData {
     }),
   ];
 
+  // Everyone in the samples with a phone has already chosen the demo PIN.
+  const logins = members.filter((m) => m.phone).map((m) => ({ phone: m.phone!, pin: DEMO_PIN }));
+
   // Copied, because the demo store edits its data in place.
   const services = parish.timetable.map((service) => ({ ...service }));
 
-  return { services, announcements, events, intentions, certificates, roster, subscriptions, families, members, account: null, mine: [] };
+  return { services, announcements, events, intentions, certificates, roster, subscriptions, families, members, logins, pinResets: [], account: null, mine: [] };
 }
+
+/** The PIN of every sample family member in the preview (Joseph Antony is +91 98430 20001). */
+export const DEMO_PIN = '246810';
 
 /** "SMC" for st-michaels-coimbatore: the start of each family code. */
 export const familyCodePrefix = () =>

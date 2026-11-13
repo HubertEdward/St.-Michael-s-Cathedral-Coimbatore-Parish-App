@@ -63,6 +63,9 @@ export const useMyFamily = () => useQuery({ queryKey: [...queryKeys.family, 'min
 export const useFamilies = () => useQuery({ queryKey: [...queryKeys.family, 'all'], queryFn: api.listFamilies });
 export const useSignIn = () => useChange(queryKeys.family, api.signIn);
 export const useSignOut = () => useChange(queryKeys.family, api.signOut);
+export const useCreateAccount = () => useChange(queryKeys.family, api.createAccount);
+export const useResetPin = () => useChange(queryKeys.family, api.resetPin);
+export const useIssuePinReset = () => useChange(queryKeys.family, api.issuePinReset);
 export const useRegisterFamily = () => useChange(queryKeys.family, api.registerFamily);
 export const useRequestToJoinFamily = () => useChange(queryKeys.family, api.requestToJoinFamily);
 export const useAddFamilyMember = () => useChange(queryKeys.family, api.addFamilyMember);

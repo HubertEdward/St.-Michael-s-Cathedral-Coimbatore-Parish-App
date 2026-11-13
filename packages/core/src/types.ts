@@ -154,7 +154,18 @@ export interface FamilyWithMembers extends Family {
   members: FamilyMember[];
 }
 
-/** The person signed in on this phone. Phase 2 replaces this with Supabase phone sign-in. */
+/**
+ * The person signed in on this phone. People sign in with their mobile number and a 6-digit PIN they
+ * choose; no SMS is sent, because the parish office's approval of each family and member is what
+ * confirms who someone is. Phase 2 keeps the PIN in Supabase Auth.
+ */
 export interface Account {
   phone: string;
+}
+
+/** A one-time code the parish office gives someone who forgot their PIN, valid for a day. */
+export interface PinReset {
+  phone: string;
+  code: string;
+  expiresAt: string;
 }

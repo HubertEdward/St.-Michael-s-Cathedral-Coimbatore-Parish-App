@@ -27,6 +27,10 @@ import {
   joinFamilySchema,
   memberInputSchema,
   signInSchema,
+  createAccountSchema,
+  resetPinSchema,
+  type CreateAccountInput,
+  type ResetPinInput,
   intentionInputSchema,
   rosterInputSchema,
   serviceInputSchema,
@@ -245,7 +249,8 @@ export const changeSubscriptionAmount = (id: string, amount: number) =>
     if (subscription) subscription.amount = subscriptionAmountSchema.parse(amount);
   });
 
-// Families and members. Thrown codes: 'notSignedIn', 'alreadyInFamily', 'familyNotFound'.
+// Families and members. Thrown codes: 'notSignedIn', 'alreadyInFamily', 'familyNotFound',
+// and for signing in 'noAccount', 'accountExists', 'wrongPin', 'resetCodeInvalid'.
 
 /** The last ten digits, so "+91 98430 20001" and "9843020001" match. */
 const phoneKey = (phone: string) => phone.replace(/\D/g, '').slice(-10);
@@ -262,11 +267,51 @@ function withMembers(d: ParishData, family: Family): FamilyWithMembers {
 
 export const getAccount = () => read((d): Account | null => d.account);
 
-/** Signs in on this phone. In the preview the one-time code is checked by the screen, not here. */
-export const signIn = (phone: string) =>
+const loginFor = (d: ParishData, phone: string) => d.logins.find((l) => phoneKey(l.phone) === phoneKey(phone));
+
+/** Signs in on this phone with the number and PIN the person chose. */
+export const signIn = (input: { phone: string; pin: string }) =>
   write((d) => {
-    d.account = { phone: signInSchema.parse({ phone }).phone };
+    const { phone, pin } = signInSchema.parse(input);
+    const login = loginFor(d, phone);
+    if (!login) throw new Error('noAccount');
+    if (login.pin !== pin) throw new Error('wrongPin');
+    d.account = { phone: login.phone };
     return d.account;
+  });
+
+/** First time on the app: chooses a PIN for this number and signs in. */
+export const createAccount = (input: CreateAccountInput) =>
+  write((d) => {
+    const { phone, pin } = createAccountSchema.parse(input);
+    if (loginFor(d, phone)) throw new Error('accountExists');
+    d.logins.push({ phone, pin });
+    d.account = { phone };
+    return d.account;
+  });
+
+/** Sets a new PIN with the reset code the parish office gave, and signs in. */
+export const resetPin = (input: ResetPinInput) =>
+  write((d) => {
+    const { phone, code, pin } = resetPinSchema.parse(input);
+    const now = new Date().toISOString();
+    const reset = d.pinResets.find((r) => phoneKey(r.phone) === phoneKey(phone) && r.code === code && r.expiresAt > now);
+    if (!reset) throw new Error('resetCodeInvalid');
+    d.pinResets = d.pinResets.filter((r) => r !== reset);
+    const login = loginFor(d, phone);
+    if (login) login.pin = pin;
+    else d.logins.push({ phone, pin });
+    d.account = { phone: login?.phone ?? phone };
+    return d.account;
+  });
+
+/** For the parish office: a 6-digit code, valid for 24 hours, that lets this number choose a new PIN. */
+export const issuePinReset = (phone: string) =>
+  write((d) => {
+    const code = String(Math.floor(Math.random() * 1_000_000)).padStart(6, '0');
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    d.pinResets = [...d.pinResets.filter((r) => phoneKey(r.phone) !== phoneKey(phone)), { phone, code, expiresAt }];
+    return { code, expiresAt };
   });
 
 export const signOut = () =>

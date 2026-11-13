@@ -2,9 +2,21 @@
 // Messages are codes (see ValidationCode); each app translates them.
 import { z } from 'zod';
 
+import { pinSchema, sixDigits } from './pin';
 import { certificateKinds, givingPurposes, intentionTypes, relationships } from './types';
 
-export type ValidationCode = 'required' | 'tooLong' | 'phone' | 'date' | 'time' | 'amountMin' | 'amountMax';
+export type ValidationCode =
+  | 'required'
+  | 'tooLong'
+  | 'phone'
+  | 'date'
+  | 'time'
+  | 'amountMin'
+  | 'amountMax'
+  | 'pinFormat'
+  | 'pinTooSimple'
+  | 'pinMismatch'
+  | 'resetCodeFormat';
 
 const required = (max = 200) => z.string().trim().min(1, 'required').max(max, 'tooLong');
 const optionalText = z.string().trim().max(500, 'tooLong').optional();
@@ -86,8 +98,20 @@ export const subscriptionInputSchema = z.object({
 });
 export type SubscriptionInput = z.infer<typeof subscriptionInputSchema>;
 
-export const signInSchema = z.object({ phone: phoneSchema });
+export const signInSchema = z.object({ phone: phoneSchema, pin: z.string().regex(sixDigits, 'pinFormat') });
 export type SignInInput = z.infer<typeof signInSchema>;
+
+const confirmed = <T extends { pin: string; confirm: string }>(input: T) => input.pin === input.confirm;
+
+export const createAccountSchema = z
+  .object({ phone: phoneSchema, pin: pinSchema, confirm: z.string() })
+  .refine(confirmed, { message: 'pinMismatch', path: ['confirm'] });
+export type CreateAccountInput = z.infer<typeof createAccountSchema>;
+
+export const resetPinSchema = z
+  .object({ phone: phoneSchema, code: z.string().regex(sixDigits, 'resetCodeFormat'), pin: pinSchema, confirm: z.string() })
+  .refine(confirmed, { message: 'pinMismatch', path: ['confirm'] });
+export type ResetPinInput = z.infer<typeof resetPinSchema>;
 
 export const familyInputSchema = z.object({
   familyName: required(100),

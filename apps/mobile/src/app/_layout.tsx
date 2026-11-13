@@ -70,6 +70,7 @@ function RootStack() {
           <Stack.Screen name="news" options={{ title: t('more.news') }} />
           <Stack.Screen name="account/index" options={{ title: t('account.myFamily') }} />
           <Stack.Screen name="account/sign-in" options={{ title: t('account.signIn') }} />
+          <Stack.Screen name="account/forgot-pin" options={{ title: t('account.forgotTitle') }} />
           <Stack.Screen name="account/start" options={{ title: t('account.myFamily') }} />
           <Stack.Screen name="account/register" options={{ title: t('account.registerTitle') }} />
           <Stack.Screen name="account/join" options={{ title: t('account.joinTitle') }} />

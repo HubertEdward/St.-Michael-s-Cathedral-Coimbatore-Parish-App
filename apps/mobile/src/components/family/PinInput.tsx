@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
 
@@ -6,23 +6,26 @@ import { radius } from '@/components/design/tokens';
 
 const LENGTH = 6;
 
-/** Six boxes for a one-time code; typing fills them, and the sixth digit completes it. */
-export function OtpInput({ onComplete }: { onComplete: (code: string) => void }) {
+interface Props {
+  value: string;
+  onChange: (digits: string) => void;
+  /** Read aloud by screen readers, e.g. "PIN". */
+  label: string;
+  /** Shows dots instead of digits, for a PIN. */
+  secure?: boolean;
+  autoFocus?: boolean;
+}
+
+/** Six boxes for a PIN or a reset code; tapping anywhere on them opens the number keyboard. */
+export function PinInput({ value, onChange, label, secure, autoFocus }: Props) {
   const theme = useTheme();
   const input = useRef<TextInput>(null);
-  const [code, setCode] = useState('');
-
-  const change = (typed: string) => {
-    const digits = typed.replace(/\D/g, '').slice(0, LENGTH);
-    setCode(digits);
-    if (digits.length === LENGTH) onComplete(digits);
-  };
 
   return (
-    <Pressable onPress={() => input.current?.focus()} accessibilityLabel="One-time code">
+    <Pressable onPress={() => input.current?.focus()} accessibilityLabel={label}>
       <View style={styles.row}>
         {Array.from({ length: LENGTH }, (_, index) => {
-          const active = index === Math.min(code.length, LENGTH - 1);
+          const active = index === Math.min(value.length, LENGTH - 1);
           return (
             <View
               key={index}
@@ -35,7 +38,7 @@ export function OtpInput({ onComplete }: { onComplete: (code: string) => void })
                 },
               ]}>
               <Text variant="headlineSmall" style={styles.digit}>
-                {code[index] ?? ''}
+                {value[index] ? (secure ? '•' : value[index]) : ''}
               </Text>
             </View>
           );
@@ -43,13 +46,13 @@ export function OtpInput({ onComplete }: { onComplete: (code: string) => void })
       </View>
       <TextInput
         ref={input}
-        value={code}
-        onChangeText={change}
+        value={value}
+        onChangeText={(typed) => onChange(typed.replace(/\D/g, '').slice(0, LENGTH))}
         keyboardType="number-pad"
-        textContentType="oneTimeCode"
-        autoComplete="sms-otp"
+        secureTextEntry={secure}
         maxLength={LENGTH}
-        autoFocus
+        autoFocus={autoFocus}
+        accessibilityLabel={label}
         style={styles.hidden}
       />
     </Pressable>

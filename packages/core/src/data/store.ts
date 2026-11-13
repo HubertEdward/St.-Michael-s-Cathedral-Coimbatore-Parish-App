@@ -9,7 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { parish } from '../parish';
 import { createSeed, type ParishData } from './seed';
 
-const STORAGE_KEY = `${parish.id}.demo.v4`;
+const STORAGE_KEY = `${parish.id}.demo.v5`;
 
 let cache: Promise<ParishData> | null = null;
 const listeners = new Set<() => void>();
