@@ -11,7 +11,7 @@ import {
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Button, Dialog, Divider, Icon, Portal, Text, useTheme } from 'react-native-paper';
-import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
 
 import { Eyebrow } from '@/components/design/Eyebrow';
@@ -77,7 +77,7 @@ export function ManageSubscription({ subscription }: { subscription: Subscriptio
       </View>
 
       {editing && (
-        <Animated.View entering={FadeInDown.springify()}>
+        <Animated.View entering={FadeIn.duration(200)}>
           <Panel>
             <Eyebrow>{t('give.newAmount')}</Eyebrow>
             <AmountPicker value={amount} onChange={setAmount} error={amountError} />

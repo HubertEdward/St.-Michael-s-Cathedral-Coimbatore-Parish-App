@@ -3,7 +3,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
-import Animated, { FadeInRight } from 'react-native-reanimated';
 
 import { Tap } from '@/components/design/Tap';
 import { gold } from '@/components/design/tokens';
@@ -23,8 +22,8 @@ export function StoryRow() {
       {stories.map((story, index) => {
         const seen = isSeen(story.id);
         return (
-          <Animated.View key={story.id} entering={FadeInRight.delay(index * 70).springify()}>
             <Tap
+              key={story.id}
               onPress={() => router.push({ pathname: '/story', params: { start: String(index) } })}
               style={styles.item}
               accessibilityLabel={story.title}>
@@ -41,7 +40,6 @@ export function StoryRow() {
                 {story.title}
               </Text>
             </Tap>
-          </Animated.View>
         );
       })}
     </ScrollView>

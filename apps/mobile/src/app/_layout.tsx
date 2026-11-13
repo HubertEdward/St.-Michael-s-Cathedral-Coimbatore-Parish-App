@@ -68,6 +68,12 @@ function RootStack() {
           <Stack.Screen name="requests/index" options={{ title: t('more.myRequests') }} />
           <Stack.Screen name="settings" options={{ title: t('more.settings') }} />
           <Stack.Screen name="news" options={{ title: t('more.news') }} />
+          <Stack.Screen name="account/index" options={{ title: t('account.myFamily') }} />
+          <Stack.Screen name="account/sign-in" options={{ title: t('account.signIn') }} />
+          <Stack.Screen name="account/start" options={{ title: t('account.myFamily') }} />
+          <Stack.Screen name="account/register" options={{ title: t('account.registerTitle') }} />
+          <Stack.Screen name="account/join" options={{ title: t('account.joinTitle') }} />
+          <Stack.Screen name="account/add-member" options={{ title: t('account.addMember') }} />
           <Stack.Screen name="story" options={{ headerShown: false, presentation: 'fullScreenModal', animation: 'fade' }} />
         </Stack.Protected>
         <Stack.Protected guard={!chosen}>

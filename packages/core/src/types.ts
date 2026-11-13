@@ -115,3 +115,46 @@ export interface Subscription {
   startsOn: string;
   createdAt: string;
 }
+
+/** How a member is related to the head of the family. */
+export const relationships = ['head', 'spouse', 'son', 'daughter', 'father', 'mother', 'sibling', 'other'] as const;
+export type Relationship = (typeof relationships)[number];
+
+/** A family's registration, or a person's membership of a family, as the parish office decided it. */
+export type MembershipStatus = 'pending' | 'approved' | 'declined';
+
+/** A household registered with the parish. Its code lets relatives ask to join it. */
+export interface Family {
+  id: string;
+  /** Short code shown to the family, e.g. "SMC-0101", that others use to ask to join. */
+  code: string;
+  name: string;
+  address: string;
+  anbiyam?: string;
+  status: MembershipStatus;
+  createdAt: string;
+}
+
+export interface FamilyMember {
+  id: string;
+  familyId: string;
+  name: string;
+  relationship: Relationship;
+  /** Members with a phone can sign in; children and elders may have none. */
+  phone?: string;
+  /** "YYYY-MM-DD", if given. */
+  birthDate?: string;
+  status: MembershipStatus;
+  /** Name of the family member who added this person, when they did not ask themselves. */
+  addedBy?: string;
+  createdAt: string;
+}
+
+export interface FamilyWithMembers extends Family {
+  members: FamilyMember[];
+}
+
+/** The person signed in on this phone. Phase 2 replaces this with Supabase phone sign-in. */
+export interface Account {
+  phone: string;
+}

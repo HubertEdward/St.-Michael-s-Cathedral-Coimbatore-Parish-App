@@ -5,7 +5,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { IconButton, Text } from 'react-native-paper';
-import Animated, { Easing, FadeIn, FadeInDown, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import Animated, { Easing, FadeIn, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 
@@ -77,7 +77,7 @@ export default function StoryViewer() {
         </View>
       </View>
 
-      <Animated.View key={`text-${story.id}`} entering={FadeInDown.springify().damping(16)} style={[styles.bottom, { paddingBottom: insets.bottom + 24 }]}>
+      <Animated.View key={`text-${story.id}`} entering={FadeIn.duration(250)} style={[styles.bottom, { paddingBottom: insets.bottom + 24 }]}>
         <Eyebrow color={gold}>{story.label}</Eyebrow>
         <Display size={38} color="#FFFFFF">
           {story.title}

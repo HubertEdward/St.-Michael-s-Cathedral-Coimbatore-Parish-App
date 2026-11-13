@@ -4,9 +4,14 @@ import { nextDebitOn } from '../giving';
 import { parishClock, parishTimeToIso } from '../parish';
 import { addDays, weekdayOf } from '../schedule';
 import type {
+  Account,
   Announcement,
   CertificateRequest,
+  Family,
+  FamilyMember,
+  FamilyWithMembers,
   MassIntention,
+  MembershipStatus,
   ParishEvent,
   RequestStatus,
   RosterEntry,
@@ -18,6 +23,10 @@ import {
   announcementInputSchema,
   certificateInputSchema,
   eventInputSchema,
+  familyInputSchema,
+  joinFamilySchema,
+  memberInputSchema,
+  signInSchema,
   intentionInputSchema,
   rosterInputSchema,
   serviceInputSchema,
@@ -26,11 +35,15 @@ import {
   type AnnouncementInput,
   type CertificateInput,
   type EventInput,
+  type FamilyInput,
+  type JoinFamilyInput,
+  type MemberInput,
   type IntentionInput,
   type RosterInput,
   type ServiceInput,
   type SubscriptionInput,
 } from '../validation';
+import { familyCodePrefix, type ParishData } from './seed';
 import { newId, read, write } from './store';
 
 const byTime = (a: Service, b: Service) => a.day - b.day || a.time.localeCompare(b.time);
@@ -230,4 +243,144 @@ export const changeSubscriptionAmount = (id: string, amount: number) =>
   write((d) => {
     const subscription = d.subscriptions.find((s) => s.id === id);
     if (subscription) subscription.amount = subscriptionAmountSchema.parse(amount);
+  });
+
+// Families and members. Thrown codes: 'notSignedIn', 'alreadyInFamily', 'familyNotFound'.
+
+/** The last ten digits, so "+91 98430 20001" and "9843020001" match. */
+const phoneKey = (phone: string) => phone.replace(/\D/g, '').slice(-10);
+
+function myMembership(d: ParishData): FamilyMember | undefined {
+  const account = d.account;
+  if (!account) return undefined;
+  return d.members.find((m) => m.phone && phoneKey(m.phone) === phoneKey(account.phone) && m.status !== 'declined');
+}
+
+function withMembers(d: ParishData, family: Family): FamilyWithMembers {
+  return { ...family, members: d.members.filter((m) => m.familyId === family.id && m.status !== 'declined') };
+}
+
+export const getAccount = () => read((d): Account | null => d.account);
+
+/** Signs in on this phone. In the preview the one-time code is checked by the screen, not here. */
+export const signIn = (phone: string) =>
+  write((d) => {
+    d.account = { phone: signInSchema.parse({ phone }).phone };
+    return d.account;
+  });
+
+export const signOut = () =>
+  write((d) => {
+    d.account = null;
+  });
+
+/**
+ * The signed-in person's family and their own membership, or null if they have none yet.
+ * Someone still waiting to join an existing family sees only the family's name and their own request,
+ * not its members or address, until the parish office approves them.
+ */
+export const getMyFamily = () =>
+  read((d) => {
+    const me = myMembership(d);
+    const family = me && d.families.find((f) => f.id === me.familyId);
+    if (!me || !family) return null;
+    const waitingToJoin = family.status === 'approved' && me.status !== 'approved';
+    return { family: waitingToJoin ? { ...family, address: '', members: [me] } : withMembers(d, family), me };
+  });
+
+function signedInWithoutFamily(d: ParishData): Account {
+  if (!d.account) throw new Error('notSignedIn');
+  if (myMembership(d)) throw new Error('alreadyInFamily');
+  return d.account;
+}
+
+/** Registers a new family with the signed-in person as its head; the parish office approves it. */
+export const registerFamily = (input: FamilyInput) =>
+  write((d) => {
+    const account = signedInWithoutFamily(d);
+    const parsed = familyInputSchema.parse(input);
+    const next = Math.max(100, ...d.families.map((f) => Number(f.code.split('-')[1]) || 0)) + 1;
+    const now = new Date().toISOString();
+    const family: Family = {
+      id: newId(),
+      code: `${familyCodePrefix()}-${String(next).padStart(4, '0')}`,
+      name: parsed.familyName,
+      address: parsed.address,
+      anbiyam: parsed.anbiyam || undefined,
+      status: 'pending',
+      createdAt: now,
+    };
+    d.families.push(family);
+    d.members.push({
+      id: newId(),
+      familyId: family.id,
+      name: parsed.headName,
+      relationship: 'head',
+      phone: account.phone,
+      status: 'pending',
+      createdAt: now,
+    });
+    return family;
+  });
+
+/** Asks to join a registered family by its code; the parish office approves it. */
+export const requestToJoinFamily = (input: JoinFamilyInput) =>
+  write((d) => {
+    const account = signedInWithoutFamily(d);
+    const parsed = joinFamilySchema.parse(input);
+    const family = d.families.find((f) => f.code.toUpperCase() === parsed.code.toUpperCase() && f.status === 'approved');
+    if (!family) throw new Error('familyNotFound');
+    const request: FamilyMember = {
+      id: newId(),
+      familyId: family.id,
+      name: parsed.name,
+      relationship: parsed.relationship,
+      phone: account.phone,
+      birthDate: parsed.birthDate || undefined,
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+    };
+    d.members.push(request);
+    return request;
+  });
+
+/** A member adds someone without their own phone, such as a child; the parish office approves it. */
+export const addFamilyMember = (input: MemberInput) =>
+  write((d) => {
+    const me = myMembership(d);
+    if (!me) throw new Error('notSignedIn');
+    const parsed = memberInputSchema.parse(input);
+    const added: FamilyMember = {
+      id: newId(),
+      familyId: me.familyId,
+      name: parsed.name,
+      relationship: parsed.relationship,
+      birthDate: parsed.birthDate || undefined,
+      status: 'pending',
+      addedBy: me.name,
+      createdAt: new Date().toISOString(),
+    };
+    d.members.push(added);
+    return added;
+  });
+
+/** Every family with its members, newest registration first. */
+export const listFamilies = () => read((d) => [...d.families].sort(newestFirst).map((f) => withMembers(d, f)));
+
+/** Approving a family approves its head too; declining it declines everyone still waiting in it. */
+export const setFamilyStatus = (id: string, status: MembershipStatus) =>
+  write((d) => {
+    const family = d.families.find((f) => f.id === id);
+    if (!family) return;
+    family.status = status;
+    for (const m of d.members) {
+      if (m.familyId !== id || m.status !== 'pending') continue;
+      if (status === 'declined' || m.relationship === 'head') m.status = status;
+    }
+  });
+
+export const setMemberStatus = (id: string, status: MembershipStatus) =>
+  write((d) => {
+    const m = d.members.find((x) => x.id === id);
+    if (m) m.status = status;
   });

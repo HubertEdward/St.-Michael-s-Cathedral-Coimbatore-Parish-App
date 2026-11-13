@@ -2,7 +2,7 @@ import { churchPhotos, parish, pick } from '@parish/core';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
-import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { displayFonts } from '@/components/design/Display';
@@ -25,7 +25,7 @@ export default function Welcome() {
       <LinearGradient colors={['rgba(15,4,6,0.25)', 'rgba(15,4,6,0.6)', 'rgba(15,4,6,0.96)']} locations={[0, 0.42, 0.78]} style={StyleSheet.absoluteFill} />
       <SafeAreaView style={styles.safe}>
         <View style={styles.body}>
-          <Animated.View entering={FadeInUp.duration(700)} style={styles.names}>
+          <Animated.View entering={FadeIn.duration(500)} style={styles.names}>
             {languages.map((language, index) => (
               <Text
                 key={language}
@@ -44,7 +44,7 @@ export default function Welcome() {
             </Text>
           </Animated.View>
 
-          <Animated.View entering={FadeInDown.delay(300).duration(700)} style={styles.choose}>
+          <Animated.View entering={FadeIn.delay(150).duration(500)} style={styles.choose}>
             <Text variant="bodyLarge" style={styles.soft}>
               {languages.map((language) => strings[language].welcome.subtitle).join(' · ')}
             </Text>

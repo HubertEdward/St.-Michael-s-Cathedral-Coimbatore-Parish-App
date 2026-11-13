@@ -5,8 +5,11 @@ import { nextDebitOn } from '../giving';
 import { parish, parishClock, parishTimeToIso } from '../parish';
 import { addDays, formatDayOfYear, nextOccurrence, servicesOn, weekdayOf } from '../schedule';
 import type {
+  Account,
   Announcement,
   CertificateRequest,
+  Family,
+  FamilyMember,
   MassIntention,
   ParishEvent,
   RosterEntry,
@@ -23,6 +26,10 @@ export interface ParishData {
   certificates: CertificateRequest[];
   roster: RosterEntry[];
   subscriptions: Subscription[];
+  families: Family[];
+  members: FamilyMember[];
+  /** Who is signed in on this phone; null when signed out. */
+  account: Account | null;
   /** Ids of the requests and subscriptions made in this parishioner app ("My requests"); Phase 2 replaces this with accounts. */
   mine: string[];
 }
@@ -110,15 +117,15 @@ export function createSeed(now: Date): ParishData {
     { id: 'cert-2', kind: 'marriage', personName: 'Xavier and Grace', purpose: 'Passport', requesterName: 'Xavier', phone: '+91 98430 00005', status: 'approved', officeNote: 'Ready for collection on Friday', createdAt: parishTimeToIso(addDays(today, -3), '11:00') },
   ];
 
-  const members = ['Arul', 'Benedict', 'Celine', 'David', 'Esther'];
+  const onDuty = ['Arul', 'Benedict', 'Celine', 'David', 'Esther'];
   const roster: RosterEntry[] =
     sundayMasses.length > 0
-      ? liturgical.slice(0, members.length).map((ministry, index) => ({
+      ? liturgical.slice(0, onDuty.length).map((ministry, index) => ({
           id: `r-${index + 1}`,
           ministryId: ministry.id,
           date: sunday,
           serviceId: sundayMass(index).id,
-          memberName: `Sample: ${members[index]}`,
+          memberName: `Sample: ${onDuty[index]}`,
         }))
       : [];
 
@@ -150,8 +157,74 @@ export function createSeed(now: Date): ParishData {
     supporter(5, 'Celine Paul', 250, 'parish', 5, 6, 'paused'),
   ];
 
+  // Registered families, one new registration and two requests to join, for the office to approve.
+  const prefix = familyCodePrefix();
+  const family = (n: number, name: string, address: string, anbiyam: string, status: Family['status'], daysAgo: number): Family => ({
+    id: `fam-${n}`,
+    code: `${prefix}-${String(100 + n).padStart(4, '0')}`,
+    name,
+    address,
+    anbiyam,
+    status,
+    createdAt: parishTimeToIso(addDays(today, -daysAgo), '11:00'),
+  });
+  const families: Family[] = [
+    family(1, 'Joseph family', '12 Raja Street, Coimbatore', 'Sample: St. Antony’s Anbiyam', 'approved', 400),
+    family(2, 'Xavier family', '4 Oppanakara Street, Coimbatore', 'Sample: St. Sebastian’s Anbiyam', 'approved', 300),
+    family(3, 'Fernandez family', '27 Big Bazaar Street, Coimbatore', 'Sample: Our Lady of Velankanni Anbiyam', 'approved', 200),
+    family(4, 'Thomas family', '8 Variety Hall Road, Coimbatore', 'Sample: St. Antony’s Anbiyam', 'pending', 1),
+  ];
+  const member = (
+    id: string,
+    familyId: string,
+    name: string,
+    relationship: FamilyMember['relationship'],
+    extra: Partial<FamilyMember> = {},
+  ): FamilyMember => ({
+    id,
+    familyId,
+    name,
+    relationship,
+    status: 'approved',
+    createdAt: parishTimeToIso(addDays(today, -100), '10:00'),
+    ...extra,
+  });
+  const members: FamilyMember[] = [
+    member('m-1', 'fam-1', 'Joseph Antony', 'head', { phone: '+91 98430 20001' }),
+    member('m-2', 'fam-1', 'Mary Joseph', 'spouse', { phone: '+91 98430 20002' }),
+    member('m-3', 'fam-1', 'Arul Joseph', 'son', { birthDate: '2012-05-14' }),
+    member('m-4', 'fam-2', 'Xavier Raj', 'head', { phone: '+91 98430 20003' }),
+    member('m-5', 'fam-2', 'Grace Xavier', 'spouse'),
+    member('m-6', 'fam-3', 'Paul Fernandez', 'head', { phone: '+91 98430 20004' }),
+    member('m-7', 'fam-3', 'Celine Fernandez', 'daughter'),
+    member('m-8', 'fam-4', 'Thomas Mathew', 'head', {
+      phone: '+91 98430 20010',
+      status: 'pending',
+      createdAt: parishTimeToIso(addDays(today, -1), '11:00'),
+    }),
+    member('m-9', 'fam-1', 'Benedict Joseph', 'son', {
+      phone: '+91 98430 20005',
+      status: 'pending',
+      createdAt: parishTimeToIso(today, '08:40'),
+    }),
+    member('m-10', 'fam-2', 'Rita Xavier', 'daughter', {
+      birthDate: '2026-08-02',
+      status: 'pending',
+      addedBy: 'Xavier Raj',
+      createdAt: parishTimeToIso(addDays(today, -2), '19:15'),
+    }),
+  ];
+
   // Copied, because the demo store edits its data in place.
   const services = parish.timetable.map((service) => ({ ...service }));
 
-  return { services, announcements, events, intentions, certificates, roster, subscriptions, mine: [] };
+  return { services, announcements, events, intentions, certificates, roster, subscriptions, families, members, account: null, mine: [] };
 }
+
+/** "SMC" for st-michaels-coimbatore: the start of each family code. */
+export const familyCodePrefix = () =>
+  parish.id
+    .split('-')
+    .map((word) => word[0])
+    .join('')
+    .toUpperCase();

@@ -13,6 +13,7 @@ export const queryKeys = {
   certificates: ['certificates'],
   roster: ['roster'],
   subscriptions: ['subscriptions'],
+  family: ['family'],
 } as const;
 
 export const useServices = () => useQuery({ queryKey: queryKeys.services, queryFn: api.listServices });
@@ -56,6 +57,17 @@ export const useDeleteRosterEntry = () => useChange(queryKeys.roster, api.delete
 export const useStartSubscription = () => useChange(queryKeys.subscriptions, api.startSubscription);
 export const useSetSubscriptionStatus = () => useChange(queryKeys.subscriptions, api.setSubscriptionStatus);
 export const useChangeSubscriptionAmount = () => useChange(queryKeys.subscriptions, api.changeSubscriptionAmount);
+
+export const useAccount = () => useQuery({ queryKey: [...queryKeys.family, 'account'], queryFn: api.getAccount });
+export const useMyFamily = () => useQuery({ queryKey: [...queryKeys.family, 'mine'], queryFn: api.getMyFamily });
+export const useFamilies = () => useQuery({ queryKey: [...queryKeys.family, 'all'], queryFn: api.listFamilies });
+export const useSignIn = () => useChange(queryKeys.family, api.signIn);
+export const useSignOut = () => useChange(queryKeys.family, api.signOut);
+export const useRegisterFamily = () => useChange(queryKeys.family, api.registerFamily);
+export const useRequestToJoinFamily = () => useChange(queryKeys.family, api.requestToJoinFamily);
+export const useAddFamilyMember = () => useChange(queryKeys.family, api.addFamilyMember);
+export const useSetFamilyStatus = () => useChange(queryKeys.family, api.setFamilyStatus);
+export const useSetMemberStatus = () => useChange(queryKeys.family, api.setMemberStatus);
 
 export function useResetDemoData() {
   const client = useQueryClient();

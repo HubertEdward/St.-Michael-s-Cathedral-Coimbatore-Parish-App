@@ -1,7 +1,7 @@
-import { Children, isValidElement, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { useTheme } from 'react-native-paper';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Display } from './design/Display';
@@ -20,30 +20,25 @@ interface Props {
 
 /**
  * Scrollable page body with consistent spacing and a capped width on tablets and web.
- * Each child rises into place a moment after the one before it.
+ * The page fades in gently when it opens.
  */
 export function Screen({ children, onRefresh, refreshing = false, title, eyebrow }: Props) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
-  const items = Children.toArray(children).filter(isValidElement);
   return (
     <ScrollView
       style={{ backgroundColor: theme.colors.background }}
       contentContainerStyle={[styles.content, title ? { paddingTop: insets.top + 20 } : null]}
       refreshControl={onRefresh ? <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={gold} /> : undefined}>
-      <View style={styles.inner}>
+      <Animated.View entering={FadeIn.duration(220)} style={styles.inner}>
         {title && (
-          <Animated.View entering={FadeInDown.duration(500)} style={styles.title}>
+          <View style={styles.title}>
             {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
             <Display size={40}>{title}</Display>
-          </Animated.View>
+          </View>
         )}
-        {items.map((child, index) => (
-          <Animated.View key={child.key ?? index} entering={FadeInDown.delay(80 + index * 60).springify().damping(16)}>
-            {child}
-          </Animated.View>
-        ))}
-      </View>
+        {children}
+      </Animated.View>
     </ScrollView>
   );
 }

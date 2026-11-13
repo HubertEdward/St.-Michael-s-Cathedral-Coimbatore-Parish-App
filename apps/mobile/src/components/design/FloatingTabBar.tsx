@@ -90,7 +90,7 @@ function TabItem({ name, label, focused, onPress }: { name: string; label: strin
   const theme = useTheme();
   const bounce = useSharedValue(1);
   useEffect(() => {
-    if (focused) bounce.set(withSequence(withTiming(0.82, { duration: 90 }), withSpring(1, { damping: 7, stiffness: 260 })));
+    if (focused) bounce.set(withSequence(withTiming(0.92, { duration: 80 }), withSpring(1, { damping: 16, stiffness: 220 })));
   }, [focused, bounce]);
   const iconStyle = useAnimatedStyle(() => ({ transform: [{ scale: bounce.get() }] }));
   const [outline, filled] = icons[name] ?? ['circle-outline', 'circle'];

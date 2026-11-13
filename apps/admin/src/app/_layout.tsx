@@ -11,6 +11,7 @@ const nav: { label: string; icon: string; href: Href }[] = [
   { label: 'Mass timetable', icon: 'clock-outline', href: '/timetable' },
   { label: 'Announcements', icon: 'bullhorn-outline', href: '/announcements' },
   { label: 'Events', icon: 'calendar', href: '/events' },
+  { label: 'Families', icon: 'home-group', href: '/families' },
   { label: 'Mass intentions', icon: 'candle', href: '/intentions' },
   { label: 'Certificates', icon: 'file-certificate-outline', href: '/certificates' },
   { label: 'Ministry rosters', icon: 'clipboard-text-clock-outline', href: '/rosters' },

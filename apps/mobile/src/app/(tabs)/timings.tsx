@@ -14,7 +14,7 @@ import {
 import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { Icon, Text, useTheme } from 'react-native-paper';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
 
 import { Notice } from '@/components/Notice';
@@ -57,7 +57,7 @@ export default function Timings() {
               ) : (
                 <View key={day} style={styles.grid}>
                   {masses.map((s, index) => (
-                    <Animated.View key={s.id} entering={FadeInDown.delay(index * 50).springify()} style={styles.cell}>
+                    <Animated.View key={s.id} entering={FadeIn.duration(200)} style={styles.cell}>
                       <MassTile
                         service={s}
                         next={s.id === nextId}

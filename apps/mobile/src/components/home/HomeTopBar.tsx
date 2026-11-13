@@ -1,4 +1,5 @@
 import { parishClock } from '@parish/core';
+import { router } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 import { Icon, Text } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
@@ -25,14 +26,19 @@ export function HomeTopBar() {
           {greeting}
         </Text>
       </View>
-      {other && (
-        <Tap onPress={() => void choose(other)} style={styles.pill} accessibilityLabel={languageNames[other]}>
-          <Icon source="translate" size={16} color="#FFFFFF" />
-          <Text variant="labelLarge" style={styles.white}>
-            {languageNames[other]}
-          </Text>
+      <View style={styles.actions}>
+        {other && (
+          <Tap onPress={() => void choose(other)} style={styles.pill} accessibilityLabel={languageNames[other]}>
+            <Icon source="translate" size={16} color="#FFFFFF" />
+            <Text variant="labelLarge" style={styles.white}>
+              {languageNames[other]}
+            </Text>
+          </Tap>
+        )}
+        <Tap onPress={() => router.push('/account')} style={styles.round} accessibilityLabel={t('account.myFamily')}>
+          <Icon source="account-circle-outline" size={22} color="#FFFFFF" />
         </Tap>
-      )}
+      </View>
     </View>
   );
 }
@@ -41,6 +47,17 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   greeting: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   white: { color: '#FFFFFF' },
+  actions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  round: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.16)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.35)',
+  },
   pill: {
     flexDirection: 'row',
     alignItems: 'center',

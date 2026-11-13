@@ -1,12 +1,12 @@
 import type { ImageContentPosition } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import { Children, isValidElement, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { RefreshControl, StyleSheet, View } from 'react-native';
 import { IconButton, Text, useTheme } from 'react-native-paper';
 import Animated, {
   Extrapolation,
-  FadeInDown,
+  FadeIn,
   interpolate,
   useAnimatedScrollHandler,
   useAnimatedStyle,
@@ -46,7 +46,6 @@ const FLOAT_OVER = 72;
 /**
  * A page that opens on a full-bleed picture. The picture drifts slower than the page as you
  * scroll, the title fades with it, and a slim crimson bar with the title takes over at the top.
- * The page's sections rise into place one after another.
  */
 export function ParallaxScreen({
   images = [],
@@ -66,7 +65,6 @@ export function ParallaxScreen({
   const scrollY = useSharedValue(0);
   const onScroll = useAnimatedScrollHandler((event) => scrollY.set(event.contentOffset.y));
   const barAt = height - insets.top - BAR - 40;
-  const sections = Children.toArray(children).filter(isValidElement);
 
   const pictureStyle = useAnimatedStyle(() => {
     const y = scrollY.get();
@@ -120,18 +118,14 @@ export function ParallaxScreen({
           </Animated.View>
         </View>
         {floating && (
-          <Animated.View entering={FadeInDown.delay(150).springify().damping(15)} style={styles.floating}>
+          <Animated.View entering={FadeIn.duration(220)} style={styles.floating}>
             <View style={styles.inner}>{floating}</View>
           </Animated.View>
         )}
         <View style={[styles.sheet, floating ? styles.sheetUnder : { backgroundColor: theme.colors.background }]}>
-          <View style={styles.inner}>
-            {sections.map((section, index) => (
-              <Animated.View key={section.key ?? index} entering={FadeInDown.delay(220 + index * 70).springify().damping(16)}>
-                {section}
-              </Animated.View>
-            ))}
-          </View>
+          <Animated.View entering={FadeIn.duration(220)} style={styles.inner}>
+            {children}
+          </Animated.View>
         </View>
       </Animated.ScrollView>
 

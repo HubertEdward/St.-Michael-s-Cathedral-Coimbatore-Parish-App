@@ -8,6 +8,7 @@ import {
   upcomingServices,
   useCertificateRequests,
   useEvents,
+  useFamilies,
   useIntentions,
   useServices,
   useSubscriptions,
@@ -25,6 +26,11 @@ export default function Dashboard() {
   const services = useServices();
   const events = useEvents();
   const subscriptions = useSubscriptions();
+  const families = useFamilies();
+  const membershipRequests = (families.data ?? []).reduce(
+    (sum, f) => sum + (f.status === 'pending' ? 1 : f.members.filter((m) => m.status === 'pending').length),
+    0,
+  );
   const now = new Date();
   const newIntentions = intentions.data?.filter((i) => i.status === 'submitted').length ?? 0;
   const newCertificates = certificates.data?.filter((c) => c.status === 'submitted').length ?? 0;
@@ -34,6 +40,12 @@ export default function Dashboard() {
   return (
     <Page title="Dashboard" description="What needs attention in the parish office today.">
       <View style={styles.row}>
+        <Card mode="contained" style={[styles.stat, { backgroundColor: theme.colors.errorContainer }]} onPress={() => router.navigate('/families')}>
+          <Card.Content>
+            <Text variant="displaySmall">{membershipRequests}</Text>
+            <Text variant="titleMedium">Family and member requests</Text>
+          </Card.Content>
+        </Card>
         <Card mode="contained" style={[styles.stat, { backgroundColor: theme.colors.primaryContainer }]} onPress={() => router.navigate('/intentions')}>
           <Card.Content>
             <Text variant="displaySmall">{newIntentions}</Text>

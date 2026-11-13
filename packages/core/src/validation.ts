@@ -2,7 +2,7 @@
 // Messages are codes (see ValidationCode); each app translates them.
 import { z } from 'zod';
 
-import { certificateKinds, givingPurposes, intentionTypes } from './types';
+import { certificateKinds, givingPurposes, intentionTypes, relationships } from './types';
 
 export type ValidationCode = 'required' | 'tooLong' | 'phone' | 'date' | 'time' | 'amountMin' | 'amountMax';
 
@@ -85,3 +85,31 @@ export const subscriptionInputSchema = z.object({
   phone: phoneSchema,
 });
 export type SubscriptionInput = z.infer<typeof subscriptionInputSchema>;
+
+export const signInSchema = z.object({ phone: phoneSchema });
+export type SignInInput = z.infer<typeof signInSchema>;
+
+export const familyInputSchema = z.object({
+  familyName: required(100),
+  headName: required(100),
+  address: required(300),
+  anbiyam: optionalText,
+});
+export type FamilyInput = z.infer<typeof familyInputSchema>;
+
+const birthDateSchema = dateSchema.optional().or(z.literal(''));
+
+export const joinFamilySchema = z.object({
+  code: z.string().trim().min(1, 'required').max(20, 'tooLong'),
+  name: required(100),
+  relationship: z.enum(relationships),
+  birthDate: birthDateSchema,
+});
+export type JoinFamilyInput = z.infer<typeof joinFamilySchema>;
+
+export const memberInputSchema = z.object({
+  name: required(100),
+  relationship: z.enum(relationships),
+  birthDate: birthDateSchema,
+});
+export type MemberInput = z.infer<typeof memberInputSchema>;

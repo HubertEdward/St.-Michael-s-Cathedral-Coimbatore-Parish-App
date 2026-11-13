@@ -8,6 +8,7 @@ import { Icon, Text, useTheme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
+import { AccountCard } from '@/components/family/AccountCard';
 import { Display } from '@/components/design/Display';
 import { Eyebrow } from '@/components/design/Eyebrow';
 import { Tap } from '@/components/design/Tap';
@@ -54,6 +55,7 @@ export default function More() {
 
   return (
     <Screen title={t('tabs.more')}>
+      <AccountCard />
       <ParishCard />
       {sections.map((section) => (
         <View key={section.title} style={styles.section}>
