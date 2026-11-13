@@ -5,7 +5,7 @@ import { Icon, Text } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 
 import { Tap } from '@/components/design/Tap';
-import { gold } from '@/components/design/tokens';
+import { gold, maxTextScale } from '@/components/design/tokens';
 import { languageNames, languages, useLanguage, useLanguageState } from '@/i18n';
 
 /** "Good evening" by the hour at the church, and a one-tap language switch. */
@@ -22,7 +22,7 @@ export function HomeTopBar() {
     <View style={styles.row}>
       <View style={styles.greeting}>
         <Icon source={icon} size={20} color={gold} />
-        <Text variant="titleMedium" style={styles.white}>
+        <Text variant="titleMedium" numberOfLines={1} maxFontSizeMultiplier={maxTextScale.label} style={styles.greetingText}>
           {greeting}
         </Text>
       </View>
@@ -30,7 +30,7 @@ export function HomeTopBar() {
         {other && (
           <Tap onPress={() => void choose(other)} style={styles.pill} accessibilityLabel={languageNames[other]}>
             <Icon source="translate" size={16} color="#FFFFFF" />
-            <Text variant="labelLarge" style={styles.white}>
+            <Text variant="labelLarge" maxFontSizeMultiplier={maxTextScale.label} style={styles.white}>
               {languageNames[other]}
             </Text>
           </Tap>
@@ -44,10 +44,12 @@ export function HomeTopBar() {
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  greeting: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
+  // The greeting gives way (and ends in "…") so the language and account buttons always fit.
+  greeting: { flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1, minWidth: 0 },
+  greetingText: { color: '#FFFFFF', flexShrink: 1 },
   white: { color: '#FFFFFF' },
-  actions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  actions: { flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 0 },
   round: {
     width: 40,
     height: 40,

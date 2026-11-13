@@ -1,6 +1,12 @@
 // Design tokens beyond the Material theme: the gold accent, brand gradients and shapes.
 import type { MD3Theme } from 'react-native-paper';
 
+/**
+ * How far text may grow with the phone's font size setting, where its space is fixed: headings,
+ * pills, tab labels, tiles. Body text is left to grow freely.
+ */
+export const maxTextScale = { heading: 1.15, label: 1.2 } as const;
+
 export const radius = { card: 24, tile: 20, button: 16 } as const;
 
 /** Gold that reads on the crimson gradients and over photos. */

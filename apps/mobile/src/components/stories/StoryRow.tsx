@@ -5,7 +5,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
 
 import { Tap } from '@/components/design/Tap';
-import { gold } from '@/components/design/tokens';
+import { gold, maxTextScale } from '@/components/design/tokens';
 
 import { useSeen, useStories } from './useStories';
 
@@ -36,7 +36,7 @@ export function StoryRow() {
                   <Image source={story.image} contentFit="cover" style={styles.image} />
                 </View>
               </LinearGradient>
-              <Text variant="labelMedium" numberOfLines={1} style={[styles.label, { color: theme.colors.onSurface }]}>
+              <Text variant="labelMedium" numberOfLines={1} maxFontSizeMultiplier={maxTextScale.label} style={[styles.label, { color: theme.colors.onSurface }]}>
                 {story.title}
               </Text>
             </Tap>

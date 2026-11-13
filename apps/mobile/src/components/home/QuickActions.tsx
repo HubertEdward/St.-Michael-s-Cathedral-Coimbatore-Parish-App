@@ -5,6 +5,7 @@ import { Icon, Text } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 
 import { Tap } from '@/components/design/Tap';
+import { maxTextScale } from '@/components/design/tokens';
 import { callOffice, openDirections } from '@/components/open';
 
 /** Four shortcuts as jewel-coloured round tiles. */
@@ -23,7 +24,7 @@ export function QuickActions() {
           <LinearGradient colors={action.colors} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.tile}>
             <Icon source={action.icon} size={28} color="#FFFFFF" />
           </LinearGradient>
-          <Text variant="labelLarge" numberOfLines={2} style={styles.label}>
+          <Text variant="labelLarge" numberOfLines={2} maxFontSizeMultiplier={maxTextScale.label} style={styles.label}>
             {action.label}
           </Text>
         </Tap>

@@ -8,6 +8,7 @@ import { Display } from '@/components/design/Display';
 import { Eyebrow } from '@/components/design/Eyebrow';
 import { Panel } from '@/components/design/Panel';
 import { Tap } from '@/components/design/Tap';
+import { maxTextScale } from '@/components/design/tokens';
 import { useDayLabel, useNow } from '@/hooks';
 import { useLanguage, useLocalized } from '@/i18n';
 
@@ -64,13 +65,16 @@ export function NextMassCard({ services }: { services: Service[] }) {
         <Eyebrow>{t('home.nextMass')}</Eyebrow>
         <View style={[styles.countdown, { backgroundColor: soon ? theme.colors.primary : theme.colors.primaryContainer }]}>
           {soon && <Pulse color={theme.colors.onPrimary} />}
-          <Text variant="labelLarge" style={{ color: soon ? theme.colors.onPrimary : theme.colors.onPrimaryContainer, fontVariant: ['tabular-nums'] }}>
+          <Text
+            variant="labelLarge"
+            maxFontSizeMultiplier={maxTextScale.label}
+            style={{ color: soon ? theme.colors.onPrimary : theme.colors.onPrimaryContainer, fontVariant: ['tabular-nums'] }}>
             {countdown}
           </Text>
         </View>
       </View>
       <View style={styles.main}>
-        <Display size={52} color={theme.colors.primary} style={styles.time}>
+        <Display size={48} color={theme.colors.primary} style={styles.time}>
           {formatTime(next.service.time, language)}
         </Display>
         <View style={styles.when}>
@@ -94,7 +98,7 @@ export function NextMassCard({ services }: { services: Service[] }) {
                 onPress={() => router.navigate('/timings')}
                 style={[styles.chip, { borderColor: theme.colors.outlineVariant, backgroundColor: theme.colors.elevation.level1 }]}>
                 <Icon source="clock-outline" size={16} color={theme.colors.primary} />
-                <Text variant="labelLarge">
+                <Text variant="labelLarge" maxFontSizeMultiplier={maxTextScale.label}>
                   {dayLabel(u.date)} · {formatTime(u.service.time, language)}
                 </Text>
               </Tap>
@@ -107,7 +111,7 @@ export function NextMassCard({ services }: { services: Service[] }) {
 }
 
 const styles = StyleSheet.create({
-  top: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12 },
+  top: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', columnGap: 12, rowGap: 8 },
   countdown: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999 },
   main: { flexDirection: 'row', alignItems: 'center', gap: 16, flexWrap: 'wrap' },
   time: { fontVariant: ['tabular-nums'] },

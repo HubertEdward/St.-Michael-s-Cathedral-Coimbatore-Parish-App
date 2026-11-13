@@ -2,7 +2,7 @@ import type { Strings } from './en';
 
 // TO CONFIRM: Tamil wording to be reviewed by the parish before release.
 const ta: Strings = {
-  tabs: { home: 'முகப்பு', timings: 'திருப்பலி நேரம்', pray: 'செபம்', give: 'காணிக்கை', more: 'மேலும்' },
+  tabs: { home: 'முகப்பு', timings: 'திருப்பலி', pray: 'செபம்', give: 'காணிக்கை', more: 'மேலும்' },
   common: {
     today: 'இன்று',
     tomorrow: 'நாளை',
@@ -61,7 +61,7 @@ const ta: Strings = {
     startingNow: 'இப்போது தொடங்குகிறது',
     inMinutes_one: 'இன்னும் {{count}} நிமிடம்',
     inMinutes_other: 'இன்னும் {{count}} நிமிடங்கள்',
-    inHours: 'இன்னும் {{hours}} மணி {{minutes}} நிமிடம்',
+    inHours: 'இன்னும் {{hours}} மணி {{minutes}} நிமி.',
     give: 'காணிக்கை',
     patronPrayer: 'பாதுகாவலரிடம் செபிக்க',
     intentionTitle: 'திருப்பலி ஒப்புக்கொடுக்க',

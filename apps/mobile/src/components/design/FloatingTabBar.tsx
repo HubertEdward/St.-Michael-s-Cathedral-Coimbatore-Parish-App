@@ -14,7 +14,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { tapFeedback } from './Tap';
-import { crimson, gold } from './tokens';
+import { crimson, gold, maxTextScale } from './tokens';
 
 /** Icons per tab route: [outline, filled]. */
 const icons: Record<string, [string, string]> = {
@@ -100,7 +100,7 @@ function TabItem({ name, label, focused, onPress }: { name: string; label: strin
       <Animated.View style={iconStyle}>
         <Icon source={focused ? filled : outline} size={24} color={color} />
       </Animated.View>
-      <Text numberOfLines={1} style={[styles.label, { color, fontWeight: focused ? '700' : '500' }]}>
+      <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} maxFontSizeMultiplier={maxTextScale.label} style={[styles.label, { color, fontWeight: focused ? '700' : '500' }]}>
         {label}
       </Text>
     </Pressable>
@@ -126,7 +126,7 @@ function CenterTab({ label, focused, onPress }: { label: string; focused: boolea
           <Icon source="hands-pray" size={28} color={gold} />
         </View>
       </View>
-      <Text numberOfLines={1} style={[styles.label, { color: focused ? theme.colors.primary : theme.colors.onSurfaceVariant, fontWeight: '700' }]}>
+      <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} maxFontSizeMultiplier={maxTextScale.label} style={[styles.label, { color: focused ? theme.colors.primary : theme.colors.onSurfaceVariant, fontWeight: '700' }]}>
         {label}
       </Text>
     </Pressable>

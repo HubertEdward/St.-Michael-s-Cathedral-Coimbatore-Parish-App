@@ -4,6 +4,8 @@ import { Text, useTheme } from 'react-native-paper';
 
 import { useLanguage } from '@/i18n';
 
+import { maxTextScale } from './tokens';
+
 /** Font families loaded in the root layout. */
 export const displayFonts = {
   en: 'CormorantGaramond_700Bold',
@@ -28,6 +30,7 @@ export function Display({ children, size = 28, color, numberOfLines, style }: Pr
     <Text
       accessibilityRole="header"
       numberOfLines={numberOfLines}
+      maxFontSizeMultiplier={maxTextScale.heading}
       style={[
         { fontFamily: displayFonts[language], fontSize, lineHeight: Math.round(fontSize * (language === 'ta' ? 1.5 : 1.15)) },
         { color: color ?? theme.colors.onSurface },
