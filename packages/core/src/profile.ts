@@ -1,7 +1,7 @@
 import type { MD3Theme } from 'react-native-paper';
 
 import type { Language, Localized } from './localized';
-import type { Ministry, Service } from './types';
+import type { ParishGroupSeed, Service } from './types';
 
 export type ClergyRole = 'bishop' | 'parish-priest' | 'assistant-priest';
 
@@ -54,7 +54,8 @@ export interface ParishProfile {
   feast: { name: Localized; month: number; day: number };
   clergy: ClergyMember[];
   history: { title: Localized; paragraphs: Localized[] };
-  ministries: Ministry[];
+  /** The ministries, associations and faith formation the app starts with; the office adds more. */
+  groups: ParishGroupSeed[];
   sacraments: SacramentGuide[];
   /** The weekly timetable the app starts with. */
   timetable: Service[];

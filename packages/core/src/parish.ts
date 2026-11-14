@@ -5,7 +5,7 @@ import { clockIn, zonedToIso, type ParishClock } from './schedule';
 
 /** The parish this build of the app belongs to. */
 export const parish = profile;
-export const { clergy, history, ministries, sacraments } = profile;
+export const { clergy, history, sacraments } = profile;
 
 /** The current date and time at the church, wherever the phone is. */
 export const parishClock = (now: Date = new Date()): ParishClock => clockIn(parish.timeZone, now);

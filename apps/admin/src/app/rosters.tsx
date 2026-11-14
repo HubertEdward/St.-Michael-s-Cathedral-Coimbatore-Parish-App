@@ -3,11 +3,11 @@ import {
   addDays,
   formatDate,
   formatTime,
-  ministries,
   parishClock,
   rosterInputSchema,
   servicesOn,
   useDeleteRosterEntry,
+  useGroups,
   useRoster,
   useSaveRosterEntry,
   useServices,
@@ -23,16 +23,15 @@ import { FormField } from '@/components/FormField';
 import { Page } from '@/components/Page';
 import { errorText } from '@/components/errors';
 
-const liturgical = ministries.filter((m) => m.kind === 'liturgical');
-
 export default function Rosters() {
+  const ministries = (useGroups().data ?? []).filter((g) => g.kind === 'liturgical');
   const roster = useRoster();
   const services = useServices();
   const save = useSaveRosterEntry();
   const remove = useDeleteRosterEntry();
   const today = parishClock(new Date()).date;
   const dates = Array.from({ length: 15 }, (_, i) => addDays(today, i));
-  const empty: RosterInput = { ministryId: liturgical[0]?.id ?? '', date: today, serviceId: '', memberName: '' };
+  const empty: RosterInput = { ministryId: ministries[0]?.id ?? '', date: today, serviceId: '', memberName: '' };
   const { control, handleSubmit, watch, setValue, reset } = useForm<RosterInput>({ resolver: zodResolver(rosterInputSchema), defaultValues: empty });
   const date = watch('date');
   const massesThatDay = servicesOn(services.data ?? [], weekdayOf(date), 'mass');
@@ -56,7 +55,7 @@ export default function Rosters() {
             render={({ field, fieldState }) => (
               <Choice
                 label="Ministry"
-                options={liturgical.map((m) => ({ value: m.id, label: m.name.en }))}
+                options={ministries.map((m) => ({ value: m.id, label: m.name.en }))}
                 value={field.value}
                 onChange={field.onChange}
                 error={fieldState.error && errorText(fieldState.error.message)}

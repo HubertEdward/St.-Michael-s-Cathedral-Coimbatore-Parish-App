@@ -3,7 +3,7 @@
 import { z } from 'zod';
 
 import { pinSchema, sixDigits } from './pin';
-import { certificateKinds, givingPurposes, intentionTypes, relationships } from './types';
+import { certificateKinds, councilSeats, givingPurposes, groupKinds, intentionTypes, officerRoles, relationships, removalReasons } from './types';
 
 export type ValidationCode =
   | 'required'
@@ -117,7 +117,7 @@ export const familyInputSchema = z.object({
   familyName: required(100),
   headName: required(100),
   address: required(300),
-  anbiyam: optionalText,
+  preferredAnbiyamId: z.string().optional(),
 });
 export type FamilyInput = z.infer<typeof familyInputSchema>;
 
@@ -137,3 +137,34 @@ export const memberInputSchema = z.object({
   birthDate: birthDateSchema,
 });
 export type MemberInput = z.infer<typeof memberInputSchema>;
+
+export const removalInputSchema = z.object({ reason: z.enum(removalReasons), note: optionalText });
+export type RemovalInput = z.infer<typeof removalInputSchema>;
+
+const optionalDate = dateSchema.optional().or(z.literal(''));
+
+/** A group as the office edits it; each text has an English and an optional Tamil field. */
+export const groupInputSchema = z.object({
+  kind: z.enum(groupKinds),
+  name: required(100),
+  nameTa: optionalText,
+  description: optionalText,
+  descriptionTa: optionalText,
+  area: optionalText,
+  areaTa: optionalText,
+  meets: optionalText,
+  meetsTa: optionalText,
+  termFrom: optionalDate,
+  termTo: optionalDate,
+});
+export type GroupInput = z.infer<typeof groupInputSchema>;
+
+export const officerInputSchema = z.object({
+  role: z.enum(officerRoles),
+  name: required(100),
+  phone: phoneSchema.optional().or(z.literal('')),
+  memberId: z.string().optional(),
+  seat: z.enum(councilSeats).optional(),
+  representsId: z.string().optional(),
+});
+export type OfficerInput = z.infer<typeof officerInputSchema>;

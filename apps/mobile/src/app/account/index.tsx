@@ -1,4 +1,4 @@
-import { useAccount, useMyFamily, useSignOut, type FamilyMember } from '@parish/core';
+import { useAccount, useAskToRejoinParish, useGroups, useMyFamily, useSignOut, type FamilyMember, type ParishGroup } from '@parish/core';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Redirect, router } from 'expo-router';
 import { Share, StyleSheet, View } from 'react-native';
@@ -14,6 +14,8 @@ import { Panel } from '@/components/design/Panel';
 import { Tap } from '@/components/design/Tap';
 import { crimson, gold, radius } from '@/components/design/tokens';
 import { MembershipPill } from '@/components/family/MembershipPill';
+import { OfficerRow, longDate } from '@/components/groups/OfficerRow';
+import { useLanguage, useLocalized } from '@/i18n';
 
 const avatarColors = ['#7A1626', '#1E3A66', '#7A5A10', '#1F5A4A', '#5B2A86'];
 
@@ -24,6 +26,9 @@ export default function MyFamily() {
   const account = useAccount();
   const mine = useMyFamily();
   const signOut = useSignOut();
+  const rejoin = useAskToRejoinParish();
+  const text = useLocalized();
+  const language = useLanguage();
 
   // Wait for fresh answers before redirecting: right after signing in or registering, the cached ones are stale.
   const settling = (query: { isPending: boolean; isFetching: boolean; data: unknown }) => query.isPending || (query.isFetching && !query.data);
@@ -31,7 +36,7 @@ export default function MyFamily() {
   if (!account.data) return <Redirect href="/account/sign-in" />;
   if (!mine.data) return <Redirect href="/account/start" />;
 
-  const { family, me } = mine.data;
+  const { family, me, anbiyam } = mine.data;
   const approved = family.status === 'approved' && me.status === 'approved';
   const shareCode = () => void Share.share({ message: t('account.shareMessage', { name: family.name, code: family.code }) });
 
@@ -49,9 +54,9 @@ export default function MyFamily() {
         <Display size={36} color="#FFFFFF">
           {family.name}
         </Display>
-        {family.anbiyam && (
+        {anbiyam && (
           <Text variant="bodyMedium" style={styles.soft}>
-            {family.anbiyam}
+            {text(anbiyam.name)}
           </Text>
         )}
         {family.address !== '' && (
@@ -75,6 +80,16 @@ export default function MyFamily() {
       {family.status === 'pending' && <Notice icon="clock-outline" text={t('account.familyPending')} />}
       {family.status === 'approved' && me.status === 'pending' && <Notice icon="clock-outline" text={t('account.mePending')} />}
       {approved && <Notice icon="account-multiple-plus" text={t('account.codeHint')} />}
+      {family.status === 'removed' && family.removal && (
+        <>
+          <Notice
+            icon="home-export-outline"
+            text={t('account.removedNotice', { reason: t(`family.removal.${family.removal.reason}`), date: longDate(family.removal.on, language) })}
+          />
+          <GradientButton label={t('account.rejoin')} icon="home-import-outline" loading={rejoin.isPending} onPress={() => rejoin.mutate([])} />
+        </>
+      )}
+      {approved && (anbiyam ? <AnbiyamPanel anbiyam={anbiyam} /> : <Notice icon="home-group" text={t('account.anbiyamWaiting')} />)}
 
       <Panel style={styles.list}>
         <Eyebrow>{t('account.members', { count: family.members.length })}</Eyebrow>
@@ -102,6 +117,28 @@ export default function MyFamily() {
         </Button>
       </View>
     </Screen>
+  );
+}
+
+/** The family's Anbiyam and its head, secretary and treasurer; tap for the full page. */
+function AnbiyamPanel({ anbiyam }: { anbiyam: ParishGroup }) {
+  const { t } = useTranslation();
+  const theme = useTheme();
+  const text = useLocalized();
+  const groups = useGroups().data ?? [];
+  return (
+    <Panel onPress={() => router.push(`/groups/${anbiyam.id}`)} accessibilityLabel={text(anbiyam.name)} style={styles.list}>
+      <Eyebrow>{t('account.anbiyamTitle')}</Eyebrow>
+      <Text variant="titleLarge">{text(anbiyam.name)}</Text>
+      {anbiyam.meets && (
+        <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+          {text(anbiyam.meets)}
+        </Text>
+      )}
+      {anbiyam.officers.map((officer) => (
+        <OfficerRow key={officer.id} officer={officer} groups={groups} />
+      ))}
+    </Panel>
   );
 }
 

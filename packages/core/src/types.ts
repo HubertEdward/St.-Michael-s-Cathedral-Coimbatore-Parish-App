@@ -75,18 +75,77 @@ export interface CertificateRequest {
   createdAt: string;
 }
 
-export type MinistryKind = 'liturgical' | 'association' | 'formation' | 'anbiyam';
+/**
+ * The parish's groups: its councils, its Anbiyams (Basic Christian Communities, one for each
+ * neighbourhood), and its liturgical ministries, associations and faith formation.
+ */
+export const groupKinds = ['council', 'anbiyam', 'liturgical', 'association', 'formation'] as const;
+export type GroupKind = (typeof groupKinds)[number];
 
-export interface Ministry {
+/** Posts a person can hold in a group. Each kind of group offers some of them: see groupRoles. */
+export const officerRoles = [
+  'president',
+  'vicePresident',
+  'head',
+  'director',
+  'coordinator',
+  'secretary',
+  'jointSecretary',
+  'treasurer',
+  'member',
+] as const;
+export type OfficerRole = (typeof officerRoles)[number];
+
+/**
+ * The posts each kind of group has. An Anbiyam has a head, a secretary and a treasurer. A council
+ * is presided over by the parish priest, with lay office-bearers and members. Ministries and
+ * associations have a director (usually a priest or sister) and lay office-bearers.
+ */
+export const groupRoles: Record<GroupKind, readonly OfficerRole[]> = {
+  council: ['president', 'vicePresident', 'secretary', 'jointSecretary', 'treasurer', 'member'],
+  anbiyam: ['head', 'secretary', 'treasurer'],
+  liturgical: ['director', 'coordinator', 'secretary', 'member'],
+  association: ['director', 'president', 'secretary', 'treasurer', 'member'],
+  formation: ['director', 'coordinator', 'member'],
+};
+
+/** How someone has a seat on a council: by office, as an Anbiyam's representative, elected, or nominated by the parish priest. */
+export const councilSeats = ['exOfficio', 'anbiyam', 'elected', 'nominated'] as const;
+export type CouncilSeat = (typeof councilSeats)[number];
+
+/** A person holding a post in a group; linked to their family membership when they are a registered parishioner. */
+export interface Officer {
   id: string;
-  kind: MinistryKind;
+  role: OfficerRole;
+  name: string;
+  phone?: string;
+  memberId?: string;
+  /** Councils only: how they have their seat, and for an Anbiyam's representative, which Anbiyam. */
+  seat?: CouncilSeat;
+  representsId?: string;
+}
+
+export interface ParishGroup {
+  id: string;
+  kind: GroupKind;
   name: Localized;
   description: Localized;
+  /** Anbiyams: the streets or area they cover. */
+  area?: Localized;
+  /** When and where it meets, e.g. "First Sunday, after the 8:00 Mass". */
+  meets?: Localized;
+  /** Councils: the current term, "YYYY-MM-DD". */
+  term?: { from: string; to: string };
+  officers: Officer[];
 }
+
+/** A group as a parish profile lists it, before anyone holds a post. */
+export type ParishGroupSeed = Omit<ParishGroup, 'officers'>;
 
 /** One person on duty for one service on one date. */
 export interface RosterEntry {
   id: string;
+  /** A liturgical group. */
   ministryId: string;
   /** "YYYY-MM-DD" */
   date: string;
@@ -123,6 +182,13 @@ export type Relationship = (typeof relationships)[number];
 /** A family's registration, or a person's membership of a family, as the parish office decided it. */
 export type MembershipStatus = 'pending' | 'approved' | 'declined';
 
+/** A family's place in the parish: asked to join, a member, turned down, or removed by the parish priest. */
+export type FamilyStatus = MembershipStatus | 'removed';
+
+/** Why the parish priest removed a family from the parish. */
+export const removalReasons = ['movedAway', 'otherParish', 'other'] as const;
+export type RemovalReason = (typeof removalReasons)[number];
+
 /** A household registered with the parish. Its code lets relatives ask to join it. */
 export interface Family {
   id: string;
@@ -130,8 +196,13 @@ export interface Family {
   code: string;
   name: string;
   address: string;
-  anbiyam?: string;
-  status: MembershipStatus;
+  /** The Anbiyam the parish office placed the family in; until then the family waits to be onboarded. */
+  anbiyamId?: string;
+  /** The Anbiyam the family thought it belonged to when asking to join the parish. */
+  preferredAnbiyamId?: string;
+  status: FamilyStatus;
+  /** Set when the parish priest removes the family; kept if they later ask to join again. */
+  removal?: { reason: RemovalReason; note?: string; on: string };
   createdAt: string;
 }
 

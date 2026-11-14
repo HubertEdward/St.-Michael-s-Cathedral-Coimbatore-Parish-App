@@ -31,6 +31,7 @@ export default function Dashboard() {
     (sum, f) => sum + (f.status === 'pending' ? 1 : f.members.filter((m) => m.status === 'pending').length),
     0,
   );
+  const withoutAnbiyam = (families.data ?? []).filter((f) => f.status === 'approved' && !f.anbiyamId).length;
   const now = new Date();
   const newIntentions = intentions.data?.filter((i) => i.status === 'submitted').length ?? 0;
   const newCertificates = certificates.data?.filter((c) => c.status === 'submitted').length ?? 0;
@@ -44,6 +45,12 @@ export default function Dashboard() {
           <Card.Content>
             <Text variant="displaySmall">{membershipRequests}</Text>
             <Text variant="titleMedium">Family and member requests</Text>
+          </Card.Content>
+        </Card>
+        <Card mode="contained" style={[styles.stat, { backgroundColor: theme.colors.surfaceVariant }]} onPress={() => router.navigate('/anbiyams')}>
+          <Card.Content>
+            <Text variant="displaySmall">{withoutAnbiyam}</Text>
+            <Text variant="titleMedium">Families waiting for an Anbiyam</Text>
           </Card.Content>
         </Card>
         <Card mode="contained" style={[styles.stat, { backgroundColor: theme.colors.primaryContainer }]} onPress={() => router.navigate('/intentions')}>

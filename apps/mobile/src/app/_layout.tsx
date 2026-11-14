@@ -56,7 +56,8 @@ function RootStack() {
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="about" options={{ headerShown: false }} />
           <Stack.Screen name="contact" options={{ title: t('more.contact') }} />
-          <Stack.Screen name="ministries" options={{ title: t('more.ministries') }} />
+          <Stack.Screen name="groups/index" options={{ title: t('more.ministries') }} />
+          <Stack.Screen name="groups/[id]" options={{ title: '' }} />
           <Stack.Screen name="roster" options={{ title: t('more.roster') }} />
           <Stack.Screen name="sacraments/index" options={{ title: t('more.sacraments') }} />
           <Stack.Screen name="sacraments/[id]" options={{ title: '' }} />

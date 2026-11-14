@@ -12,7 +12,9 @@ import type {
   FamilyWithMembers,
   MassIntention,
   MembershipStatus,
+  Officer,
   ParishEvent,
+  ParishGroup,
   RequestStatus,
   RosterEntry,
   Service,
@@ -26,6 +28,12 @@ import {
   familyInputSchema,
   joinFamilySchema,
   memberInputSchema,
+  groupInputSchema,
+  officerInputSchema,
+  removalInputSchema,
+  type GroupInput,
+  type OfficerInput,
+  type RemovalInput,
   signInSchema,
   createAccountSchema,
   resetPinSchema,
@@ -330,7 +338,17 @@ export const getMyFamily = () =>
     const family = me && d.families.find((f) => f.id === me.familyId);
     if (!me || !family) return null;
     const waitingToJoin = family.status === 'approved' && me.status !== 'approved';
-    return { family: waitingToJoin ? { ...family, address: '', members: [me] } : withMembers(d, family), me };
+    if (waitingToJoin) return { family: { ...family, address: '', anbiyamId: undefined, members: [me] }, me, anbiyam: undefined };
+    return { family: withMembers(d, family), me, anbiyam: d.groups.find((g) => g.id === family.anbiyamId) };
+  });
+
+/** A member of a family the parish priest removed asks for it to be taken back into the parish. */
+export const askToRejoinParish = () =>
+  write((d) => {
+    const me = myMembership(d);
+    const family = me && d.families.find((f) => f.id === me.familyId);
+    if (!family || family.status !== 'removed') throw new Error('notSignedIn');
+    family.status = 'pending';
   });
 
 function signedInWithoutFamily(d: ParishData): Account {
@@ -351,7 +369,7 @@ export const registerFamily = (input: FamilyInput) =>
       code: `${familyCodePrefix()}-${String(next).padStart(4, '0')}`,
       name: parsed.familyName,
       address: parsed.address,
-      anbiyam: parsed.anbiyam || undefined,
+      preferredAnbiyamId: parsed.preferredAnbiyamId || undefined,
       status: 'pending',
       createdAt: now,
     };
@@ -418,6 +436,7 @@ export const setFamilyStatus = (id: string, status: MembershipStatus) =>
     const family = d.families.find((f) => f.id === id);
     if (!family) return;
     family.status = status;
+    if (status === 'approved') delete family.removal;
     for (const m of d.members) {
       if (m.familyId !== id || m.status !== 'pending') continue;
       if (status === 'declined' || m.relationship === 'head') m.status = status;
@@ -428,4 +447,84 @@ export const setMemberStatus = (id: string, status: MembershipStatus) =>
   write((d) => {
     const m = d.members.find((x) => x.id === id);
     if (m) m.status = status;
+  });
+
+/** Onboards a family to its Anbiyam, or moves it to another. */
+export const setFamilyAnbiyam = (familyId: string, anbiyamId: string) =>
+  write((d) => {
+    const family = d.families.find((f) => f.id === familyId);
+    if (family) family.anbiyamId = anbiyamId;
+  });
+
+/**
+ * The parish priest removes a family that has left the parish, e.g. after moving out of the area.
+ * The family keeps its record and code; it leaves its Anbiyam, and its members leave any posts they held.
+ */
+export const removeFamily = (familyId: string, input: RemovalInput) =>
+  write((d) => {
+    const family = d.families.find((f) => f.id === familyId);
+    if (!family) return;
+    const { reason, note } = removalInputSchema.parse(input);
+    family.status = 'removed';
+    family.removal = { reason, ...(note ? { note } : {}), on: parishClock(new Date()).date };
+    delete family.anbiyamId;
+    const members = new Set(d.members.filter((m) => m.familyId === familyId).map((m) => m.id));
+    for (const group of d.groups) group.officers = group.officers.filter((o) => !o.memberId || !members.has(o.memberId));
+  });
+
+// Groups: councils, Anbiyams, ministries, associations and faith formation. Thrown code: 'anbiyamHasFamilies'.
+
+const localized = (en: string | undefined, ta: string | undefined) => (en ? { en, ...(ta ? { ta } : {}) } : undefined);
+
+export const listGroups = () => read((d) => d.groups);
+
+/** Creates a group, or edits one when `id` is given; its officers stay as they are. */
+export const saveGroup = (input: GroupInput, id?: string) =>
+  write((d) => {
+    const p = groupInputSchema.parse(input);
+    const existing = id ? d.groups.find((g) => g.id === id) : undefined;
+    const group: ParishGroup = {
+      id: existing?.id ?? newId(),
+      kind: p.kind,
+      name: localized(p.name, p.nameTa)!,
+      description: localized(p.description, p.descriptionTa) ?? { en: '' },
+      area: localized(p.area, p.areaTa),
+      meets: localized(p.meets, p.meetsTa),
+      term: p.termFrom && p.termTo ? { from: p.termFrom, to: p.termTo } : undefined,
+      officers: existing?.officers ?? [],
+    };
+    upsert(d.groups, group);
+    return group;
+  });
+
+export const deleteGroup = (id: string) =>
+  write((d) => {
+    if (d.families.some((f) => f.anbiyamId === id)) throw new Error('anbiyamHasFamilies');
+    remove(d.groups, id);
+  });
+
+/** Gives someone a post in a group. Every post but "member" has one holder, who is replaced. */
+export const addOfficer = (groupId: string, input: OfficerInput) =>
+  write((d) => {
+    const group = d.groups.find((g) => g.id === groupId);
+    if (!group) return undefined;
+    const p = officerInputSchema.parse(input);
+    const council = group.kind === 'council';
+    const officer: Officer = {
+      id: newId(),
+      role: p.role,
+      name: p.name,
+      ...(p.phone ? { phone: p.phone } : {}),
+      ...(p.memberId ? { memberId: p.memberId } : {}),
+      ...(council && p.seat ? { seat: p.seat } : {}),
+      ...(council && p.seat === 'anbiyam' && p.representsId ? { representsId: p.representsId } : {}),
+    };
+    group.officers = [...group.officers.filter((o) => p.role === 'member' || o.role !== p.role), officer];
+    return officer;
+  });
+
+export const removeOfficer = (groupId: string, officerId: string) =>
+  write((d) => {
+    const group = d.groups.find((g) => g.id === groupId);
+    if (group) group.officers = group.officers.filter((o) => o.id !== officerId);
   });

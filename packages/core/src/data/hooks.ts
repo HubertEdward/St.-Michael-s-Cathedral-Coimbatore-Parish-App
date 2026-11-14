@@ -14,6 +14,7 @@ export const queryKeys = {
   roster: ['roster'],
   subscriptions: ['subscriptions'],
   family: ['family'],
+  groups: ['groups'],
 } as const;
 
 export const useServices = () => useQuery({ queryKey: queryKeys.services, queryFn: api.listServices });
@@ -33,11 +34,12 @@ export const useMySubscriptions = () =>
   useQuery({ queryKey: [...queryKeys.subscriptions, 'mine'], queryFn: api.listMySubscriptions });
 export const useRoster = () => useQuery({ queryKey: queryKeys.roster, queryFn: api.listRoster });
 
-function useChange<TArgs extends unknown[], TResult>(key: QueryKey, change: (...args: TArgs) => Promise<TResult>) {
+/** A mutation that refreshes the queries under `key`, and under `also` when the change shows there too. */
+function useChange<TArgs extends unknown[], TResult>(key: QueryKey, change: (...args: TArgs) => Promise<TResult>, also?: QueryKey) {
   const client = useQueryClient();
   return useMutation({
     mutationFn: (args: TArgs) => change(...args),
-    onSuccess: () => client.invalidateQueries({ queryKey: key }),
+    onSuccess: () => Promise.all([key, also].filter((k) => k !== undefined).map((queryKey) => client.invalidateQueries({ queryKey }))),
   });
 }
 
@@ -71,6 +73,16 @@ export const useRequestToJoinFamily = () => useChange(queryKeys.family, api.requ
 export const useAddFamilyMember = () => useChange(queryKeys.family, api.addFamilyMember);
 export const useSetFamilyStatus = () => useChange(queryKeys.family, api.setFamilyStatus);
 export const useSetMemberStatus = () => useChange(queryKeys.family, api.setMemberStatus);
+export const useSetFamilyAnbiyam = () => useChange(queryKeys.family, api.setFamilyAnbiyam);
+export const useRemoveFamily = () => useChange(queryKeys.family, api.removeFamily, queryKeys.groups);
+export const useAskToRejoinParish = () => useChange(queryKeys.family, api.askToRejoinParish);
+
+// A family's screen shows its Anbiyam, so group changes refresh it too.
+export const useGroups = () => useQuery({ queryKey: queryKeys.groups, queryFn: api.listGroups });
+export const useSaveGroup = () => useChange(queryKeys.groups, api.saveGroup, queryKeys.family);
+export const useDeleteGroup = () => useChange(queryKeys.groups, api.deleteGroup, queryKeys.family);
+export const useAddOfficer = () => useChange(queryKeys.groups, api.addOfficer, queryKeys.family);
+export const useRemoveOfficer = () => useChange(queryKeys.groups, api.removeOfficer, queryKeys.family);
 
 export function useResetDemoData() {
   const client = useQueryClient();

@@ -1,4 +1,4 @@
-import { formatTime, ministries, parishClock, useRoster, useServices } from '@parish/core';
+import { formatTime, parishClock, useGroups, useRoster, useServices } from '@parish/core';
 import { useState } from 'react';
 import { Card, List, Text } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
@@ -18,12 +18,13 @@ export default function Roster() {
   const dayLabel = useDayLabel();
   const roster = useRoster();
   const services = useServices();
+  const ministries = (useGroups().data ?? []).filter((g) => g.kind === 'liturgical');
   const [ministry, setMinistry] = useState('all');
   const today = parishClock(new Date()).date;
 
   const options = [
     { value: 'all', label: t('roster.all') },
-    ...ministries.filter((m) => m.kind === 'liturgical').map((m) => ({ value: m.id, label: text(m.name) })),
+    ...ministries.map((m) => ({ value: m.id, label: text(m.name) })),
   ];
 
   return (

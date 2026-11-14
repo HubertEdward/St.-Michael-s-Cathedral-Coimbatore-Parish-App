@@ -11,7 +11,9 @@ import type {
   Family,
   FamilyMember,
   MassIntention,
+  Officer,
   ParishEvent,
+  ParishGroup,
   PinReset,
   RosterEntry,
   Service,
@@ -29,6 +31,8 @@ export interface ParishData {
   subscriptions: Subscription[];
   families: Family[];
   members: FamilyMember[];
+  /** Councils, Anbiyams, ministries and associations, with the people holding posts in them. */
+  groups: ParishGroup[];
   /** The PINs people chose, by phone number. Preview only: Phase 2 keeps them (hashed) in Supabase Auth. */
   logins: { phone: string; pin: string }[];
   /** Reset codes the parish office has handed out and not yet used. */
@@ -53,7 +57,7 @@ export function createSeed(now: Date): ParishData {
   // Samples point at the parish's own Sunday Masses and liturgical ministries.
   const sundayMasses = servicesOn(parish.timetable, 0, 'mass');
   const sundayMass = (index: number) => sundayMasses[index % sundayMasses.length];
-  const liturgical = parish.ministries.filter((m) => m.kind === 'liturgical');
+  const liturgical = parish.groups.filter((g) => g.kind === 'liturgical');
 
   const announcements: Announcement[] = [
     {
@@ -162,22 +166,27 @@ export function createSeed(now: Date): ParishData {
     supporter(5, 'Celine Paul', 250, 'parish', 5, 6, 'paused'),
   ];
 
-  // Registered families, one new registration and two requests to join, for the office to approve.
+  // Registered families in their Anbiyams; one new family asking to join the parish, one approved but
+  // not yet placed in an Anbiyam, one removed after moving away; and two requests to join a family.
   const prefix = familyCodePrefix();
-  const family = (n: number, name: string, address: string, anbiyam: string, status: Family['status'], daysAgo: number): Family => ({
+  const family = (n: number, name: string, address: string, status: Family['status'], daysAgo: number, extra: Partial<Family> = {}): Family => ({
     id: `fam-${n}`,
     code: `${prefix}-${String(100 + n).padStart(4, '0')}`,
     name,
     address,
-    anbiyam,
     status,
     createdAt: parishTimeToIso(addDays(today, -daysAgo), '11:00'),
+    ...extra,
   });
   const families: Family[] = [
-    family(1, 'Joseph family', '12 Raja Street, Coimbatore', 'Sample: St. Antony’s Anbiyam', 'approved', 400),
-    family(2, 'Xavier family', '4 Oppanakara Street, Coimbatore', 'Sample: St. Sebastian’s Anbiyam', 'approved', 300),
-    family(3, 'Fernandez family', '27 Big Bazaar Street, Coimbatore', 'Sample: Our Lady of Velankanni Anbiyam', 'approved', 200),
-    family(4, 'Thomas family', '8 Variety Hall Road, Coimbatore', 'Sample: St. Antony’s Anbiyam', 'pending', 1),
+    family(1, 'Joseph family', '12 Raja Street, Coimbatore', 'approved', 400, { anbiyamId: 'anb-1' }),
+    family(2, 'Xavier family', '4 Oppanakara Street, Coimbatore', 'approved', 300, { anbiyamId: 'anb-2' }),
+    family(3, 'Fernandez family', '27 Big Bazaar Street, Coimbatore', 'approved', 200, { anbiyamId: 'anb-3' }),
+    family(4, 'Thomas family', '8 Variety Hall Road, Coimbatore', 'pending', 1, { preferredAnbiyamId: 'anb-2' }),
+    family(5, 'D’Souza family', '3 Town Hall Road, Coimbatore', 'approved', 6, { preferredAnbiyamId: 'anb-4' }),
+    family(6, 'Pereira family', '19 Prakasam Street, Coimbatore', 'removed', 900, {
+      removal: { reason: 'movedAway', note: 'Moved to Chennai', on: addDays(today, -30) },
+    }),
   ];
   const member = (
     id: string,
@@ -218,6 +227,68 @@ export function createSeed(now: Date): ParishData {
       addedBy: 'Xavier Raj',
       createdAt: parishTimeToIso(addDays(today, -2), '19:15'),
     }),
+    member('m-11', 'fam-5', 'Francis D’Souza', 'head', { phone: '+91 98430 20006' }),
+    member('m-12', 'fam-5', 'Lourdes D’Souza', 'spouse'),
+    member('m-13', 'fam-6', 'Peter Pereira', 'head', { phone: '+91 98430 20007' }),
+  ];
+
+  // Every parish has a pastoral council and a finance council (canons 536 and 537), presided over by
+  // the parish priest. The Anbiyams and the posts filled here are samples for the demo.
+  const priest = parish.clergy.find((c) => c.role === 'parish-priest')?.name ?? 'Parish priest';
+  const officer = (id: string, role: Officer['role'], name: string, extra: Partial<Officer> = {}): Officer => ({ id, role, name, ...extra });
+  const person = (memberId: string) => {
+    const m = members.find((x) => x.id === memberId)!;
+    return { name: m.name, memberId, ...(m.phone ? { phone: m.phone } : {}) };
+  };
+  const year = Number(today.slice(0, 4));
+  const groups: ParishGroup[] = [
+    {
+      id: 'council-pastoral',
+      kind: 'council',
+      name: { en: 'Parish Pastoral Council', ta: 'பங்குப் பேரவை' },
+      description: {
+        en: 'Advises the parish priest on the life and mission of the parish. Each Anbiyam sends a representative; others serve by office, by election or by the parish priest’s nomination.',
+        ta: 'பங்கின் வாழ்வு மற்றும் பணி குறித்து பங்குத்தந்தைக்கு ஆலோசனை வழங்குகிறது. ஒவ்வொரு அன்பியமும் ஒரு பிரதிநிதியை அனுப்புகிறது; மற்றவர்கள் பதவி வழியாக, தேர்தல் வழியாக அல்லது பங்குத்தந்தையின் நியமனம் வழியாக உறுப்பினராகிறார்கள்.',
+      },
+      meets: { en: 'Sample: first Sunday of the month, 10:00, parish hall', ta: 'மாதிரி: மாதத்தின் முதல் ஞாயிறு, காலை 10 மணி, பங்கு அரங்கம்' },
+      term: { from: `${year}-01-01`, to: `${year + 2}-12-31` },
+      officers: [
+        officer('o-1', 'president', priest, { seat: 'exOfficio' }),
+        officer('o-2', 'vicePresident', person('m-4').name, { ...person('m-4'), seat: 'elected' }),
+        officer('o-3', 'secretary', person('m-2').name, { ...person('m-2'), seat: 'anbiyam', representsId: 'anb-1' }),
+        officer('o-4', 'treasurer', person('m-6').name, { ...person('m-6'), seat: 'anbiyam', representsId: 'anb-3' }),
+        officer('o-5', 'member', 'Sample: Sister superior, Presentation Convent', { seat: 'exOfficio' }),
+        officer('o-6', 'member', 'Sample: President, Catholic youth', { seat: 'nominated' }),
+      ],
+    },
+    {
+      id: 'council-finance',
+      kind: 'council',
+      name: { en: 'Parish Finance Council', ta: 'பங்கு நிதிக் குழு' },
+      description: {
+        en: 'Helps the parish priest look after the parish’s property, accounts and budget.',
+        ta: 'பங்கின் சொத்துகள், கணக்குகள் மற்றும் வரவு செலவுத் திட்டத்தைக் கவனிக்க பங்குத்தந்தைக்கு உதவுகிறது.',
+      },
+      term: { from: `${year}-01-01`, to: `${year + 2}-12-31` },
+      officers: [
+        officer('o-7', 'president', priest, { seat: 'exOfficio' }),
+        officer('o-8', 'member', person('m-1').name, { ...person('m-1'), seat: 'elected' }),
+        officer('o-9', 'member', 'Sample: Chartered accountant', { seat: 'nominated' }),
+      ],
+    },
+    anbiyam('anb-1', { en: 'St. Antony’s Anbiyam', ta: 'புனித அந்தோணியார் அன்பியம்' }, 'Raja Street, Big Bazaar Street', [
+      officer('o-10', 'head', person('m-1').name, person('m-1')),
+      officer('o-11', 'secretary', person('m-2').name, person('m-2')),
+      officer('o-12', 'treasurer', 'Sample: Antony Raj', { phone: '+91 98430 20021' }),
+    ]),
+    anbiyam('anb-2', { en: 'St. Sebastian’s Anbiyam', ta: 'புனித செபஸ்தியார் அன்பியம்' }, 'Oppanakara Street, Variety Hall Road', [
+      officer('o-13', 'head', person('m-4').name, person('m-4')),
+    ]),
+    anbiyam('anb-3', { en: 'Our Lady of Velankanni Anbiyam', ta: 'வேளாங்கண்ணி மாதா அன்பியம்' }, 'Big Bazaar Street, Kottai Medu', [
+      officer('o-14', 'head', person('m-6').name, person('m-6')),
+    ]),
+    anbiyam('anb-4', { en: 'St. Joseph’s Anbiyam', ta: 'புனித சூசையப்பர் அன்பியம்' }, 'Town Hall, Prakasam Street', []),
+    ...parish.groups.map((g) => ({ ...g, officers: [] })),
   ];
 
   // Everyone in the samples with a phone has already chosen the demo PIN.
@@ -226,11 +297,24 @@ export function createSeed(now: Date): ParishData {
   // Copied, because the demo store edits its data in place.
   const services = parish.timetable.map((service) => ({ ...service }));
 
-  return { services, announcements, events, intentions, certificates, roster, subscriptions, families, members, logins, pinResets: [], account: null, mine: [] };
+  return { services, announcements, events, intentions, certificates, roster, subscriptions, families, members, groups, logins, pinResets: [], account: null, mine: [] };
 }
 
 /** The PIN of every sample family member in the preview (Joseph Antony is +91 98430 20001). */
 export const DEMO_PIN = '246810';
+
+/** A sample Anbiyam: the parish office replaces these with the parish's own. */
+function anbiyam(id: string, name: ParishGroup['name'], streets: string, officers: Officer[]): ParishGroup {
+  return {
+    id,
+    kind: 'anbiyam',
+    name,
+    description: { en: 'Sample Anbiyam: families of the neighbourhood meet to pray, read the Word of God and help one another.', ta: 'மாதிரி அன்பியம்: அக்கம்பக்கக் குடும்பங்கள் ஒன்றுகூடி செபிக்கின்றன, இறைவார்த்தையை வாசிக்கின்றன, ஒருவருக்கொருவர் உதவுகின்றன.' },
+    area: { en: streets },
+    meets: { en: 'Sample: second Friday, 7 pm, in a member family’s home', ta: 'மாதிரி: இரண்டாம் வெள்ளி, இரவு 7 மணி, ஒரு குடும்பத்தின் இல்லத்தில்' },
+    officers,
+  };
+}
 
 /** "SMC" for st-michaels-coimbatore: the start of each family code. */
 export const familyCodePrefix = () =>
