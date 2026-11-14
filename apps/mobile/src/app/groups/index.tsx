@@ -47,7 +47,7 @@ function GroupCard({ group }: { group: ParishGroup }) {
   const { t } = useTranslation();
   const theme = useTheme();
   const text = useLocalized();
-  const lead = group.officers.find((o) => o.role !== 'member');
+  const lead = group.officers.find((o) => o.role !== 'member' && !o.pending);
   const detail = group.kind === 'anbiyam' && group.area ? text(group.area) : text(group.description);
 
   return (

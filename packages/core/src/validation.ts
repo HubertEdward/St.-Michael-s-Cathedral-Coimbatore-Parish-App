@@ -168,3 +168,5 @@ export const officerInputSchema = z.object({
   representsId: z.string().optional(),
 });
 export type OfficerInput = z.infer<typeof officerInputSchema>;
+
+export const messageSchema = z.string().trim().min(1, 'required').max(1000, 'tooLong');

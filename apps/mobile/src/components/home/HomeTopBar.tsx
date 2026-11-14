@@ -1,4 +1,4 @@
-import { parishClock } from '@parish/core';
+import { parishClock, useMyMessages } from '@parish/core';
 import { router } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 import { Icon, Text } from 'react-native-paper';
@@ -13,6 +13,10 @@ export function HomeTopBar() {
   const { t } = useTranslation();
   const language = useLanguage();
   const { choose } = useLanguageState();
+  // Null until the person is in the parish; then the bell shows, with the number of new messages.
+  const messages = useMyMessages().data;
+  const unread = messages?.unread ?? 0;
+  const inParish = messages != null;
   const { minutes } = parishClock();
   const greeting = minutes < 12 * 60 ? t('home.morning') : minutes < 17 * 60 ? t('home.afternoon') : t('home.evening');
   const other = languages.find((l) => l !== language);
@@ -33,6 +37,18 @@ export function HomeTopBar() {
             <Text variant="labelLarge" maxFontSizeMultiplier={maxTextScale.label} style={styles.white}>
               {languageNames[other]}
             </Text>
+          </Tap>
+        )}
+        {inParish && (
+          <Tap onPress={() => router.push('/messages')} style={styles.round} accessibilityLabel={unread > 0 ? `${t('messages.title')}, ${t('messages.newCount', { count: unread })}` : t('messages.title')}>
+            <Icon source={unread > 0 ? 'bell-ring' : 'bell-outline'} size={22} color="#FFFFFF" />
+            {unread > 0 && (
+              <View style={styles.badge}>
+                <Text variant="labelSmall" maxFontSizeMultiplier={maxTextScale.label} style={styles.badgeText}>
+                  {unread > 9 ? '9+' : unread}
+                </Text>
+              </View>
+            )}
           </Tap>
         )}
         <Tap onPress={() => router.push('/account')} style={styles.round} accessibilityLabel={t('account.myFamily')}>
@@ -60,6 +76,19 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.35)',
   },
+  badge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    minWidth: 18,
+    height: 18,
+    paddingHorizontal: 4,
+    borderRadius: 9,
+    backgroundColor: gold,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  badgeText: { color: '#3A0710', fontWeight: '700' },
   pill: {
     flexDirection: 'row',
     alignItems: 'center',

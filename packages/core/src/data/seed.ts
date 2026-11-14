@@ -10,6 +10,7 @@ import type {
   CertificateRequest,
   Family,
   FamilyMember,
+  GroupMessage,
   MassIntention,
   Officer,
   ParishEvent,
@@ -33,6 +34,9 @@ export interface ParishData {
   members: FamilyMember[];
   /** Councils, Anbiyams, ministries and associations, with the people holding posts in them. */
   groups: ParishGroup[];
+  messages: GroupMessage[];
+  /** When each member last opened their messages, by member id; newer messages count as unread. */
+  lastRead: Record<string, string>;
   /** The PINs people chose, by phone number. Preview only: Phase 2 keeps them (hashed) in Supabase Auth. */
   logins: { phone: string; pin: string }[];
   /** Reset codes the parish office has handed out and not yet used. */
@@ -288,7 +292,36 @@ export function createSeed(now: Date): ParishData {
       officer('o-14', 'head', person('m-6').name, person('m-6')),
     ]),
     anbiyam('anb-4', { en: 'St. Joseph’s Anbiyam', ta: 'புனித சூசையப்பர் அன்பியம்' }, 'Town Hall, Prakasam Street', []),
+    {
+      id: 'prayer-group',
+      kind: 'association',
+      name: { en: 'Sample: Charismatic prayer group', ta: 'மாதிரி: அருங்கொடை செபக் குழு' },
+      description: { en: 'Praise, worship and intercession for the parish and its families.', ta: 'பங்குக்காகவும் அதன் குடும்பங்களுக்காகவும் புகழ்ச்சி, ஆராதனை, பரிந்துரை செபம்.' },
+      meets: { en: 'Thursdays, 6:30 pm, parish hall', ta: 'வியாழன்தோறும், மாலை 6:30, பங்கு அரங்கம்' },
+      officers: [
+        officer('o-15', 'coordinator', person('m-1').name, person('m-1')),
+        officer('o-16', 'member', person('m-4').name, person('m-4')),
+        officer('o-17', 'member', person('m-2').name, person('m-2')),
+        officer('o-18', 'member', person('m-6').name, { ...person('m-6'), pending: true }),
+      ],
+    },
     ...parish.groups.map((g) => ({ ...g, officers: [] })),
+  ];
+
+  // Messages from an Anbiyam's office-bearers, a prayer group and the parish office.
+  const message = (id: string, groupId: string, sender: string, senderRole: GroupMessage['senderRole'], daysAgo: number, time: string, body: string): GroupMessage => ({
+    id,
+    groupId,
+    sender,
+    senderRole,
+    body,
+    sentAt: parishTimeToIso(addDays(today, -daysAgo), time),
+  });
+  const messages: GroupMessage[] = [
+    message('msg-1', 'anb-1', 'Joseph Antony', 'head', 1, '07:30', 'Sample: our Anbiyam meets this Friday at 7 pm at the home of Mary Joseph, 12 Raja Street. We will pray the Rosary and read Sunday’s Gospel together.'),
+    message('msg-2', 'prayer-group', 'Joseph Antony', 'coordinator', 1, '19:10', 'Sample: prayer meeting on Thursday at 6:30 pm in the parish hall. Please bring your Bible.'),
+    message('msg-3', 'anb-1', 'Mary Joseph', 'secretary', 4, '20:00', 'Sample: thank you to every family that brought food for the feast. Our Anbiyam gave ₹4,500 to the poor fund.'),
+    message('msg-4', 'anb-2', 'Parish office', 'office', 2, '11:00', 'Sample: the parish priest will bless homes in St. Sebastian’s Anbiyam on Saturday from 4 pm.'),
   ];
 
   // Everyone in the samples with a phone has already chosen the demo PIN.
@@ -297,7 +330,7 @@ export function createSeed(now: Date): ParishData {
   // Copied, because the demo store edits its data in place.
   const services = parish.timetable.map((service) => ({ ...service }));
 
-  return { services, announcements, events, intentions, certificates, roster, subscriptions, families, members, groups, logins, pinResets: [], account: null, mine: [] };
+  return { services, announcements, events, intentions, certificates, roster, subscriptions, families, members, groups, messages, lastRead: {}, logins, pinResets: [], account: null, mine: [] };
 }
 
 /** The PIN of every sample family member in the preview (Joseph Antony is +91 98430 20001). */

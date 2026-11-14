@@ -123,6 +123,22 @@ export interface Officer {
   /** Councils only: how they have their seat, and for an Anbiyam's representative, which Anbiyam. */
   seat?: CouncilSeat;
   representsId?: string;
+  /** Asked in the app to join the group; waiting for one of its office-bearers to approve. */
+  pending?: true;
+}
+
+/** Groups a parishioner can ask to join. Anbiyam membership follows the family; councils are appointed. */
+export const joinableKinds: readonly GroupKind[] = ['liturgical', 'association', 'formation'];
+
+/** A message an Anbiyam's or a group's office-bearers, or the parish office, send to its members. */
+export interface GroupMessage {
+  id: string;
+  groupId: string;
+  body: string;
+  sender: string;
+  /** The sender's post in the group, or 'office' for the parish office. */
+  senderRole: OfficerRole | 'office';
+  sentAt: string;
 }
 
 export interface ParishGroup {

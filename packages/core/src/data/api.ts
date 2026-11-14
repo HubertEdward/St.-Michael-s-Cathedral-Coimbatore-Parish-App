@@ -1,6 +1,7 @@
 // The only functions screens use to read and change parish data.
 // Thrown Error messages are codes the apps translate: 'massNotOnDate', 'massOutOfRange'.
 import { nextDebitOn } from '../giving';
+import { joinableKinds } from '../types';
 import { parishClock, parishTimeToIso } from '../parish';
 import { addDays, weekdayOf } from '../schedule';
 import type {
@@ -9,6 +10,7 @@ import type {
   CertificateRequest,
   Family,
   FamilyMember,
+  GroupMessage,
   FamilyWithMembers,
   MassIntention,
   MembershipStatus,
@@ -31,6 +33,7 @@ import {
   groupInputSchema,
   officerInputSchema,
   removalInputSchema,
+  messageSchema,
   type GroupInput,
   type OfficerInput,
   type RemovalInput,
@@ -473,6 +476,7 @@ export const removeFamily = (familyId: string, input: RemovalInput) =>
   });
 
 // Groups: councils, Anbiyams, ministries, associations and faith formation. Thrown code: 'anbiyamHasFamilies'.
+// Messages and joining: 'notInParish' (not an approved member of an approved family), 'notGroupLeader', 'cannotJoin'.
 
 const localized = (en: string | undefined, ta: string | undefined) => (en ? { en, ...(ta ? { ta } : {}) } : undefined);
 
@@ -527,4 +531,110 @@ export const removeOfficer = (groupId: string, officerId: string) =>
   write((d) => {
     const group = d.groups.find((g) => g.id === groupId);
     if (group) group.officers = group.officers.filter((o) => o.id !== officerId);
+  });
+
+/** The signed-in person, if they are an approved member of a family that belongs to the parish. */
+function parishioner(d: ParishData): FamilyMember | undefined {
+  const me = myMembership(d);
+  const family = me && d.families.find((f) => f.id === me.familyId);
+  return me?.status === 'approved' && family?.status === 'approved' ? me : undefined;
+}
+
+/** The people who receive a group's messages: an Anbiyam's families, or a group's listed people. */
+function recipients(d: ParishData, group: ParishGroup): string[] {
+  if (group.kind === 'anbiyam') {
+    const families = new Set(d.families.filter((f) => f.status === 'approved' && f.anbiyamId === group.id).map((f) => f.id));
+    return d.members.filter((m) => m.status === 'approved' && families.has(m.familyId)).map((m) => m.id);
+  }
+  return group.officers.filter((o) => o.memberId && !o.pending).map((o) => o.memberId!);
+}
+
+/** The post `memberId` holds in a group (not counting a plain member), if any. */
+const postIn = (group: ParishGroup, memberId: string) => group.officers.find((o) => o.memberId === memberId && o.role !== 'member' && !o.pending);
+
+const newestSent = (a: GroupMessage, b: GroupMessage) => b.sentAt.localeCompare(a.sentAt);
+
+/** Messages from every group the signed-in person belongs to, newest first, and how many are new. Null when not in the parish. */
+export const getMyMessages = () =>
+  read((d) => {
+    const me = parishioner(d);
+    if (!me) return null;
+    const mine = new Set(d.groups.filter((g) => recipients(d, g).includes(me.id)).map((g) => g.id));
+    const messages = d.messages.filter((m) => mine.has(m.groupId)).sort(newestSent);
+    const lastRead = d.lastRead[me.id] ?? '';
+    return { messages, unread: messages.filter((m) => m.sentAt > lastRead).length, lastRead };
+  });
+
+export const markMessagesRead = () =>
+  write((d) => {
+    const me = parishioner(d);
+    if (me) d.lastRead[me.id] = new Date().toISOString();
+  });
+
+/**
+ * What the signed-in person can do in a group: read its messages (members), send messages and
+ * answer requests to join (office-bearers), or ask to join (anyone in the parish, for joinable groups).
+ */
+export const getGroupAccess = (groupId: string) =>
+  read((d) => {
+    const group = d.groups.find((g) => g.id === groupId);
+    const me = parishioner(d);
+    if (!group || !me) return null;
+    const people = recipients(d, group);
+    const member = people.includes(me.id);
+    const post = postIn(group, me.id);
+    return {
+      member,
+      post: post?.role,
+      pending: group.officers.some((o) => o.memberId === me.id && o.pending),
+      canJoin: !member && joinableKinds.includes(group.kind),
+      recipients: people.length,
+      messages: member || post ? d.messages.filter((m) => m.groupId === groupId).sort(newestSent) : [],
+      requests: post ? group.officers.filter((o) => o.pending) : [],
+    };
+  });
+
+/** An office-bearer sends a message to everyone in their group. */
+export const sendGroupMessage = (groupId: string, body: string) =>
+  write((d) => {
+    const me = parishioner(d);
+    const group = d.groups.find((g) => g.id === groupId);
+    if (!me || !group) throw new Error('notInParish');
+    const post = postIn(group, me.id);
+    if (!post) throw new Error('notGroupLeader');
+    const message: GroupMessage = { id: newId(), groupId, body: messageSchema.parse(body), sender: post.name, senderRole: post.role, sentAt: new Date().toISOString() };
+    d.messages.push(message);
+    return message;
+  });
+
+/** The parish office sends a message to a group's members. */
+export const sendOfficeMessage = (groupId: string, body: string) =>
+  write((d) => {
+    const message: GroupMessage = { id: newId(), groupId, body: messageSchema.parse(body), sender: 'Parish office', senderRole: 'office', sentAt: new Date().toISOString() };
+    d.messages.push(message);
+    return message;
+  });
+
+export const listGroupMessages = (groupId: string) => read((d) => d.messages.filter((m) => m.groupId === groupId).sort(newestSent));
+
+export const deleteMessage = (id: string) => write((d) => remove(d.messages, id));
+
+/** Asks to join a ministry, association or faith formation group; its office-bearers approve. */
+export const askToJoinGroup = (groupId: string) =>
+  write((d) => {
+    const me = parishioner(d);
+    const group = d.groups.find((g) => g.id === groupId);
+    if (!me || !group) throw new Error('notInParish');
+    if (!joinableKinds.includes(group.kind) || group.officers.some((o) => o.memberId === me.id)) throw new Error('cannotJoin');
+    group.officers.push({ id: newId(), role: 'member', name: me.name, memberId: me.id, ...(me.phone ? { phone: me.phone } : {}), pending: true });
+  });
+
+/** An office-bearer (or the office) approves or declines a request to join. */
+export const answerJoinRequest = (groupId: string, officerId: string, approve: boolean) =>
+  write((d) => {
+    const group = d.groups.find((g) => g.id === groupId);
+    const request = group?.officers.find((o) => o.id === officerId && o.pending);
+    if (!group || !request) return;
+    if (approve) delete request.pending;
+    else group.officers = group.officers.filter((o) => o !== request);
   });

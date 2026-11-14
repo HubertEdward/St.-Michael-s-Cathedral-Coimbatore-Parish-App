@@ -38,6 +38,7 @@ export default function More() {
         { label: t('more.contact'), icon: 'map-marker-radius', href: '/contact', colors: blueTile },
         { label: t('more.news'), icon: 'bullhorn-variant', href: '/news', colors: greenTile },
         { label: t('more.ministries'), icon: 'account-group', href: '/groups', colors: goldTile },
+        { label: t('messages.title'), icon: 'bell-outline', href: '/messages', colors: goldTile },
         { label: t('more.roster'), icon: 'clipboard-text-clock', href: '/roster', colors: blueTile },
         { label: t('more.sacraments'), icon: 'water', href: '/sacraments', colors: crimsonTile },
       ],

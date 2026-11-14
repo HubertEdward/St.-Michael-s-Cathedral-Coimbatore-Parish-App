@@ -9,7 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { parish } from '../parish';
 import { createSeed, type ParishData } from './seed';
 
-const STORAGE_KEY = `${parish.id}.demo.v6`;
+const STORAGE_KEY = `${parish.id}.demo.v7`;
 
 let cache: Promise<ParishData> | null = null;
 const listeners = new Set<() => void>();
@@ -21,15 +21,21 @@ function load(): Promise<ParishData> {
   return cache;
 }
 
+/**
+ * A copy, so screens never hold the objects that later writes change in place; otherwise a refetch
+ * returns the same (already changed) objects and the screen cannot tell that anything changed.
+ */
+const copy = <T>(value: T): T => (value === undefined ? value : (JSON.parse(JSON.stringify(value)) as T));
+
 export async function read<T>(select: (data: ParishData) => T): Promise<T> {
-  return select(await load());
+  return copy(select(await load()));
 }
 
 export async function write<T>(change: (data: ParishData) => T): Promise<T> {
   const data = await load();
   const result = change(data);
   await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  return result;
+  return copy(result);
 }
 
 export async function resetDemoData(): Promise<void> {

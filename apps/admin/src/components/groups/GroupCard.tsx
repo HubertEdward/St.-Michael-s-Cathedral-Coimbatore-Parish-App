@@ -7,6 +7,7 @@ import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { errorText } from '@/components/errors';
 
 import { dayMonthYear, roleLabel, seatLabel } from './labels';
+import { OfficeMessages } from './OfficeMessages';
 
 const byRank = (a: Officer, b: Officer) => officerRoles.indexOf(a.role) - officerRoles.indexOf(b.role);
 
@@ -34,7 +35,7 @@ export function GroupCard({ group, groups, icon, onEdit, onAddPerson, children }
     group.meets?.en && `Meets: ${group.meets.en}`,
     group.term && `Term: ${dayMonthYear(group.term.from)} to ${dayMonthYear(group.term.to)}`,
   ].filter(Boolean);
-  const people = [...group.officers].sort(byRank);
+  const people = group.officers.filter((o) => !o.pending).sort(byRank);
   const describe = (o: Officer) => {
     const represents = groups.find((g) => g.id === o.representsId);
     const seat = o.seat === 'anbiyam' && represents ? `Represents ${represents.name.en}` : o.seat ? seatLabel[o.seat] : undefined;
@@ -69,6 +70,7 @@ export function GroupCard({ group, groups, icon, onEdit, onAddPerson, children }
           />
         ))}
         {children}
+        <OfficeMessages group={group} />
         {deleteGroup.isError && <HelperText type="error">{errorText(deleteGroup.error?.message)}</HelperText>}
       </Card.Content>
       <Card.Actions>

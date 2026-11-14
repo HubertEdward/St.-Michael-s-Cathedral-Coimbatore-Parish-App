@@ -9,6 +9,7 @@ import { Screen } from '@/components/Screen';
 import { Display } from '@/components/design/Display';
 import { Eyebrow } from '@/components/design/Eyebrow';
 import { Panel } from '@/components/design/Panel';
+import { GroupMessages } from '@/components/groups/GroupMessages';
 import { OfficerRow, longDate } from '@/components/groups/OfficerRow';
 import { useLanguage, useLocalized } from '@/i18n';
 
@@ -29,8 +30,9 @@ export default function GroupDetail() {
         {(all) => {
           const group = all.find((g) => g.id === id);
           if (!group) return <Text variant="bodyLarge">{t('common.notFound')}</Text>;
-          const officers = group.officers.filter((o) => o.role !== 'member').sort(byRank);
-          const members = group.officers.filter((o) => o.role === 'member');
+          const listed = group.officers.filter((o) => !o.pending);
+          const officers = listed.filter((o) => o.role !== 'member').sort(byRank);
+          const members = listed.filter((o) => o.role === 'member');
           const facts = [
             group.area && { icon: 'map-marker-outline', label: t('groups.area'), value: text(group.area) },
             group.meets && { icon: 'calendar-clock', label: t('groups.meets'), value: text(group.meets) },
@@ -65,6 +67,7 @@ export default function GroupDetail() {
                   ))}
                 </Panel>
               )}
+              <GroupMessages groupId={group.id} />
               <Panel style={styles.list}>
                 <Eyebrow>{t('groups.officers')}</Eyebrow>
                 {officers.length === 0 && (
