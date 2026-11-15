@@ -140,6 +140,17 @@ const en = {
     hint: 'Type Tamil in English letters: “vanakkam” becomes வணக்கம். Start a name with a capital letter to keep it in English.',
     hintOff: 'Typing in English. Tap தமிழ் to type Tamil in English letters.',
   },
+  voice: {
+    start: 'Speak instead of typing',
+    stop: 'Stop listening',
+    listeningTamil: 'Listening… speak in Tamil',
+    listeningEnglish: 'Listening… speak in English',
+    noSpeech: 'I did not hear anything. Tap the microphone and speak.',
+    notAllowed: 'Allow the microphone for this app in your phone’s settings to speak instead of typing.',
+    unavailable: 'Speaking is not available on this phone for this language. Updating the Google app usually adds it.',
+    network: 'Speaking needs an internet connection, unless the language is downloaded for offline use in your phone’s speech settings.',
+    failed: 'That did not work. Please try again.',
+  },
   messages: {
     title: 'Messages',
     empty: 'No messages yet. Messages from your Anbiyam and your groups will appear here.',

@@ -5,6 +5,7 @@ import { Chip, Text, TextInput, useTheme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 
 import { pickedSpelling, rememberSpelling, useTamilTyping } from './typingPreferences';
+import { useVoiceTyping } from './useVoiceTyping';
 
 interface Props {
   value: string;
@@ -32,7 +33,8 @@ function spellingsFor(latin: string): string[] {
  * A text field where people can type Tamil in English letters, the way they would on a phonetic
  * keyboard: "vanakkam" becomes வணக்கம் when the word ends. Words starting with a capital letter
  * (names, places) stay in English. While a word is typed, and just after it changes, a strip under
- * the field offers other spellings and the English word; a switch turns Tamil typing off.
+ * the field offers other spellings and the English word; a switch turns Tamil typing off. A microphone
+ * lets people speak instead, in Tamil or English, following the same switch.
  */
 export function TamilTextInput({ value, onChangeText, onBlur, label, placeholder, error, multiline, numberOfLines }: Props) {
   const { t } = useTranslation();
@@ -41,6 +43,11 @@ export function TamilTextInput({ value, onChangeText, onBlur, label, placeholder
   const [focused, setFocused] = useState(false);
   // The word just turned into Tamil, so the strip can offer to change it back.
   const [last, setLast] = useState<{ latin: string; tamil: string; end: string }>();
+  // What was said goes after the text, as it is: already in Tamil script, or English.
+  const voice = useVoiceTyping((said) => {
+    setLast(undefined);
+    onChangeText(`${value}${value === '' || /\s$/.test(value) ? '' : ' '}${said} `);
+  });
 
   const change = (next: string) => {
     // A word just ended: typed letter by letter then a space, or put in whole by swipe typing or a keyboard suggestion.
@@ -100,8 +107,23 @@ export function TamilTextInput({ value, onChangeText, onBlur, label, placeholder
         autoCorrect={!tamil}
         spellCheck={!tamil}
         autoComplete="off"
+        right={
+          voice.available ? (
+            <TextInput.Icon
+              icon={voice.listening ? 'stop-circle' : 'microphone'}
+              color={voice.listening ? theme.colors.error : theme.colors.primary}
+              accessibilityLabel={voice.listening ? t('voice.stop') : t('voice.start')}
+              onPress={() => (voice.listening ? voice.stop() : void voice.start(tamil))}
+            />
+          ) : undefined
+        }
       />
-      {focused && (
+      {(voice.listening || voice.problem) && (
+        <Text variant="bodyMedium" style={[styles.voice, { color: voice.problem ? theme.colors.error : theme.colors.primary }]}>
+          {voice.problem ? t(`voice.${voice.problem}`) : voice.heard || (tamil ? t('voice.listeningTamil') : t('voice.listeningEnglish'))}
+        </Text>
+      )}
+      {focused && !voice.listening && (
         <View style={styles.strip}>
           <Chip
             compact
@@ -139,4 +161,5 @@ const styles = StyleSheet.create({
   strip: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingTop: 6 },
   chips: { gap: 6, alignItems: 'center' },
   hint: { flex: 1 },
+  voice: { paddingTop: 6 },
 });

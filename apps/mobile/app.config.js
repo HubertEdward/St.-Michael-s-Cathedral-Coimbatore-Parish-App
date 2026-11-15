@@ -35,6 +35,15 @@ module.exports = ({ projectRoot }) => {
       'expo-localization',
       'expo-image',
       ['expo-splash-screen', { backgroundColor: brandColor, image: asset('splash-icon.png'), imageWidth: 160 }],
+      // Speaking instead of typing, in Tamil or English, with the phone's own speech recogniser (no cost, no key).
+      [
+        'expo-speech-recognition',
+        {
+          microphonePermission: 'Allow $(PRODUCT_NAME) to hear you when you tap the microphone to speak instead of typing.',
+          speechRecognitionPermission: 'Allow $(PRODUCT_NAME) to turn what you say into text, in Tamil or English.',
+          androidSpeechServicePackages: ['com.google.android.googlequicksearchbox', 'com.google.android.tts'],
+        },
+      ],
     ],
     experiments: {
       typedRoutes: true,
