@@ -1,13 +1,14 @@
 import { useAnswerJoinRequest, useAskToJoinGroup, useGroupAccess, useSendGroupMessage } from '@parish/core';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Button, Divider, HelperText, Snackbar, Text, TextInput, useTheme } from 'react-native-paper';
+import { Button, Divider, HelperText, Snackbar, Text, useTheme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 
 import { Notice } from '@/components/Notice';
 import { Eyebrow } from '@/components/design/Eyebrow';
 import { GradientButton } from '@/components/design/GradientButton';
 import { Panel } from '@/components/design/Panel';
+import { TamilTextInput } from '@/components/tamil/TamilTextInput';
 import { translateError } from '@/components/translateError';
 
 import { MessageCard } from './MessageCard';
@@ -58,7 +59,7 @@ export function GroupMessages({ groupId }: { groupId: string }) {
           <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
             {t('messages.sendHint', { role: t(`groups.role.${a.post}`), count: a.recipients })}
           </Text>
-          <TextInput mode="outlined" multiline numberOfLines={4} placeholder={t('messages.placeholder')} value={body} onChangeText={setBody} />
+          <TamilTextInput multiline numberOfLines={4} placeholder={t('messages.placeholder')} value={body} onChangeText={setBody} />
           {send.isError && <HelperText type="error">{translateError(t, send.error.message)}</HelperText>}
           <GradientButton label={t('messages.send')} icon="send" loading={send.isPending} disabled={body.trim() === ''} onPress={() => void onSend()} />
         </Panel>

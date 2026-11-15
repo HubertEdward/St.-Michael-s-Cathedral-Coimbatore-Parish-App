@@ -30,7 +30,7 @@ export default function JoinFamily() {
         {t('account.joinIntro')}
       </Text>
       <FormField control={control} name="code" label={t('account.familyCode')} hint={t('account.familyCodeHint')} />
-      <FormField control={control} name="name" label={t('account.yourName')} />
+      <FormField tamil control={control} name="name" label={t('account.yourName')} />
       <Controller
         control={control}
         name="relationship"

@@ -134,6 +134,12 @@ const en = {
     rosaryToday: 'Today: {{name}}',
     tamilPending: 'Tamil prayer texts will be added once the parish provides the approved translation.',
   },
+  typing: {
+    tamil: 'தமிழ்',
+    switch: 'Type Tamil in English letters',
+    hint: 'Type Tamil in English letters: “vanakkam” becomes வணக்கம். Start a name with a capital letter to keep it in English.',
+    hintOff: 'Typing in English. Tap தமிழ் to type Tamil in English letters.',
+  },
   messages: {
     title: 'Messages',
     empty: 'No messages yet. Messages from your Anbiyam and your groups will appear here.',

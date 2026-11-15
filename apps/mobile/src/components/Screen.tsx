@@ -29,6 +29,8 @@ export function Screen({ children, onRefresh, refreshing = false, title, eyebrow
     <ScrollView
       style={{ backgroundColor: theme.colors.background }}
       contentContainerStyle={[styles.content, title ? { paddingTop: insets.top + 20 } : null]}
+      // A tap on a button or a typing suggestion works first time while the keyboard is open.
+      keyboardShouldPersistTaps="handled"
       refreshControl={onRefresh ? <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={gold} /> : undefined}>
       <Animated.View entering={FadeIn.duration(220)} style={styles.inner}>
         {title && (

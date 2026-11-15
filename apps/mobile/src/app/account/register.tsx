@@ -33,9 +33,9 @@ export default function RegisterFamily() {
       <Text variant="bodyLarge" style={{ color: theme.colors.onSurfaceVariant }}>
         {t('account.registerIntro')}
       </Text>
-      <FormField control={control} name="familyName" label={t('account.familyName')} hint={t('account.familyNameHint')} />
-      <FormField control={control} name="headName" label={t('account.headName')} />
-      <FormField control={control} name="address" label={t('account.address')} multiline />
+      <FormField tamil control={control} name="familyName" label={t('account.familyName')} hint={t('account.familyNameHint')} />
+      <FormField tamil control={control} name="headName" label={t('account.headName')} />
+      <FormField tamil control={control} name="address" label={t('account.address')} multiline />
       {anbiyams.length > 0 && (
         <Controller
           control={control}

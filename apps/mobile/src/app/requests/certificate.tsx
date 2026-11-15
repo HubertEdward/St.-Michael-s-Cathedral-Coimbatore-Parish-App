@@ -65,17 +65,17 @@ export default function CertificateRequestScreen() {
           />
         )}
       />
-      <FormField control={control} name="personName" label={t('certificate.personName')} />
+      <FormField tamil control={control} name="personName" label={t('certificate.personName')} />
       <FormField
         control={control}
         name="sacramentDate"
         label={t('certificate.sacramentDate')}
         keyboardType="numbers-and-punctuation"
       />
-      <FormField control={control} name="fatherName" label={t('certificate.fatherName')} />
-      <FormField control={control} name="motherName" label={t('certificate.motherName')} />
-      <FormField control={control} name="purpose" label={t('certificate.purpose')} />
-      <FormField control={control} name="requesterName" label={t('certificate.yourName')} />
+      <FormField tamil control={control} name="fatherName" label={t('certificate.fatherName')} />
+      <FormField tamil control={control} name="motherName" label={t('certificate.motherName')} />
+      <FormField tamil control={control} name="purpose" label={t('certificate.purpose')} />
+      <FormField tamil control={control} name="requesterName" label={t('certificate.yourName')} />
       <FormField control={control} name="phone" label={t('certificate.phone')} keyboardType="phone-pad" />
       <GradientButton label={t('common.submit')} icon="send" loading={formState.isSubmitting} onPress={onSubmit} />
       <Snackbar visible={submit.isError} onDismiss={() => submit.reset()}>

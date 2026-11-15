@@ -86,7 +86,7 @@ export function SetupForm({ onReview }: { onReview: (input: SubscriptionInput) =
 
       <Eyebrow>{t('give.yourDetails')}</Eyebrow>
       <View>
-        <FormField control={control} name="name" label={t('give.yourName')} />
+        <FormField tamil control={control} name="name" label={t('give.yourName')} />
         <FormField control={control} name="phone" label={t('give.phone')} keyboardType="phone-pad" />
       </View>
 

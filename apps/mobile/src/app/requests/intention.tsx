@@ -77,7 +77,7 @@ export default function IntentionRequest() {
         )}
       />
 
-      <FormField control={control} name="names" label={t('intention.names')} hint={t('intention.namesHint')} multiline />
+      <FormField tamil control={control} name="names" label={t('intention.names')} hint={t('intention.namesHint')} multiline />
 
       <QueryState query={services}>
         {(list) => {
@@ -132,9 +132,9 @@ export default function IntentionRequest() {
         }}
       </QueryState>
 
-      <FormField control={control} name="requesterName" label={t('intention.yourName')} />
+      <FormField tamil control={control} name="requesterName" label={t('intention.yourName')} />
       <FormField control={control} name="phone" label={t('intention.phone')} keyboardType="phone-pad" />
-      <FormField control={control} name="note" label={t('intention.note')} multiline />
+      <FormField tamil control={control} name="note" label={t('intention.note')} multiline />
       <Notice text={t('intention.offering')} icon="cash" />
       <GradientButton label={t('common.submit')} icon="send" loading={formState.isSubmitting} onPress={onSubmit} />
       <Snackbar visible={submit.isError} onDismiss={() => submit.reset()}>

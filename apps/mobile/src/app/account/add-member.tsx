@@ -29,7 +29,7 @@ export default function AddMember() {
       <Text variant="bodyLarge" style={{ color: theme.colors.onSurfaceVariant }}>
         {t('account.addIntro')}
       </Text>
-      <FormField control={control} name="name" label={t('account.memberName')} />
+      <FormField tamil control={control} name="name" label={t('account.memberName')} />
       <Controller
         control={control}
         name="relationship"

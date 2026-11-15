@@ -10,3 +10,4 @@ export * from './content/prayers';
 export * from './data/api';
 export * from './data/hooks';
 export { DEMO_PIN } from './data/seed';
+export * from './tamil';
