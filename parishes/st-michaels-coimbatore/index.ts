@@ -39,8 +39,9 @@ export default {
   clergy: [
     // TO CONFIRM: name taken from a Wikipedia-derived diocesan listing
     { role: 'bishop', name: 'Most Rev. Thomas Aquinas Lephonse', title: { en: 'Bishop of Coimbatore', ta: 'கோயம்புத்தூர் ஆயர்' } },
-    // TO CONFIRM: current parish priest and assistant priests
-    { role: 'parish-priest', name: null },
+    // Given by the app's developer, 16 November 2026.
+    { role: 'parish-priest', name: 'Fr. A. Arokia Raj Stephen' },
+    // TO CONFIRM: current assistant priests
     { role: 'assistant-priest', name: null },
   ],
 
