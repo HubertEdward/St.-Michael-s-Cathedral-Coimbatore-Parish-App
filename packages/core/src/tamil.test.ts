@@ -52,6 +52,11 @@ test('real words beat the rules when English letters are ambiguous', () => {
   // A commoner word that needs a guess (a letter typed once for two) does not beat the word typed.
   assert.equal(toTamil('pera'), 'பெற');
   assert.equal(toTamil('petra'), 'பெற்ற');
+  // Everyday intention words win over look-alikes from the prayers: "died", not "begged".
+  assert.equal(toTamil('irandhu'), 'இறந்து');
+  assert.equal(toTamil('jebikkiren'), 'ஜெபிக்கிறேன்');
+  assert.equal(toTamil('sagodhari'), 'சகோதரி');
+  assert.equal(toTamil('ponavargal'), 'போனவர்கள்');
 });
 
 test('offers the other spellings of uncertain letters, and completes long words', () => {
