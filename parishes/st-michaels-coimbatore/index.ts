@@ -41,8 +41,7 @@ export default {
     { role: 'bishop', name: 'Most Rev. Thomas Aquinas Lephonse', title: { en: 'Bishop of Coimbatore', ta: 'கோயம்புத்தூர் ஆயர்' } },
     // Given by the app's developer, 16 November 2026.
     { role: 'parish-priest', name: 'Fr. A. Arokia Raj Stephen' },
-    // TO CONFIRM: current assistant priests
-    { role: 'assistant-priest', name: null },
+    { role: 'assistant-priest', name: 'Fr. Francis Xavier' },
   ],
 
   history: {
