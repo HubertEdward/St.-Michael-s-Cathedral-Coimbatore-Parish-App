@@ -72,6 +72,7 @@ export const useIssuePinReset = () => useChange(queryKeys.family, api.issuePinRe
 export const useRegisterFamily = () => useChange(queryKeys.family, api.registerFamily);
 export const useRequestToJoinFamily = () => useChange(queryKeys.family, api.requestToJoinFamily);
 export const useAddFamilyMember = () => useChange(queryKeys.family, api.addFamilyMember);
+export const useUpdateFamilyMember = () => useChange(queryKeys.family, api.updateFamilyMember);
 export const useSetFamilyStatus = () => useChange(queryKeys.family, api.setFamilyStatus);
 export const useSetMemberStatus = () => useChange(queryKeys.family, api.setMemberStatus);
 export const useSetFamilyAnbiyam = () => useChange(queryKeys.family, api.setFamilyAnbiyam, queryKeys.messages);

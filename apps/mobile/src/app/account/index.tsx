@@ -1,4 +1,5 @@
 import { useAccount, useAskToRejoinParish, useGroups, useMyFamily, useSignOut, type FamilyMember, type ParishGroup } from '@parish/core';
+import type { TFunction } from 'i18next';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Redirect, router } from 'expo-router';
 import { Share, StyleSheet, View } from 'react-native';
@@ -14,6 +15,7 @@ import { Panel } from '@/components/design/Panel';
 import { Tap } from '@/components/design/Tap';
 import { crimson, gold, radius } from '@/components/design/tokens';
 import { MembershipPill } from '@/components/family/MembershipPill';
+import { studyClassLabel } from '@/components/family/MemberDetailsFields';
 import { OfficerRow, longDate } from '@/components/groups/OfficerRow';
 import { useLanguage, useLocalized } from '@/i18n';
 
@@ -38,6 +40,8 @@ export default function MyFamily() {
 
   const { family, me, anbiyam } = mine.data;
   const approved = family.status === 'approved' && me.status === 'approved';
+  // The head of a family still waiting for approval adds and completes its members, so the parish priest sees the whole family.
+  const canEdit = approved || (family.status === 'pending' && me.relationship === 'head');
   const shareCode = () => void Share.share({ message: t('account.shareMessage', { name: family.name, code: family.code }) });
 
   return (
@@ -96,12 +100,18 @@ export default function MyFamily() {
         {family.members.map((member, index) => (
           <View key={member.id}>
             {index > 0 && <Divider />}
-            <MemberRow member={member} isMe={member.id === me.id} color={avatarColors[index % avatarColors.length]} />
+            <MemberRow
+              member={member}
+              isMe={member.id === me.id}
+              color={avatarColors[index % avatarColors.length]}
+              onPress={canEdit || member.id === me.id ? () => router.push(`/account/member/${member.id}`) : undefined}
+            />
           </View>
         ))}
       </Panel>
 
-      {approved && <GradientButton label={t('account.addMember')} icon="account-plus" onPress={() => router.push('/account/add-member')} />}
+      {canEdit && <Notice icon="gesture-tap" text={t('member.editHint')} />}
+      {canEdit && <GradientButton label={t('account.addMember')} icon="account-plus" onPress={() => router.push('/account/add-member')} />}
 
       <View style={styles.footer}>
         <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
@@ -142,7 +152,14 @@ function AnbiyamPanel({ anbiyam }: { anbiyam: ParishGroup }) {
   );
 }
 
-function MemberRow({ member, isMe, color }: { member: FamilyMember; isMe: boolean; color: string }) {
+/** What a member does, in a few words: "Class 9", "Teacher", "Retired". */
+function doing(t: TFunction, member: FamilyMember): string | undefined {
+  if (member.occupation === 'studying' && member.studyClass) return studyClassLabel(t, member.studyClass);
+  if (member.occupation === 'working' && (member.job || member.workSector)) return member.job || t(`member.sectors.${member.workSector!}`);
+  return member.occupation && t(`member.occupations.${member.occupation}`);
+}
+
+function MemberRow({ member, isMe, color, onPress }: { member: FamilyMember; isMe: boolean; color: string; onPress?: () => void }) {
   const { t } = useTranslation();
   const theme = useTheme();
   const initials = member.name
@@ -151,8 +168,9 @@ function MemberRow({ member, isMe, color }: { member: FamilyMember; isMe: boolea
     .slice(0, 2)
     .join('')
     .toUpperCase();
+  const now = doing(t, member);
   return (
-    <View style={styles.member}>
+    <Tap onPress={onPress} disabled={!onPress} accessibilityLabel={member.name} style={styles.member}>
       <View style={[styles.avatar, { backgroundColor: color }]}>
         <Text variant="titleMedium" style={styles.initials}>
           {initials}
@@ -171,11 +189,13 @@ function MemberRow({ member, isMe, color }: { member: FamilyMember; isMe: boolea
         </View>
         <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
           {t(`family.relationship.${member.relationship}`)}
+          {now ? ` · ${now}` : ''}
           {member.addedBy ? ` · ${t('account.addedBy', { name: member.addedBy })}` : ''}
         </Text>
       </View>
       {member.status !== 'approved' && <MembershipPill status={member.status} />}
-    </View>
+      {onPress && <Icon source="chevron-right" size={22} color={theme.colors.onSurfaceVariant} />}
+    </Tap>
   );
 }
 

@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { joinFamilySchema, relationships, useRequestToJoinFamily, type JoinFamilyInput } from '@parish/core';
 import { useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { Snackbar, Text, useTheme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 
@@ -9,10 +9,11 @@ import { ChoiceChips } from '@/components/ChoiceChips';
 import { FormField } from '@/components/FormField';
 import { Screen } from '@/components/Screen';
 import { GradientButton } from '@/components/design/GradientButton';
+import { MemberDetailsFields, noDetails } from '@/components/family/MemberDetailsFields';
 import { SentForApproval } from '@/components/family/SentForApproval';
 import { translateError } from '@/components/translateError';
 
-const empty: JoinFamilyInput = { code: '', name: '', relationship: 'son', birthDate: '' };
+const empty: JoinFamilyInput = { code: '', name: '', relationship: 'son', ...noDetails };
 
 /** Ask to join a registered family with its family code; the parish office approves it. */
 export default function JoinFamily() {
@@ -20,7 +21,8 @@ export default function JoinFamily() {
   const theme = useTheme();
   const join = useRequestToJoinFamily();
   const [sent, setSent] = useState(false);
-  const { control, handleSubmit, formState } = useForm<JoinFamilyInput>({ resolver: zodResolver(joinFamilySchema), defaultValues: empty });
+  const form = useForm<JoinFamilyInput>({ resolver: zodResolver(joinFamilySchema), defaultValues: empty });
+  const { control, handleSubmit, formState } = form;
 
   if (sent) return <SentForApproval body={t('account.joinSent')} />;
 
@@ -43,7 +45,12 @@ export default function JoinFamily() {
           />
         )}
       />
-      <FormField control={control} name="birthDate" label={t('account.birthDate')} keyboardType="numbers-and-punctuation" />
+      <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+        {t('member.detailsIntro')}
+      </Text>
+      <FormProvider {...form}>
+        <MemberDetailsFields />
+      </FormProvider>
       <GradientButton
         label={t('account.askToJoin')}
         icon="send"

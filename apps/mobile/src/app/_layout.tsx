@@ -78,6 +78,7 @@ function RootStack() {
           <Stack.Screen name="account/register" options={{ title: t('account.registerTitle') }} />
           <Stack.Screen name="account/join" options={{ title: t('account.joinTitle') }} />
           <Stack.Screen name="account/add-member" options={{ title: t('account.addMember') }} />
+          <Stack.Screen name="account/member/[id]" options={{ title: t('member.editTitle') }} />
           <Stack.Screen name="story" options={{ headerShown: false, presentation: 'fullScreenModal', animation: 'fade' }} />
         </Stack.Protected>
         <Stack.Protected guard={!chosen}>

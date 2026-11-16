@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { GradientButton } from '@/components/design/GradientButton';
 import { SuccessMark } from '@/components/design/SuccessMark';
 import { ChoiceChips } from '@/components/ChoiceChips';
+import { DateField } from '@/components/DateField';
 import { FormField } from '@/components/FormField';
 import { Notice } from '@/components/Notice';
 import { Screen } from '@/components/Screen';
@@ -66,12 +67,7 @@ export default function CertificateRequestScreen() {
         )}
       />
       <FormField tamil control={control} name="personName" label={t('certificate.personName')} />
-      <FormField
-        control={control}
-        name="sacramentDate"
-        label={t('certificate.sacramentDate')}
-        keyboardType="numbers-and-punctuation"
-      />
+      <DateField control={control} name="sacramentDate" label={t('certificate.sacramentDate')} />
       <FormField tamil control={control} name="fatherName" label={t('certificate.fatherName')} />
       <FormField tamil control={control} name="motherName" label={t('certificate.motherName')} />
       <FormField tamil control={control} name="purpose" label={t('certificate.purpose')} />

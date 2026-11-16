@@ -18,13 +18,20 @@ In this preview, everything is kept **on your phone only**:
 - your language and typing choices (Tamil typing on or off, the spellings you picked for words
   typed in English letters, the language to listen for when you speak);
 - if you sign in: your phone number and PIN, your family's register entry (family name, head of
-  family, address, chosen Anbiyam) and its members (names, relationship, date of birth if given);
+  family, address, chosen Anbiyam) and its members: each one's name and relationship to the head
+  of the family and, if given, their date of birth, education, what they do now (their class if
+  studying; the sector, their work and a yearly income range if working) and the dates of their
+  baptism, First Holy Communion, confirmation and marriage;
 - Mass intentions and certificate requests you send (the names, dates and notes you type, your name
   and phone number);
 - monthly-offering set-ups you make (amount, purpose, debit day, your name and phone number; no money
   moves in the preview);
 - the messages of the groups you belong to, and which ones you have read;
 - the sample parish data the preview starts with.
+
+The register's questions beyond a name and relationship are all optional. The parish asks them to
+know its families and plan its care, for example help with studies or for families in need.
+Income is asked only as a range, with "Prefer not to say" as one of the answers.
 
 Nothing is sent to the parish office, to the app's developer or to anyone else. Uninstalling the app
 deletes everything it stored. More → Settings → "Reset preview data" clears the preview's details

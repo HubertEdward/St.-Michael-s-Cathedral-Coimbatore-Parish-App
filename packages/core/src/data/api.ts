@@ -11,6 +11,7 @@ import type {
   Family,
   FamilyMember,
   GroupMessage,
+  MemberDetails,
   FamilyWithMembers,
   MassIntention,
   MembershipStatus,
@@ -53,6 +54,7 @@ import {
   type FamilyInput,
   type JoinFamilyInput,
   type MemberInput,
+  type MemberDetailsInput,
   type IntentionInput,
   type RosterInput,
   type ServiceInput,
@@ -272,6 +274,32 @@ function myMembership(d: ParishData): FamilyMember | undefined {
   return d.members.find((m) => m.phone && phoneKey(m.phone) === phoneKey(account.phone) && m.status !== 'declined');
 }
 
+/**
+ * The register entry from a form: blanks dropped, and the class or the work kept only for someone
+ * studying or working, so changing what a person does clears what no longer applies.
+ */
+function memberDetails(input: MemberDetailsInput): MemberDetails {
+  const studying = input.occupation === 'studying';
+  const working = input.occupation === 'working';
+  const sacraments = Object.fromEntries(Object.entries(input.sacraments).filter(([, date]) => date));
+  const details: MemberDetails = {
+    birthDate: input.birthDate || undefined,
+    education: input.education,
+    qualification: input.qualification || undefined,
+    occupation: input.occupation,
+    studyClass: studying ? input.studyClass : undefined,
+    course: studying && input.studyClass === 'college' ? input.course || undefined : undefined,
+    workSector: working ? input.workSector : undefined,
+    job: working ? input.job || undefined : undefined,
+    yearlyIncome: working ? input.yearlyIncome : undefined,
+    sacraments: Object.keys(sacraments).length > 0 ? sacraments : undefined,
+  };
+  return Object.fromEntries(Object.entries(details).filter(([, value]) => value !== undefined));
+}
+
+/** Approved members look after their family's entries; so does the head of a family still waiting to be approved. */
+const keepsFamily = (me: FamilyMember) => me.status === 'approved' || me.relationship === 'head';
+
 function withMembers(d: ParishData, family: Family): FamilyWithMembers {
   return { ...family, members: d.members.filter((m) => m.familyId === family.id && m.status !== 'declined') };
 }
@@ -383,6 +411,7 @@ export const registerFamily = (input: FamilyInput) =>
       name: parsed.headName,
       relationship: 'head',
       phone: account.phone,
+      ...memberDetails(parsed),
       status: 'pending',
       createdAt: now,
     });
@@ -402,7 +431,7 @@ export const requestToJoinFamily = (input: JoinFamilyInput) =>
       name: parsed.name,
       relationship: parsed.relationship,
       phone: account.phone,
-      birthDate: parsed.birthDate || undefined,
+      ...memberDetails(parsed),
       status: 'pending',
       createdAt: new Date().toISOString(),
     };
@@ -414,14 +443,14 @@ export const requestToJoinFamily = (input: JoinFamilyInput) =>
 export const addFamilyMember = (input: MemberInput) =>
   write((d) => {
     const me = myMembership(d);
-    if (!me) throw new Error('notSignedIn');
+    if (!me || !keepsFamily(me)) throw new Error('notSignedIn');
     const parsed = memberInputSchema.parse(input);
     const added: FamilyMember = {
       id: newId(),
       familyId: me.familyId,
       name: parsed.name,
       relationship: parsed.relationship,
-      birthDate: parsed.birthDate || undefined,
+      ...memberDetails(parsed),
       status: 'pending',
       addedBy: me.name,
       createdAt: new Date().toISOString(),
@@ -430,10 +459,27 @@ export const addFamilyMember = (input: MemberInput) =>
     return added;
   });
 
+/**
+ * A member of the family corrects or completes someone's register entry. The head stays the head,
+ * and nobody else can be made head; what was approved stays approved.
+ */
+export const updateFamilyMember = (id: string, input: MemberInput) =>
+  write((d) => {
+    const me = myMembership(d);
+    const member = d.members.find((m) => m.id === id);
+    if (!me || !member || member.familyId !== me.familyId || (member.id !== me.id && !keepsFamily(me))) throw new Error('notSignedIn');
+    const parsed = memberInputSchema.parse(input);
+    const relationship = member.relationship === 'head' || parsed.relationship === 'head' ? member.relationship : parsed.relationship;
+    const { familyId, phone, status, addedBy, createdAt } = member;
+    const updated: FamilyMember = { id, familyId, name: parsed.name, relationship, phone, ...memberDetails(parsed), status, addedBy, createdAt };
+    d.members[d.members.indexOf(member)] = updated;
+    return updated;
+  });
+
 /** Every family with its members, newest registration first. */
 export const listFamilies = () => read((d) => [...d.families].sort(newestFirst).map((f) => withMembers(d, f)));
 
-/** Approving a family approves its head too; declining it declines everyone still waiting in it. */
+/** Approving or declining a family does the same for everyone waiting in it: its head, and those the head added. */
 export const setFamilyStatus = (id: string, status: MembershipStatus) =>
   write((d) => {
     const family = d.families.find((f) => f.id === id);
@@ -442,7 +488,7 @@ export const setFamilyStatus = (id: string, status: MembershipStatus) =>
     if (status === 'approved') delete family.removal;
     for (const m of d.members) {
       if (m.familyId !== id || m.status !== 'pending') continue;
-      if (status === 'declined' || m.relationship === 'head') m.status = status;
+      m.status = status;
     }
   });
 

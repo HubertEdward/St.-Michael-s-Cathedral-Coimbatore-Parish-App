@@ -222,15 +222,58 @@ export interface Family {
   createdAt: string;
 }
 
-export interface FamilyMember {
+/** The highest level of education a person has completed. */
+export const educationLevels = ['none', 'belowSslc', 'sslc', 'hsc', 'diploma', 'graduate', 'postgraduate', 'doctorate'] as const;
+export type EducationLevel = (typeof educationLevels)[number];
+
+/** What a person mainly does now. */
+export const occupations = ['studying', 'working', 'lookingForWork', 'homemaker', 'retired', 'other'] as const;
+export type Occupation = (typeof occupations)[number];
+
+/** The class a pupil is in, or college for any course after school. */
+export const studyClasses = ['preschool', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', 'college'] as const;
+export type StudyClass = (typeof studyClasses)[number];
+
+export const workSectors = ['government', 'private', 'selfEmployed', 'agriculture', 'dailyWage', 'church', 'other'] as const;
+export type WorkSector = (typeof workSectors)[number];
+
+/** Yearly income in bands of rupees: people answer a range more readily, and the parish needs no more. */
+export const incomeBands = ['upTo1L', '1to3L', '3to6L', '6to10L', '10to20L', 'over20L', 'notSaying'] as const;
+export type IncomeBand = (typeof incomeBands)[number];
+
+/** The sacraments the parish registers record with a date: the same ones it issues certificates for. */
+export const recordedSacraments = certificateKinds;
+export type RecordedSacrament = CertificateKind;
+
+/** What the family register records about each person; every part is optional. */
+export interface MemberDetails {
+  /** "YYYY-MM-DD" */
+  birthDate?: string;
+  education?: EducationLevel;
+  /** The degree or course completed, e.g. "B.E. Civil". */
+  qualification?: string;
+  occupation?: Occupation;
+  /** While studying. */
+  studyClass?: StudyClass;
+  /** While at college: the course and year, e.g. "B.Com, 2nd year". */
+  course?: string;
+  /** While working. */
+  workSector?: WorkSector;
+  /** While working: the work they do, e.g. "Teacher". */
+  job?: string;
+  /** While working. */
+  yearlyIncome?: IncomeBand;
+  /** "YYYY-MM-DD" of each sacrament received. */
+  sacraments?: Partial<Record<RecordedSacrament, string>>;
+}
+
+export interface FamilyMember extends MemberDetails {
   id: string;
   familyId: string;
   name: string;
   relationship: Relationship;
   /** Members with a phone can sign in; children and elders may have none. */
   phone?: string;
-  /** "YYYY-MM-DD", if given. */
-  birthDate?: string;
   status: MembershipStatus;
   /** Name of the family member who added this person, when they did not ask themselves. */
   addedBy?: string;

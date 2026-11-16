@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { familyInputSchema, useGroups, useRegisterFamily, type FamilyInput } from '@parish/core';
 import { useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { View } from 'react-native';
 import { Snackbar, Text, useTheme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
@@ -10,11 +10,13 @@ import { ChoiceChips } from '@/components/ChoiceChips';
 import { FormField } from '@/components/FormField';
 import { Screen } from '@/components/Screen';
 import { GradientButton } from '@/components/design/GradientButton';
+import { Eyebrow } from '@/components/design/Eyebrow';
+import { MemberDetailsFields, noDetails } from '@/components/family/MemberDetailsFields';
 import { SentForApproval } from '@/components/family/SentForApproval';
 import { translateError } from '@/components/translateError';
 import { useLocalized } from '@/i18n';
 
-const empty: FamilyInput = { familyName: '', headName: '', address: '', preferredAnbiyamId: '' };
+const empty: FamilyInput = { familyName: '', headName: '', address: '', preferredAnbiyamId: '', ...noDetails };
 
 /** Ask the parish priest to take a new family into the parish, with the signed-in person as its head. */
 export default function RegisterFamily() {
@@ -24,7 +26,8 @@ export default function RegisterFamily() {
   const text = useLocalized();
   const anbiyams = (useGroups().data ?? []).filter((g) => g.kind === 'anbiyam');
   const [sent, setSent] = useState(false);
-  const { control, handleSubmit, formState } = useForm<FamilyInput>({ resolver: zodResolver(familyInputSchema), defaultValues: empty });
+  const form = useForm<FamilyInput>({ resolver: zodResolver(familyInputSchema), defaultValues: empty });
+  const { control, handleSubmit, formState } = form;
 
   if (sent) return <SentForApproval body={t('account.registerSent')} />;
 
@@ -34,7 +37,6 @@ export default function RegisterFamily() {
         {t('account.registerIntro')}
       </Text>
       <FormField tamil control={control} name="familyName" label={t('account.familyName')} hint={t('account.familyNameHint')} />
-      <FormField tamil control={control} name="headName" label={t('account.headName')} />
       <FormField tamil control={control} name="address" label={t('account.address')} multiline />
       {anbiyams.length > 0 && (
         <Controller
@@ -55,6 +57,14 @@ export default function RegisterFamily() {
           )}
         />
       )}
+      <Eyebrow style={{ marginTop: 8 }}>{t('member.aboutYou')}</Eyebrow>
+      <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+        {t('member.detailsIntro')}
+      </Text>
+      <FormField tamil control={control} name="headName" label={t('account.headName')} />
+      <FormProvider {...form}>
+        <MemberDetailsFields />
+      </FormProvider>
       <GradientButton
         label={t('account.sendForApproval')}
         icon="send"

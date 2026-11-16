@@ -1,6 +1,5 @@
 import {
   formatDate,
-  monthName,
   parishDateTime,
   useFamilies,
   useIssuePinReset,
@@ -21,6 +20,7 @@ import { StyleSheet, View } from 'react-native';
 import { Avatar, Button, Card, Chip, Dialog, Portal, Searchbar, SegmentedButtons, Text, TextInput, useTheme } from 'react-native-paper';
 
 import { Choice } from '@/components/Choice';
+import { MemberFacts } from '@/components/family/MemberFacts';
 import { Page } from '@/components/Page';
 import { dayMonthYear, removalLabel } from '@/components/groups/labels';
 
@@ -38,9 +38,6 @@ const relationshipLabel: Record<Relationship, string> = {
 const statusLabel: Record<MembershipStatus, string> = { pending: 'Awaiting approval', approved: 'Approved', declined: 'Declined' };
 
 type Tab = 'requests' | 'families' | 'left';
-
-/** "2 Aug 2026" */
-const birthDay = (date: string) => `${Number(date.slice(8, 10))} ${monthName(date, 'en')} ${date.slice(0, 4)}`;
 
 const requestedOn = (iso: string) => formatDate(parishDateTime(iso).date, 'en');
 
@@ -61,6 +58,7 @@ export default function Families() {
   const assign = useSetFamilyAnbiyam();
   const removeFamily = useRemoveFamily();
   const [moving, setMoving] = useState<FamilyWithMembers>();
+  const [viewing, setViewing] = useState<FamilyMember>();
   const [removing, setRemoving] = useState<FamilyWithMembers>();
   const [reason, setReason] = useState<RemovalReason>('movedAway');
   const [note, setNote] = useState('');
@@ -164,7 +162,11 @@ export default function Families() {
                   {anbiyamName(family.anbiyamId) ?? 'No Anbiyam yet: place the family'}
                 </Chip>
                 {family.members.map((m) => (
-                  <Chip key={m.id} compact icon={m.status === 'pending' ? 'clock-outline' : m.phone ? 'cellphone' : 'account'}>
+                  <Chip
+                    key={m.id}
+                    compact
+                    icon={m.status === 'pending' ? 'clock-outline' : m.phone ? 'cellphone' : 'account'}
+                    onPress={() => setViewing(m)}>
                     {`${m.name} · ${relationshipLabel[m.relationship]}${m.status === 'pending' ? ' · awaiting approval' : ''}`}
                   </Chip>
                 ))}
@@ -186,6 +188,20 @@ export default function Families() {
         </>
       )}
       <Portal>
+        <Dialog visible={!!viewing} onDismiss={() => setViewing(undefined)} style={styles.dialog}>
+          <Dialog.Title>{viewing?.name}</Dialog.Title>
+          <Dialog.Content style={styles.gap}>
+            {viewing && (
+              <>
+                <Text variant="titleSmall">{`${relationshipLabel[viewing.relationship]}${viewing.phone ? ` · ${viewing.phone}` : ''}`}</Text>
+                <MemberFacts member={viewing} />
+              </>
+            )}
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setViewing(undefined)}>Close</Button>
+          </Dialog.Actions>
+        </Dialog>
         <Dialog visible={!!moving} onDismiss={() => setMoving(undefined)} style={styles.dialog}>
           <Dialog.Title>{`Anbiyam of the ${moving?.name}`}</Dialog.Title>
           <Dialog.Content>
@@ -273,6 +289,12 @@ function NewFamily({
       />
       <Card.Content style={styles.gap}>
         <Text variant="bodyMedium">{family.address}</Text>
+        {family.members.map((m) => (
+          <View key={m.id} style={styles.entry}>
+            <Text variant="titleSmall">{`${m.name} · ${relationshipLabel[m.relationship]}`}</Text>
+            <MemberFacts member={m} />
+          </View>
+        ))}
         {family.removal && (
           <Text variant="bodyMedium">{`Left the parish on ${dayMonthYear(family.removal.on)}: ${removalLabel[family.removal.reason].toLowerCase()}.`}</Text>
         )}
@@ -312,7 +334,7 @@ function JoinRequest({ family, member, onDecide }: { family: FamilyWithMembers; 
         <Text variant="bodyMedium">
           Wants to join the {family.name} ({family.code}){head ? `, head: ${head.name}` : ''}.
         </Text>
-        {member.birthDate && <Text variant="bodyMedium">Date of birth: {birthDay(member.birthDate)}</Text>}
+        <MemberFacts member={member} />
         <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
           Status: {statusLabel[member.status]}
         </Text>
@@ -342,6 +364,7 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: 16 },
   stat: { flexGrow: 1, flexBasis: 220 },
   gap: { gap: 4 },
+  entry: { gap: 2, marginTop: 8 },
   members: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   resets: { flexWrap: 'wrap', justifyContent: 'flex-start' },
   dialog: { maxWidth: 480, alignSelf: 'center' },
