@@ -69,6 +69,7 @@ function RootStack() {
           <Stack.Screen name="requests/certificate" options={{ title: t('more.certificate') }} />
           <Stack.Screen name="requests/index" options={{ title: t('more.myRequests') }} />
           <Stack.Screen name="settings" options={{ title: t('more.settings') }} />
+          <Stack.Screen name="privacy" options={{ title: t('privacy.title') }} />
           <Stack.Screen name="news" options={{ title: t('more.news') }} />
           <Stack.Screen name="account/index" options={{ title: t('account.myFamily') }} />
           <Stack.Screen name="account/sign-in" options={{ title: t('account.signIn') }} />

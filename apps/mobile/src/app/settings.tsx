@@ -1,5 +1,6 @@
 import { parish, useResetDemoData, type Language } from '@parish/core';
 import Constants from 'expo-constants';
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { Button, Card, SegmentedButtons, Snackbar, Text } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
@@ -34,6 +35,9 @@ export default function Settings() {
           <Text variant="bodySmall">{t('settings.version', { version: Constants.expoConfig?.version ?? '' })}</Text>
         </Card.Content>
       </Card>
+      <Button mode="outlined" icon="shield-account-outline" onPress={() => router.push('/privacy')}>
+        {t('settings.privacy')}
+      </Button>
       <Button
         mode="outlined"
         icon="restore"

@@ -295,6 +295,25 @@ const en = {
     about: 'About this app',
     aboutText: 'Phase 1 preview of the {{name}} parish app. Content is being confirmed by the parish office.',
     version: 'Version {{version}}',
+    privacy: 'Privacy',
+  },
+  // The privacy promise in plain words. The full policy is docs/PRIVACY-POLICY.md: keep the two saying the same thing.
+  privacy: {
+    title: 'Privacy',
+    intro: 'This app was made for our parish family. Here, in plain words, is what it keeps and who can see it.',
+    points: [
+      'In this preview, everything you enter (your family’s details, your requests and messages) is kept only on this phone. Nothing is sent to the parish office or to anyone else yet.',
+      'Later, when the app is connected to the parish office, your family register, your requests and your groups’ messages will be kept by the parish. Only the parish priest and the parish office will see your family’s details, and your Anbiyam or group office-bearers will see the names of their own members. The app will tell you before this starts.',
+      'You sign in with your phone number and a PIN. No SMS is sent. The parish office will never ask for your PIN: if you forget it, the office gives you a one-time code to set a new one.',
+      'No advertising, no tracking, no usage statistics, and your details are never sold or shared for any other purpose.',
+      'The app does not use your contacts, photos, location or camera.',
+      'The microphone is used only while you tap it to speak instead of typing. If your phone has offline speech for the language, what you say is turned into text on the phone and nothing leaves it. If not, the app asks you first, because what you say will go to the phone’s speech service (Google) to be turned into text. The app keeps no sound, only the text you choose to send.',
+      'Tamil typing in English letters works on the phone. The spellings you pick are remembered on this phone only.',
+      'Calling the office, directions, email and UPI payments open your phone’s own apps, whose own privacy policies apply. The app never sees your bank details. No money moves in this preview.',
+      'Uninstalling the app removes everything it stored on this phone. Settings → “Reset preview data” clears the preview’s details too.',
+      'Questions about your details? Please contact the parish office.',
+    ],
+    updated: 'Last updated: 16 November 2026',
   },
   give: {
     eyebrow: 'Monthly offering',
