@@ -41,7 +41,8 @@ module.exports = ({ projectRoot }) => {
         {
           microphonePermission: 'Allow $(PRODUCT_NAME) to hear you when you tap the microphone to speak instead of typing.',
           speechRecognitionPermission: 'Allow $(PRODUCT_NAME) to turn what you say into text, in Tamil or English.',
-          androidSpeechServicePackages: ['com.google.android.googlequicksearchbox', 'com.google.android.tts'],
+          // Google's on-device recogniser first, so speech can stay on the phone where it has the language.
+          androidSpeechServicePackages: ['com.google.android.as', 'com.google.android.googlequicksearchbox', 'com.google.android.tts'],
         },
       ],
     ],

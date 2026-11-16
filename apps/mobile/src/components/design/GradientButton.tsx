@@ -12,6 +12,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { finishPendingTamil } from '../tamil/typingPreferences';
 import { Tap } from './Tap';
 import { crimson, gold, radius } from './tokens';
 
@@ -39,7 +40,11 @@ export function GradientButton({ label, icon, onPress, loading, disabled }: Prop
 
   return (
     <Tap
-      onPress={onPress}
+      onPress={() => {
+        // A last word typed in English letters without a space after it goes in as Tamil.
+        finishPendingTamil();
+        onPress();
+      }}
       disabled={disabled || loading}
       accessibilityLabel={label}
       style={[styles.button, (disabled || loading) && styles.dim]}>

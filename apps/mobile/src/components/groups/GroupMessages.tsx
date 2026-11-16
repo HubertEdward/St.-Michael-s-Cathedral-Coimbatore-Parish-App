@@ -9,6 +9,7 @@ import { Eyebrow } from '@/components/design/Eyebrow';
 import { GradientButton } from '@/components/design/GradientButton';
 import { Panel } from '@/components/design/Panel';
 import { TamilTextInput } from '@/components/tamil/TamilTextInput';
+import { finishTamilText } from '@/components/tamil/typingPreferences';
 import { translateError } from '@/components/translateError';
 
 import { MessageCard } from './MessageCard';
@@ -31,7 +32,7 @@ export function GroupMessages({ groupId }: { groupId: string }) {
 
   const onSend = async () => {
     try {
-      await send.mutateAsync([groupId, body]);
+      await send.mutateAsync([groupId, finishTamilText(body, true)]);
       setSentTo(a.recipients);
       setBody('');
     } catch {
