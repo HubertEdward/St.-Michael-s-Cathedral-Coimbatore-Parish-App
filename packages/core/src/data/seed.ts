@@ -1,6 +1,7 @@
-// Demo data for Phase 1. The timetable comes from the parish profile; the
-// announcements, events, requests and roster are samples built around it, with
-// dates relative to the first launch so the demo never looks stale.
+// Sample data for previews and tests, loaded into a backend by scripts/load-samples.ts (npm run
+// backend:samples). The timetable comes from the parish profile; the announcements, events, families,
+// groups, requests and roster are samples built around it, with dates relative to the day they are
+// loaded so the preview never looks stale.
 import { nextDebitOn } from '../giving';
 import { parish, parishClock, parishTimeToIso } from '../parish';
 import { addDays, formatDayOfYear, nextOccurrence, servicesOn, weekdayOf } from '../schedule';

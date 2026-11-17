@@ -1,13 +1,13 @@
 import { CormorantGaramond_700Bold } from '@expo-google-fonts/cormorant-garamond';
 import { NotoSerifTamil_600SemiBold } from '@expo-google-fonts/noto-serif-tamil';
-import { useDemoDataSync } from '@parish/core';
+import { connectBackend } from '@parish/core';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
 import { Stack, ThemeProvider, usePathname } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
-import { useColorScheme } from 'react-native';
+import { AppState, useColorScheme } from 'react-native';
 import { PaperProvider } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 
@@ -15,6 +15,12 @@ import { LanguageProvider, useLanguageState } from '@/i18n';
 import { darkTheme, lightTheme, navigationTheme } from '@/theme';
 
 SplashScreen.preventAutoHideAsync();
+
+// The backend's address and publishable key come from .env.local (see README, "Backend").
+const backend = connectBackend({ url: process.env.EXPO_PUBLIC_SUPABASE_URL, publishableKey: process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY, app: 'parishioner' });
+// On a phone the sign-in is kept fresh only while the app is open, as Supabase advises.
+AppState.addEventListener('change', (state) => (state === 'active' ? backend.auth.startAutoRefresh() : backend.auth.stopAutoRefresh()));
+
 const queryClient = new QueryClient();
 
 export default function RootLayout() {
@@ -38,7 +44,6 @@ function RootStack() {
   const { t } = useTranslation();
   const dark = useColorScheme() === 'dark';
   const pathname = usePathname();
-  useDemoDataSync();
 
   // A missing font falls back to the system face; it must not keep the splash screen up.
   const loaded = ready && (fontsLoaded || fontError !== null);

@@ -1,8 +1,7 @@
-import { parish, useResetDemoData, type Language } from '@parish/core';
+import { parish, type Language } from '@parish/core';
 import Constants from 'expo-constants';
 import { router } from 'expo-router';
-import { useState } from 'react';
-import { Button, Card, SegmentedButtons, Snackbar, Text } from 'react-native-paper';
+import { Button, Card, SegmentedButtons, Text } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/Screen';
@@ -13,8 +12,6 @@ export default function Settings() {
   const text = useLocalized();
   const language = useLanguage();
   const { choose } = useLanguageState();
-  const reset = useResetDemoData();
-  const [done, setDone] = useState(false);
 
   return (
     <Screen>
@@ -38,17 +35,6 @@ export default function Settings() {
       <Button mode="outlined" icon="shield-account-outline" onPress={() => router.push('/privacy')}>
         {t('settings.privacy')}
       </Button>
-      <Button
-        mode="outlined"
-        icon="restore"
-        labelStyle={{ flexShrink: 1 }}
-        loading={reset.isPending}
-        onPress={() => reset.mutate(undefined, { onSuccess: () => setDone(true) })}>
-        {t('settings.resetDemo')}
-      </Button>
-      <Snackbar visible={done} onDismiss={() => setDone(false)} duration={3000}>
-        {t('settings.resetDone')}
-      </Snackbar>
     </Screen>
   );
 }

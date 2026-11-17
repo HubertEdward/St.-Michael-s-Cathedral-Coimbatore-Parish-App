@@ -1,9 +1,7 @@
 // TanStack Query bindings for api.ts. Mutations refresh the lists they touch.
 import { useMutation, useQuery, useQueryClient, type QueryKey } from '@tanstack/react-query';
-import { useEffect } from 'react';
 
 import * as api from './api';
-import { resetDemoData, subscribeToDemoData } from './store';
 
 export const queryKeys = {
   services: ['services'],
@@ -47,6 +45,15 @@ function useChange<TArgs extends unknown[], TResult>(key: QueryKey, change: (...
   });
 }
 
+/** A sign-in or sign-out: everything is refetched as the new person. */
+function useAccountChange<TArgs extends unknown[], TResult>(change: (...args: TArgs) => Promise<TResult>) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (args: TArgs) => change(...args),
+    onSuccess: () => client.invalidateQueries(),
+  });
+}
+
 export const useSaveService = () => useChange(queryKeys.services, api.saveService);
 export const useDeleteService = () => useChange(queryKeys.services, api.deleteService);
 export const useSaveAnnouncement = () => useChange(queryKeys.announcements, api.saveAnnouncement);
@@ -68,10 +75,11 @@ export const useChangeSubscriptionAmount = () => useChange(queryKeys.subscriptio
 export const useAccount = () => useQuery({ queryKey: [...queryKeys.family, 'account'], queryFn: api.getAccount });
 export const useMyFamily = () => useQuery({ queryKey: [...queryKeys.family, 'mine'], queryFn: api.getMyFamily });
 export const useFamilies = () => useQuery({ queryKey: [...queryKeys.family, 'all'], queryFn: api.listFamilies });
-export const useSignIn = () => useChange(queryKeys.family, api.signIn);
-export const useSignOut = () => useChange(queryKeys.family, api.signOut);
-export const useCreateAccount = () => useChange(queryKeys.family, api.createAccount);
-export const useResetPin = () => useChange(queryKeys.family, api.resetPin);
+// Signing in or out changes what every query may see, so these refresh everything.
+export const useSignIn = () => useAccountChange(api.signIn);
+export const useSignOut = () => useAccountChange(api.signOut);
+export const useCreateAccount = () => useAccountChange(api.createAccount);
+export const useResetPin = () => useAccountChange(api.resetPin);
 export const useIssuePinReset = () => useChange(queryKeys.family, api.issuePinReset);
 export const useRegisterFamily = () => useChange(queryKeys.family, api.registerFamily);
 export const useRequestToJoinFamily = () => useChange(queryKeys.family, api.requestToJoinFamily);
@@ -106,19 +114,9 @@ export const useAnswerJoinRequest = () => useChange(queryKeys.messages, api.answ
 // The office app's sign-in and team.
 export const useOfficeAccount = () => useQuery({ queryKey: [...queryKeys.office, 'me'], queryFn: api.getOfficeAccount });
 export const useOfficeUsers = () => useQuery({ queryKey: [...queryKeys.office, 'team'], queryFn: api.listOfficeUsers });
-export const useOfficeSignIn = () => useChange(queryKeys.office, api.officeSignIn);
-export const useOfficeChoosePin = () => useChange(queryKeys.office, api.officeChoosePin);
-export const useOfficeSignOut = () => useChange(queryKeys.office, api.officeSignOut);
+export const useOfficeSignIn = () => useAccountChange(api.officeSignIn);
+export const useOfficeSetUp = () => useAccountChange(api.officeSetUp);
+export const useOfficeSignOut = () => useAccountChange(api.officeSignOut);
 export const useAddOfficeUser = () => useChange(queryKeys.office, api.addOfficeUser);
+export const useIssueOfficeCode = () => useChange(queryKeys.office, api.issueOfficeCode);
 export const useRemoveOfficeUser = () => useChange(queryKeys.office, api.removeOfficeUser);
-
-export function useResetDemoData() {
-  const client = useQueryClient();
-  return useMutation({ mutationFn: resetDemoData, onSuccess: () => client.invalidateQueries() });
-}
-
-/** Refreshes every query when the other app changes the shared demo data. Call once, in the root layout. */
-export function useDemoDataSync() {
-  const client = useQueryClient();
-  useEffect(() => subscribeToDemoData(() => void client.invalidateQueries()), [client]);
-}

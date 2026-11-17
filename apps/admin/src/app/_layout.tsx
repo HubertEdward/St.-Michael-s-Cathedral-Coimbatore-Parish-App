@@ -1,10 +1,13 @@
-import { darkTheme, lightTheme, parish, useDemoDataSync, useOfficeAccount, useOfficeSignOut } from '@parish/core';
+import { connectBackend, darkTheme, lightTheme, parish, useOfficeAccount, useOfficeSignOut } from '@parish/core';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { router, Slot, usePathname, type Href } from 'expo-router';
 import { ScrollView, StyleSheet, useColorScheme, useWindowDimensions, View } from 'react-native';
 import { Appbar, Chip, Drawer, PaperProvider, useTheme } from 'react-native-paper';
 
 import { SignIn } from '@/components/SignIn';
+
+// The backend's address and publishable key come from .env.local (see README, "Backend").
+connectBackend({ url: process.env.EXPO_PUBLIC_SUPABASE_URL, publishableKey: process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY, app: 'office' });
 
 const queryClient = new QueryClient();
 
@@ -38,7 +41,6 @@ export default function RootLayout() {
 function Shell() {
   const theme = useTheme();
   const pathname = usePathname();
-  useDemoDataSync();
   const account = useOfficeAccount();
   const signOut = useOfficeSignOut();
   const wide = useWindowDimensions().width >= 900;
@@ -54,7 +56,7 @@ function Shell() {
         <Appbar.Content title={`${parish.name.en} · Parish office`} color={theme.colors.onPrimary} />
         {wide && (
           <Chip compact icon="flask-outline" style={styles.demo}>
-            Demo data in this browser
+            Preview
           </Chip>
         )}
         <Chip compact icon={me.role === 'priest' ? 'account-tie' : 'account'} style={styles.demo}>

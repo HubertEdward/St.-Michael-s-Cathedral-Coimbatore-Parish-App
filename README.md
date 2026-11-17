@@ -18,7 +18,7 @@ The analysis, decisions and the full development plan are in the project documen
 | --- | --- |
 | Parishioner app | Home with next Mass, weekly timetable, news and events, about, contact and directions, sacraments guide, prayers and today's Rosary, ministries, duty rosters, Mass-intention and certificate requests, in the languages the parish offers (Tamil and English so far) |
 | Admin web app | Dashboard, timetable editor, announcements, events, Mass-intention queue with a printable priest's list, certificate requests, ministry rosters |
-| Data | Demo store on each device (AsyncStorage / localStorage). The two apps do not share data until the Phase 2 backend (Supabase) |
+| Data | Supabase (Postgres with row-level security, Auth, one Edge Function), shared by both apps; runs locally in Docker for development |
 | Parishes | St. Michael's Cathedral, Coimbatore. Its content was gathered from public listings; see [docs/CONTENT_CHECKLIST.md](docs/CONTENT_CHECKLIST.md) for what the parish office must confirm |
 
 ## Layout
@@ -32,8 +32,14 @@ parishes/        One folder per parish, plus shared/ content a parish can reuse
   select.js      Picks the parish from the PARISH environment variable
 ```
 
-Screens only call the data functions in `packages/core/src/data/api.ts`. In Phase 2 the demo store
-(`packages/core/src/data/store.ts`) is replaced by the backend client; screens do not change.
+Screens only call the data functions in `packages/core/src/data/api.ts`, which talk to the backend.
+
+```
+supabase/migrations   The database: tables, row-level security, and the server functions behind every rule
+supabase/functions    pin: sets a PIN with a one-time code from the office (forgotten PIN, new office team member)
+supabase/tests        Who may do what, checked by signing in as the sample people
+scripts/              Loading the sample data; pointing the apps at the local backend
+```
 
 ## How a parish is selected
 
@@ -56,6 +62,32 @@ npm run typecheck  # all workspaces, including every parish profile
 npm test           # schedule logic tests
 ```
 
+## Backend
+
+Both apps use one Supabase backend. For development it runs on this computer in Docker (Docker Desktop must be
+running); nothing is sent to the internet.
+
+```bash
+npm run backend:start     # the database, sign-in and API at http://127.0.0.1:54321 (Studio: http://127.0.0.1:54323)
+npm run backend:samples   # replaces the parish's data with the sample families, groups, requests and messages
+npm run backend:env       # writes apps/mobile/.env.local and apps/admin/.env.local for the local backend
+npm run backend:test      # checks who may do what (needs the samples)
+npm run backend:reset     # rebuilds the database from supabase/migrations (then load the samples again)
+npm run backend:stop
+```
+
+`backend:env` points the parishioner app at this computer's Wi-Fi address, so a phone on the same Wi-Fi can use
+it; run it again if the address changes, and restart the app. Each app reads `EXPO_PUBLIC_SUPABASE_URL` and
+`EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` from its `.env.local` (not committed).
+
+People sign in with their phone number and a PIN; no SMS is sent. Supabase Auth keeps the PIN as the password
+of a login named after the number (`packages/core/src/data/login.ts`). Requests such as Mass intentions can be
+sent without an account: the app signs in anonymously, and creating an account later keeps those requests.
+
+With the samples loaded, the office app's parish priest is 98430 30001 and the office staff member is 98430 30002;
+the parishioner app's approved family is 98430 20001. All use PIN 246810. New members of the office team sign in
+the first time with a setup code the parish priest gives them.
+
 ## Clickable demo
 
 ```bash
@@ -63,17 +95,11 @@ npm run demo       # builds both apps (a few minutes), then serves the demo at h
 ```
 
 The demo page shows the parishioner app in a phone frame beside the parish office app, with a short list of
-things to try. Both apps run in the same browser and share the demo data, so a Mass intention requested on the
-phone appears in the office queue at once, and the office's approval, announcements and timetable changes appear
-on the phone. "Start the demo again" restores the sample data. `npm run demo -- --no-build` serves the last
-build; `PORT` and `PARISH` work as usual. Nothing is sent anywhere: the data stays in that browser.
-
-The office app asks for a sign-in. In the preview, the parish priest is 98430 30001 and the office staff member is
-98430 30002, both with PIN 246810 (`OFFICE_DEMO_PHONES` and `DEMO_PIN` in `packages/core/src/data/seed.ts`).
-Office staff can do everything except remove a family from the parish or change the office team.
-
-The phone app on a real phone (the APK) keeps its own copy of the demo data, so it does not see the office app's
-changes. Phone and office share data only once the Phase 2 backend is running.
+things to try. Start the backend and load the samples first (see Backend). Both apps use the backend, so a Mass
+intention requested on the phone appears in the office queue, and the office's approvals, announcements and
+timetable changes appear on the phone; so does a phone on the same Wi-Fi running the APK. "Sign out of both"
+signs both apps out; `npm run backend:samples` restores the sample data. `npm run demo -- --no-build` serves the
+last build; `PORT` and `PARISH` work as usual.
 
 For another parish, set `PARISH` first: `PARISH=<folder> npm run mobile`, or in PowerShell
 `$env:PARISH='<folder>'; npm run mobile`.

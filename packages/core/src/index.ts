@@ -9,5 +9,6 @@ export * from './validation';
 export * from './content/prayers';
 export * from './data/api';
 export * from './data/hooks';
+export { connectBackend } from './data/backend';
 export { DEMO_PIN, OFFICE_DEMO_PHONES } from './data/seed';
 export * from './tamil';

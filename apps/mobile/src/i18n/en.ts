@@ -33,7 +33,7 @@ const en = {
     resetCodeFormat: 'The reset code is 6 digits.',
     noAccount: 'There is no account for this number yet. Tap “First time here?” to create one.',
     accountExists: 'This number already has an account. Sign in with your PIN, or tap “Forgot your PIN?”.',
-    wrongPin: 'That PIN is not right. Try again, or tap “Forgot your PIN?”.',
+    wrongPin: 'That number and PIN do not match an account. Check them, tap “First time here?” to create an account, or tap “Forgot your PIN?”.',
     resetCodeInvalid: 'That reset code is not right or has expired. Ask the parish office for a new one.',
     notInParish: 'This is for families registered with the parish. Sign in, and ask to join the parish first.',
     notGroupLeader: 'Only the group’s office-bearers can send messages to it.',
@@ -305,8 +305,6 @@ const en = {
   },
   settings: {
     language: 'Language',
-    resetDemo: 'Reset preview data',
-    resetDone: 'Preview data has been reset.',
     about: 'About this app',
     aboutText: 'Phase 1 preview of the {{name}} parish app. Content is being confirmed by the parish office.',
     version: 'Version {{version}}',

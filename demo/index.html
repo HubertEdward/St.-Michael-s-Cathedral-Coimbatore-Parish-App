@@ -57,7 +57,7 @@
       <p>The parishioner app and the parish office app, side by side. Changes in one show up in the other.</p>
     </div>
     <div class="spacer"></div>
-    <button id="reset" type="button">Start the demo again</button>
+    <button id="reset" type="button">Sign out of both</button>
   </header>
   <main>
     <section class="steps">
@@ -82,7 +82,7 @@
         <li><b>Pray the Rosary</b>Phone: the round Pray button in the middle. Tap for each Hail Mary; the beads fill and the next mystery follows. Then light a candle.</li>
         <li><b>Plan an event and a roster</b>Office: Events and Ministry rosters. The phone shows them as stories on Home and under More → Ministry duty rosters.</li>
       </ol>
-      <p class="note">This is a preview with sample data, kept in this browser only. Nothing is sent anywhere. Facts about the parish still need the office's confirmation.</p>
+      <p class="note">This is a preview with sample data, kept in the backend on this computer (npm run backend:samples restores it). Facts about the parish still need the office's confirmation.</p>
     </section>
     <section>
       <h2 class="panel-title">Parishioner app · <a href="/app/" target="_blank" rel="noopener">open alone</a></h2>
@@ -94,7 +94,7 @@
     </section>
   </main>
   <script>
-    // Clears this parish's demo data and language choice, then reloads both apps.
+    // Signs both apps out and forgets the language choice, then reloads them. The data stays in the backend.
     document.getElementById('reset').addEventListener('click', () => {
       try {
         Object.keys(localStorage)

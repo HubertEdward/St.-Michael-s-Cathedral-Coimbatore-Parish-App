@@ -1,17 +1,21 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   officeUserInputSchema,
+  formatDate,
+  parishDateTime,
   useAddOfficeUser,
+  useIssueOfficeCode,
   useOfficeAccount,
   useOfficeUsers,
   useRemoveOfficeUser,
   type OfficeRole,
   type OfficeUserInput,
+  type SetupCode,
 } from '@parish/core';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { StyleSheet, View } from 'react-native';
-import { Button, Card, HelperText, IconButton, List, Text } from 'react-native-paper';
+import { Button, Card, Dialog, HelperText, IconButton, List, Portal, Text } from 'react-native-paper';
 
 import { Choice } from './Choice';
 import { ConfirmDialog } from './ConfirmDialog';
@@ -26,6 +30,9 @@ export function OfficeTeam() {
   const me = useOfficeAccount().data;
   const team = useOfficeUsers().data ?? [];
   const remove = useRemoveOfficeUser();
+  const issue = useIssueOfficeCode();
+  // The setup code just made, shown once for the parish priest to pass on.
+  const [code, setCode] = useState<SetupCode & { name: string }>();
   const [adding, setAdding] = useState(false);
   const [removing, setRemoving] = useState<(typeof team)[number]>();
   const isPriest = me?.role === 'priest';
@@ -36,7 +43,7 @@ export function OfficeTeam() {
       <Card.Content style={styles.content}>
         <Text variant="bodyMedium">
           {isPriest
-            ? 'People who can sign in to this office app. Add someone with their phone number; they choose their own PIN the first time they sign in. Office staff can do everything except remove a family from the parish or change this team.'
+            ? 'People who can sign in to this office app. Add someone with their phone number, and give them the setup code shown: they sign in with it once and choose their own PIN. If they forget it, give them a new code with the key button. Office staff can do everything except remove a family from the parish or change this team.'
             : 'People who can sign in to this office app. The parish priest adds and removes them.'}
         </Text>
         {team.map((user) => (
@@ -47,7 +54,14 @@ export function OfficeTeam() {
             left={(props) => <List.Icon {...props} icon={user.role === 'priest' ? 'account-tie' : 'account'} />}
             right={() =>
               isPriest && user.id !== me?.id ? (
-                <IconButton icon="account-remove-outline" accessibilityLabel={`Take ${user.name} off the team`} onPress={() => setRemoving(user)} />
+                <View style={styles.actions}>
+                  <IconButton
+                    icon="key-outline"
+                    accessibilityLabel={`New setup code for ${user.name}`}
+                    onPress={() => void issue.mutateAsync([user.id]).then((issued) => setCode({ ...issued, name: user.name }))}
+                  />
+                  <IconButton icon="account-remove-outline" accessibilityLabel={`Take ${user.name} off the team`} onPress={() => setRemoving(user)} />
+                </View>
               ) : null
             }
           />
@@ -61,10 +75,11 @@ export function OfficeTeam() {
           </Button>
         </Card.Actions>
       )}
-      <AddDialog visible={adding} onDismiss={() => setAdding(false)} />
+      <AddDialog visible={adding} onDismiss={() => setAdding(false)} onAdded={setCode} />
+      <CodeDialog code={code} onDismiss={() => setCode(undefined)} />
       <ConfirmDialog
         visible={!!removing}
-        message={`Take ${removing?.name} off the office team? They can no longer sign in. Adding them again lets them choose a new PIN.`}
+        message={`Take ${removing?.name} off the office team? They can no longer sign in to the office app.`}
         confirmLabel="Take off the team"
         onConfirm={() => removing && remove.mutate([removing.id])}
         onDismiss={() => setRemoving(undefined)}
@@ -73,7 +88,7 @@ export function OfficeTeam() {
   );
 }
 
-function AddDialog({ visible, onDismiss }: { visible: boolean; onDismiss: () => void }) {
+function AddDialog({ visible, onDismiss, onAdded }: { visible: boolean; onDismiss: () => void; onAdded: (code: SetupCode & { name: string }) => void }) {
   const add = useAddOfficeUser();
   const { control, handleSubmit, reset } = useForm<OfficeUserInput>({
     resolver: zodResolver(officeUserInputSchema),
@@ -85,8 +100,9 @@ function AddDialog({ visible, onDismiss }: { visible: boolean; onDismiss: () => 
     onDismiss();
   };
   const onSave = handleSubmit(async (values) => {
-    await add.mutateAsync([values]);
+    const added = await add.mutateAsync([values]);
     close();
+    onAdded(added);
   });
   return (
     <FormDialog visible={visible} title="Add to the office team" onDismiss={close} onSave={() => void onSave().catch(() => undefined)} saving={add.isPending}>
@@ -114,7 +130,31 @@ function AddDialog({ visible, onDismiss }: { visible: boolean; onDismiss: () => 
   );
 }
 
+/** The setup code to pass on, by phone or in person; it is shown only now. */
+function CodeDialog({ code, onDismiss }: { code: (SetupCode & { name: string }) | undefined; onDismiss: () => void }) {
+  const until = code ? parishDateTime(code.expiresAt) : undefined;
+  return (
+    <Portal>
+      <Dialog visible={!!code} onDismiss={onDismiss} style={{ maxWidth: 480, alignSelf: 'center', width: '90%' }}>
+        <Dialog.Title>{`Setup code for ${code?.name ?? ''}`}</Dialog.Title>
+        <Dialog.Content style={{ gap: 8 }}>
+          <Text variant="displaySmall" selectable style={{ letterSpacing: 6 }}>
+            {code?.code}
+          </Text>
+          <Text variant="bodyMedium">
+            {`Give it to them yourself. On the office app's sign-in page they choose "Use a setup code", enter their phone number and this code, and choose their PIN. It works once, until ${until ? `${formatDate(until.date, 'en')}, ${until.time}` : ''}.`}
+          </Text>
+        </Dialog.Content>
+        <Dialog.Actions>
+          <Button onPress={onDismiss}>Done</Button>
+        </Dialog.Actions>
+      </Dialog>
+    </Portal>
+  );
+}
+
 const styles = StyleSheet.create({
+  actions: { flexDirection: 'row' },
   content: { gap: 4 },
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
 });
