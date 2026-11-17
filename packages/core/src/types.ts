@@ -134,6 +134,8 @@ export const joinableKinds: readonly GroupKind[] = ['liturgical', 'association',
 export interface GroupMessage {
   id: string;
   groupId: string;
+  /** Set for a news article, such as a report of a feast or a meeting; a plain message has none. */
+  title?: string;
   body: string;
   sender: string;
   /** The sender's post in the group, or 'office' for the parish office. */
@@ -298,6 +300,21 @@ export interface ParishSettings {
  */
 export interface Account {
   phone: string;
+}
+
+/**
+ * Who may use the parish office app. The parish priest can do everything. Office staff can do
+ * everything except remove a family from the parish or change who is on the office team.
+ */
+export const officeRoles = ['priest', 'staff'] as const;
+export type OfficeRole = (typeof officeRoles)[number];
+
+/** Someone on the office team. They sign in to the office app with their phone number and a PIN they choose. */
+export interface OfficeUser {
+  id: string;
+  name: string;
+  phone: string;
+  role: OfficeRole;
 }
 
 /** A one-time code the parish office gives someone who forgot their PIN, valid for a day. */

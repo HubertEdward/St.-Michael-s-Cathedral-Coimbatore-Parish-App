@@ -1,7 +1,7 @@
 import { formatDate, parishDateTime, useAnswerJoinRequest, useDeleteMessage, useGroupMessages, useSendOfficeMessage, type ParishGroup } from '@parish/core';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Button, HelperText, IconButton, List, Text, TextInput, useTheme } from 'react-native-paper';
+import { Button, HelperText, IconButton, List, SegmentedButtons, Text, TextInput, useTheme } from 'react-native-paper';
 
 import { FormDialog } from '@/components/FormDialog';
 import { errorText } from '@/components/errors';
@@ -13,7 +13,7 @@ const sentOn = (iso: string) => {
   return `${formatDate(date, 'en')}, ${time}`;
 };
 
-/** In a group's card: requests to join, the latest messages to the group, and sending one as the parish office. */
+/** In a group's card: requests to join, the latest messages and news articles to the group, and sending one as the parish office. */
 export function OfficeMessages({ group }: { group: ParishGroup }) {
   const theme = useTheme();
   const messages = useGroupMessages(group.id).data ?? [];
@@ -21,14 +21,21 @@ export function OfficeMessages({ group }: { group: ParishGroup }) {
   const remove = useDeleteMessage();
   const answer = useAnswerJoinRequest();
   const [writing, setWriting] = useState(false);
+  const [news, setNews] = useState(false);
+  const [title, setTitle] = useState('');
+  const [needsTitle, setNeedsTitle] = useState(false);
   const [body, setBody] = useState('');
   const [showAll, setShowAll] = useState(false);
   const requests = group.officers.filter((o) => o.pending);
   const shown = showAll ? messages : messages.slice(0, 2);
 
   const onSend = async () => {
-    await send.mutateAsync([group.id, body]);
+    if (news && !title.trim()) return setNeedsTitle(true);
+    setNeedsTitle(false);
+    await send.mutateAsync([group.id, { title: news ? title : undefined, body }]);
+    setTitle('');
     setBody('');
+    setNews(false);
     setWriting(false);
   };
 
@@ -56,16 +63,16 @@ export function OfficeMessages({ group }: { group: ParishGroup }) {
       <View style={styles.header}>
         <Text variant="labelLarge">{messages.length === 0 ? 'No messages sent yet' : `Messages (${messages.length})`}</Text>
         <Button compact icon="send" onPress={() => setWriting(true)}>
-          Send a message
+          Send
         </Button>
       </View>
       {shown.map((m) => (
         <List.Item
           key={m.id}
-          title={m.body}
+          title={m.title ? `News: ${m.title}` : m.body}
           titleNumberOfLines={3}
           description={`${m.senderRole === 'office' ? 'Parish office' : `${m.sender}, ${roleLabel[m.senderRole]}`} · ${sentOn(m.sentAt)}`}
-          left={(props) => <List.Icon {...props} icon="message-text-outline" />}
+          left={(props) => <List.Icon {...props} icon={m.title ? 'newspaper-variant-outline' : 'message-text-outline'} />}
           right={() => <IconButton icon="delete-outline" accessibilityLabel="Delete message" onPress={() => remove.mutate([m.id])} />}
         />
       ))}
@@ -75,13 +82,23 @@ export function OfficeMessages({ group }: { group: ParishGroup }) {
         </Button>
       )}
 
-      <FormDialog visible={writing} title={`Message to ${group.name.en}`} onDismiss={() => setWriting(false)} onSave={() => void onSend()} saving={send.isPending}>
+      <FormDialog visible={writing} title={`Send to ${group.name.en}`} onDismiss={() => setWriting(false)} onSave={() => void onSend().catch(() => undefined)} saving={send.isPending}>
         <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
           {group.kind === 'anbiyam'
             ? 'Every approved member of the families in this Anbiyam receives it, from the parish office.'
             : 'Everyone listed in this group receives it, from the parish office.'}
         </Text>
-        <TextInput mode="outlined" multiline numberOfLines={5} label="Message" value={body} onChangeText={setBody} />
+        <SegmentedButtons
+          value={news ? 'news' : 'message'}
+          onValueChange={(v) => setNews(v === 'news')}
+          buttons={[
+            { value: 'message', label: 'Message', icon: 'message-text-outline' },
+            { value: 'news', label: 'News article', icon: 'newspaper-variant-outline' },
+          ]}
+        />
+        {news && <TextInput mode="outlined" label="Headline" value={title} onChangeText={setTitle} error={needsTitle} />}
+        {news && needsTitle && <HelperText type="error">A news article needs a headline.</HelperText>}
+        <TextInput mode="outlined" multiline numberOfLines={news ? 8 : 5} label={news ? 'Article' : 'Message'} value={body} onChangeText={setBody} />
         {send.isError && <HelperText type="error">{errorText(send.error.message)}</HelperText>}
       </FormDialog>
     </View>

@@ -11,6 +11,7 @@ import { useForm } from 'react-hook-form';
 import { Button, Card, Text } from 'react-native-paper';
 
 import { FormField } from '@/components/FormField';
+import { OfficeTeam } from '@/components/OfficeTeam';
 import { Page } from '@/components/Page';
 import { errorText } from '@/components/errors';
 
@@ -19,6 +20,7 @@ export default function Settings() {
   const reset = useResetDemoData();
   return (
     <Page title="Settings">
+      <OfficeTeam />
       {settings.data && <IntentionSettings settings={settings.data} />}
       <Card mode="outlined">
         <Card.Title title="Demo data" titleVariant="titleMedium" />

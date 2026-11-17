@@ -1,5 +1,6 @@
 // The only functions screens use to read and change parish data.
 // Thrown Error messages are codes the apps translate: 'massNotOnDate', 'massOutOfRange', 'intentionClosed'.
+// Phase 1 checks only the parish priest's own powers here; Phase 2 enforces every role with row-level security.
 import { nextDebitOn } from '../giving';
 import { joinableKinds } from '../types';
 import { parishClock, parishTimeToIso } from '../parish';
@@ -15,6 +16,7 @@ import type {
   FamilyWithMembers,
   MassIntention,
   MembershipStatus,
+  OfficeUser,
   Officer,
   ParishEvent,
   ParishGroup,
@@ -34,7 +36,10 @@ import {
   groupInputSchema,
   officerInputSchema,
   removalInputSchema,
-  messageSchema,
+  groupPostSchema,
+  officeUserInputSchema,
+  type GroupPostInput,
+  type OfficeUserInput,
   type GroupInput,
   type OfficerInput,
   type RemovalInput,
@@ -503,6 +508,76 @@ export const updateFamilyMember = (id: string, input: MemberInput) =>
     return updated;
   });
 
+// The parish office app's sign-in and team. Thrown codes: 'noAccount', 'noPin', 'wrongPin', 'accountExists',
+// 'notPriest' (only the parish priest may do this), 'officeUserExists', 'cannotRemoveSelf'.
+
+const officeUserFor = (d: ParishData, phone: string) => d.officeUsers.find((u) => phoneKey(u.phone) === phoneKey(phone));
+const officeLoginFor = (d: ParishData, phone: string) => d.officeLogins.find((l) => phoneKey(l.phone) === phoneKey(phone));
+
+/** Who is signed in to the office app, or null. */
+export const getOfficeAccount = () => read((d): OfficeUser | null => d.officeUsers.find((u) => u.id === d.officeAccount) ?? null);
+
+/** Signs in to the office app. 'noPin' means they are on the team but have not chosen a PIN yet. */
+export const officeSignIn = (input: { phone: string; pin: string }) =>
+  write((d) => {
+    const { phone, pin } = signInSchema.parse(input);
+    const user = officeUserFor(d, phone);
+    if (!user) throw new Error('noAccount');
+    const login = officeLoginFor(d, phone);
+    if (!login) throw new Error('noPin');
+    if (login.pin !== pin) throw new Error('wrongPin');
+    d.officeAccount = user.id;
+    return user;
+  });
+
+/** First sign-in of someone the parish priest added to the team: they choose their PIN. */
+export const officeChoosePin = (input: CreateAccountInput) =>
+  write((d) => {
+    const { phone, pin } = createAccountSchema.parse(input);
+    const user = officeUserFor(d, phone);
+    if (!user) throw new Error('noAccount');
+    if (officeLoginFor(d, phone)) throw new Error('accountExists');
+    d.officeLogins.push({ phone: user.phone, pin });
+    d.officeAccount = user.id;
+    return user;
+  });
+
+export const officeSignOut = () =>
+  write((d) => {
+    d.officeAccount = null;
+  });
+
+function requirePriest(d: ParishData): OfficeUser {
+  const me = d.officeUsers.find((u) => u.id === d.officeAccount);
+  if (me?.role !== 'priest') throw new Error('notPriest');
+  return me;
+}
+
+/** The office team, and whether each has chosen a PIN yet. */
+export const listOfficeUsers = () => read((d) => d.officeUsers.map((u) => ({ ...u, hasPin: !!officeLoginFor(d, u.phone) })));
+
+/** The parish priest adds someone to the office team; they choose their PIN when they first sign in. */
+export const addOfficeUser = (input: OfficeUserInput) =>
+  write((d) => {
+    requirePriest(d);
+    const p = officeUserInputSchema.parse(input);
+    if (officeUserFor(d, p.phone)) throw new Error('officeUserExists');
+    const user: OfficeUser = { id: newId(), ...p };
+    d.officeUsers.push(user);
+    return user;
+  });
+
+/** The parish priest takes someone off the office team. Adding them again lets them choose a new PIN, e.g. after forgetting it. */
+export const removeOfficeUser = (id: string) =>
+  write((d) => {
+    const me = requirePriest(d);
+    if (id === me.id) throw new Error('cannotRemoveSelf');
+    const user = d.officeUsers.find((u) => u.id === id);
+    if (!user) return;
+    d.officeUsers = d.officeUsers.filter((u) => u.id !== id);
+    d.officeLogins = d.officeLogins.filter((l) => phoneKey(l.phone) !== phoneKey(user.phone));
+  });
+
 /** Every family with its members, newest registration first. */
 export const listFamilies = () => read((d) => [...d.families].sort(newestFirst).map((f) => withMembers(d, f)));
 
@@ -525,11 +600,21 @@ export const setMemberStatus = (id: string, status: MembershipStatus) =>
     if (m) m.status = status;
   });
 
-/** Onboards a family to its Anbiyam, or moves it to another. */
-export const setFamilyAnbiyam = (familyId: string, anbiyamId: string) =>
+/**
+ * Places a family in its Anbiyam, moves it to another, or (with null) takes it out of its Anbiyam.
+ * Its members give up any post they held in the Anbiyam it leaves.
+ */
+export const setFamilyAnbiyam = (familyId: string, anbiyamId: string | null) =>
   write((d) => {
     const family = d.families.find((f) => f.id === familyId);
-    if (family) family.anbiyamId = anbiyamId;
+    if (!family || family.anbiyamId === (anbiyamId ?? undefined)) return;
+    const left = d.groups.find((g) => g.id === family.anbiyamId);
+    if (left) {
+      const members = new Set(d.members.filter((m) => m.familyId === familyId).map((m) => m.id));
+      left.officers = left.officers.filter((o) => !o.memberId || !members.has(o.memberId));
+    }
+    if (anbiyamId) family.anbiyamId = anbiyamId;
+    else delete family.anbiyamId;
   });
 
 /**
@@ -538,6 +623,7 @@ export const setFamilyAnbiyam = (familyId: string, anbiyamId: string) =>
  */
 export const removeFamily = (familyId: string, input: RemovalInput) =>
   write((d) => {
+    requirePriest(d);
     const family = d.families.find((f) => f.id === familyId);
     if (!family) return;
     const { reason, note } = removalInputSchema.parse(input);
@@ -667,23 +753,25 @@ export const getGroupAccess = (groupId: string) =>
     };
   });
 
-/** An office-bearer sends a message to everyone in their group. */
-export const sendGroupMessage = (groupId: string, body: string) =>
+/** An office-bearer sends a message, or a news article, to everyone in their group. */
+export const sendGroupMessage = (groupId: string, input: GroupPostInput) =>
   write((d) => {
     const me = parishioner(d);
     const group = d.groups.find((g) => g.id === groupId);
     if (!me || !group) throw new Error('notInParish');
     const post = postIn(group, me.id);
     if (!post) throw new Error('notGroupLeader');
-    const message: GroupMessage = { id: newId(), groupId, body: messageSchema.parse(body), sender: post.name, senderRole: post.role, sentAt: new Date().toISOString() };
+    const { title, body } = groupPostSchema.parse(input);
+    const message: GroupMessage = { id: newId(), groupId, ...(title ? { title } : {}), body, sender: post.name, senderRole: post.role, sentAt: new Date().toISOString() };
     d.messages.push(message);
     return message;
   });
 
-/** The parish office sends a message to a group's members. */
-export const sendOfficeMessage = (groupId: string, body: string) =>
+/** The parish office sends a message, or a news article, to a group's members. */
+export const sendOfficeMessage = (groupId: string, input: GroupPostInput) =>
   write((d) => {
-    const message: GroupMessage = { id: newId(), groupId, body: messageSchema.parse(body), sender: 'Parish office', senderRole: 'office', sentAt: new Date().toISOString() };
+    const { title, body } = groupPostSchema.parse(input);
+    const message: GroupMessage = { id: newId(), groupId, ...(title ? { title } : {}), body, sender: 'Parish office', senderRole: 'office', sentAt: new Date().toISOString() };
     d.messages.push(message);
     return message;
   });

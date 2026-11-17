@@ -12,6 +12,7 @@ import {
   incomeBands,
   intentionTypes,
   occupations,
+  officeRoles,
   officerRoles,
   relationships,
   removalReasons,
@@ -234,4 +235,18 @@ export const officerInputSchema = z.object({
 });
 export type OfficerInput = z.infer<typeof officerInputSchema>;
 
-export const messageSchema = z.string().trim().min(1, 'required').max(1000, 'tooLong');
+/** What a group's office-bearers, or the parish office, send to the group: a message, or a news article when it has a title. */
+export const groupPostSchema = z.object({
+  title: z
+    .string()
+    .trim()
+    .max(150, 'tooLong')
+    .optional()
+    .transform((title) => title || undefined),
+  body: z.string().trim().min(1, 'required').max(4000, 'tooLong'),
+});
+export type GroupPostInput = z.input<typeof groupPostSchema>;
+
+/** Someone the parish priest adds to the office team. They choose their own PIN when they first sign in. */
+export const officeUserInputSchema = z.object({ name: required(100), phone: phoneSchema, role: z.enum(officeRoles) });
+export type OfficeUserInput = z.infer<typeof officeUserInputSchema>;

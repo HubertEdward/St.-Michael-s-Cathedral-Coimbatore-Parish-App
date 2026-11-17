@@ -3,6 +3,7 @@ import {
   parishDateTime,
   useFamilies,
   useIssuePinReset,
+  useOfficeAccount,
   useGroups,
   useRemoveFamily,
   useSetFamilyAnbiyam,
@@ -57,6 +58,8 @@ export default function Families() {
   const anbiyamName = (id: string | undefined) => anbiyams.find((a) => a.id === id)?.name.en;
   const assign = useSetFamilyAnbiyam();
   const removeFamily = useRemoveFamily();
+  // Only the parish priest removes a family from the parish.
+  const isPriest = useOfficeAccount().data?.role === 'priest';
   const [moving, setMoving] = useState<FamilyWithMembers>();
   const [viewing, setViewing] = useState<FamilyMember>();
   const [removing, setRemoving] = useState<FamilyWithMembers>();
@@ -81,7 +84,7 @@ export default function Families() {
   return (
     <Page
       title="Families"
-      description="Families ask in the app to join the parish, and relatives ask to join their families. Check each against the parish register, then approve or decline. Remove a family that has left the parish, for example after moving out of the area.">
+      description="Families ask in the app to join the parish, and relatives ask to join their families. Check each against the parish register, then approve or decline. The parish priest removes a family that has left the parish, for example after moving out of the area.">
       <View style={styles.row}>
         <Stat value={String(waiting)} label="Waiting for approval" color={theme.colors.primaryContainer} />
         <Stat value={String(list.filter((f) => f.status === 'approved').length)} label="Registered families" color={theme.colors.secondaryContainer} />
@@ -179,9 +182,11 @@ export default function Families() {
                       {`Reset PIN · ${m.name.split(' ')[0]}`}
                     </Button>
                   ))}
-                <Button compact icon="home-export-outline" onPress={() => setRemoving(family)}>
-                  Remove from parish
-                </Button>
+                {isPriest && (
+                  <Button compact icon="home-export-outline" onPress={() => setRemoving(family)}>
+                    Remove from parish
+                  </Button>
+                )}
               </Card.Actions>
             </Card>
           ))}

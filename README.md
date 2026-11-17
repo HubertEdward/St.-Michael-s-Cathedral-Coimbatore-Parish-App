@@ -68,6 +68,13 @@ phone appears in the office queue at once, and the office's approval, announceme
 on the phone. "Start the demo again" restores the sample data. `npm run demo -- --no-build` serves the last
 build; `PORT` and `PARISH` work as usual. Nothing is sent anywhere: the data stays in that browser.
 
+The office app asks for a sign-in. In the preview, the parish priest is 98430 30001 and the office staff member is
+98430 30002, both with PIN 246810 (`OFFICE_DEMO_PHONES` and `DEMO_PIN` in `packages/core/src/data/seed.ts`).
+Office staff can do everything except remove a family from the parish or change the office team.
+
+The phone app on a real phone (the APK) keeps its own copy of the demo data, so it does not see the office app's
+changes. Phone and office share data only once the Phase 2 backend is running.
+
 For another parish, set `PARISH` first: `PARISH=<folder> npm run mobile`, or in PowerShell
 `$env:PARISH='<folder>'; npm run mobile`.
 

@@ -1,8 +1,10 @@
-import { darkTheme, lightTheme, parish, useDemoDataSync } from '@parish/core';
+import { darkTheme, lightTheme, parish, useDemoDataSync, useOfficeAccount, useOfficeSignOut } from '@parish/core';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { router, Slot, usePathname, type Href } from 'expo-router';
 import { ScrollView, StyleSheet, useColorScheme, useWindowDimensions, View } from 'react-native';
 import { Appbar, Chip, Drawer, PaperProvider, useTheme } from 'react-native-paper';
+
+import { SignIn } from '@/components/SignIn';
 
 const queryClient = new QueryClient();
 
@@ -37,16 +39,28 @@ function Shell() {
   const theme = useTheme();
   const pathname = usePathname();
   useDemoDataSync();
+  const account = useOfficeAccount();
+  const signOut = useOfficeSignOut();
   const wide = useWindowDimensions().width >= 900;
   const active = (href: Href) => (href === '/' ? pathname === '/' : pathname.startsWith(String(href)));
+
+  if (account.isPending) return <View style={[styles.page, { backgroundColor: theme.colors.background }]} />;
+  if (!account.data) return <SignIn />;
+  const me = account.data;
 
   return (
     <View style={[styles.page, { backgroundColor: theme.colors.background }]}>
       <Appbar.Header style={{ backgroundColor: theme.colors.primary }}>
         <Appbar.Content title={`${parish.name.en} · Parish office`} color={theme.colors.onPrimary} />
-        <Chip compact icon="flask-outline" style={styles.demo}>
-          Demo data in this browser
+        {wide && (
+          <Chip compact icon="flask-outline" style={styles.demo}>
+            Demo data in this browser
+          </Chip>
+        )}
+        <Chip compact icon={me.role === 'priest' ? 'account-tie' : 'account'} style={styles.demo}>
+          {wide ? `${me.name} · ${me.role === 'priest' ? 'Parish priest' : 'Office staff'}` : me.role === 'priest' ? 'Parish priest' : 'Office staff'}
         </Chip>
+        <Appbar.Action icon="logout" color={theme.colors.onPrimary} accessibilityLabel="Sign out" onPress={() => signOut.mutate([])} />
       </Appbar.Header>
       <View style={[styles.body, !wide && styles.stacked]}>
         {wide ? (

@@ -15,6 +15,7 @@ import type {
   Officer,
   ParishEvent,
   ParishGroup,
+  OfficeUser,
   ParishSettings,
   PinReset,
   RosterEntry,
@@ -47,6 +48,12 @@ export interface ParishData {
   /** Ids of the requests and subscriptions made in this parishioner app ("My requests"); Phase 2 replaces this with accounts. */
   mine: string[];
   settings: ParishSettings;
+  /** The office team: the parish priest and the office staff he adds. */
+  officeUsers: OfficeUser[];
+  /** The PINs the office team chose, by phone number. Preview only, like `logins`. */
+  officeLogins: { phone: string; pin: string }[];
+  /** The id of the office team member signed in to the office app; null when signed out. */
+  officeAccount: string | null;
 }
 
 function nextWeekday(from: string, day: Weekday): string {
@@ -354,6 +361,10 @@ export function createSeed(now: Date): ParishData {
     message('msg-2', 'prayer-group', 'Joseph Antony', 'coordinator', 1, '19:10', 'Sample: prayer meeting on Thursday at 6:30 pm in the parish hall. Please bring your Bible.'),
     message('msg-3', 'anb-1', 'Mary Joseph', 'secretary', 4, '20:00', 'Sample: thank you to every family that brought food for the feast. Our Anbiyam gave ₹4,500 to the poor fund.'),
     message('msg-4', 'anb-2', 'Parish office', 'office', 2, '11:00', 'Sample: the parish priest will bless homes in St. Sebastian’s Anbiyam on Saturday from 4 pm.'),
+    {
+      ...message('msg-5', 'anb-1', 'Joseph Antony', 'head', 6, '21:00', 'Sample: forty-two people from twelve families came together on Sunday evening to pray for the sick of our street. Fr. Francis Xavier blessed each home afterwards, and the youth served tea and snacks. Thank you to everyone who helped.'),
+      title: 'Sample: our Anbiyam prayed for the sick',
+    },
   ];
 
   // Everyone in the samples with a phone has already chosen the demo PIN.
@@ -362,11 +373,42 @@ export function createSeed(now: Date): ParishData {
   // Copied, because the demo store edits its data in place.
   const services = parish.timetable.map((service) => ({ ...service }));
 
-  return { services, announcements, events, intentions, certificates, roster, subscriptions, families, members, groups, messages, lastRead: {}, logins, pinResets: [], account: null, mine: [], settings: { intentionCutoffMinutes: 60 } };
+  // The office team: the parish priest and one member of the office staff, both with the demo PIN.
+  const officeUsers: OfficeUser[] = [
+    { id: 'office-priest', name: priest, phone: OFFICE_DEMO_PHONES.priest, role: 'priest' },
+    { id: 'office-staff', name: 'Sample: Teresa Mary (office)', phone: OFFICE_DEMO_PHONES.staff, role: 'staff' },
+  ];
+  const officeLogins = officeUsers.map((u) => ({ phone: u.phone, pin: DEMO_PIN }));
+
+  return {
+    services,
+    announcements,
+    events,
+    intentions,
+    certificates,
+    roster,
+    subscriptions,
+    families,
+    members,
+    groups,
+    messages,
+    lastRead: {},
+    logins,
+    pinResets: [],
+    account: null,
+    mine: [],
+    settings: { intentionCutoffMinutes: 60 },
+    officeUsers,
+    officeLogins,
+    officeAccount: null,
+  };
 }
 
 /** The PIN of every sample family member in the preview (Joseph Antony is +91 98430 20001). */
 export const DEMO_PIN = '246810';
+
+/** The office team's phone numbers in the preview; they sign in with DEMO_PIN too. */
+export const OFFICE_DEMO_PHONES = { priest: '+91 98430 30001', staff: '+91 98430 30002' } as const;
 
 /** A sample Anbiyam: the parish office replaces these with the parish's own. */
 function anbiyam(id: string, name: ParishGroup['name'], streets: string, officers: Officer[]): ParishGroup {

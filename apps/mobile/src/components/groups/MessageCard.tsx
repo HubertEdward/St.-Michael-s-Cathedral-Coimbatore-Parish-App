@@ -14,7 +14,7 @@ interface Props {
   unread?: boolean;
 }
 
-/** One message to a group: who sent it, in which post, when, and what it says. */
+/** One message or news article to a group: who sent it, in which post, when, and what it says. */
 export function MessageCard({ message, groupName, unread }: Props) {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -37,6 +37,14 @@ export function MessageCard({ message, groupName, unread }: Props) {
           {dayLabel(date)} · {formatTime(time, language)}
         </Text>
       </View>
+      {message.title && (
+        <View style={styles.news}>
+          <Text variant="labelMedium" style={{ color: theme.colors.primary }}>
+            {t('messages.newsLabel').toUpperCase()}
+          </Text>
+          <Text variant="titleLarge">{message.title}</Text>
+        </View>
+      )}
       <Text variant="bodyLarge">{message.body}</Text>
       <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
         {message.senderRole === 'office' ? t('messages.office') : `${message.sender}, ${role}`}
@@ -50,4 +58,5 @@ const styles = StyleSheet.create({
   top: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   flex: { flex: 1 },
   when: { flexShrink: 1, textAlign: 'right' },
+  news: { gap: 2 },
 });

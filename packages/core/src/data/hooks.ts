@@ -17,6 +17,7 @@ export const queryKeys = {
   groups: ['groups'],
   messages: ['messages'],
   settings: ['settings'],
+  office: ['office'],
 } as const;
 
 export const useServices = () => useQuery({ queryKey: queryKeys.services, queryFn: api.listServices });
@@ -78,7 +79,7 @@ export const useAddFamilyMembers = () => useChange(queryKeys.family, api.addFami
 export const useUpdateFamilyMember = () => useChange(queryKeys.family, api.updateFamilyMember);
 export const useSetFamilyStatus = () => useChange(queryKeys.family, api.setFamilyStatus);
 export const useSetMemberStatus = () => useChange(queryKeys.family, api.setMemberStatus);
-export const useSetFamilyAnbiyam = () => useChange(queryKeys.family, api.setFamilyAnbiyam, queryKeys.messages);
+export const useSetFamilyAnbiyam = () => useChange(queryKeys.family, api.setFamilyAnbiyam, queryKeys.groups, queryKeys.messages);
 export const useRemoveFamily = () => useChange(queryKeys.family, api.removeFamily, queryKeys.groups, queryKeys.messages);
 export const useAskToRejoinParish = () => useChange(queryKeys.family, api.askToRejoinParish);
 
@@ -101,6 +102,15 @@ export const useSendOfficeMessage = () => useChange(queryKeys.messages, api.send
 export const useDeleteMessage = () => useChange(queryKeys.messages, api.deleteMessage);
 export const useAskToJoinGroup = () => useChange(queryKeys.messages, api.askToJoinGroup, queryKeys.groups);
 export const useAnswerJoinRequest = () => useChange(queryKeys.messages, api.answerJoinRequest, queryKeys.groups);
+
+// The office app's sign-in and team.
+export const useOfficeAccount = () => useQuery({ queryKey: [...queryKeys.office, 'me'], queryFn: api.getOfficeAccount });
+export const useOfficeUsers = () => useQuery({ queryKey: [...queryKeys.office, 'team'], queryFn: api.listOfficeUsers });
+export const useOfficeSignIn = () => useChange(queryKeys.office, api.officeSignIn);
+export const useOfficeChoosePin = () => useChange(queryKeys.office, api.officeChoosePin);
+export const useOfficeSignOut = () => useChange(queryKeys.office, api.officeSignOut);
+export const useAddOfficeUser = () => useChange(queryKeys.office, api.addOfficeUser);
+export const useRemoveOfficeUser = () => useChange(queryKeys.office, api.removeOfficeUser);
 
 export function useResetDemoData() {
   const client = useQueryClient();
