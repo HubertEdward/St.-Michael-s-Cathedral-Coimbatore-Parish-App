@@ -41,6 +41,7 @@ export default function Settings() {
       <Button
         mode="outlined"
         icon="restore"
+        labelStyle={{ flexShrink: 1 }}
         loading={reset.isPending}
         onPress={() => reset.mutate(undefined, { onSuccess: () => setDone(true) })}>
         {t('settings.resetDemo')}

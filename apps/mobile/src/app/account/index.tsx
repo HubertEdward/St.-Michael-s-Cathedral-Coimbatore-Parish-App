@@ -115,7 +115,7 @@ export default function MyFamily() {
       {canEdit && <GradientButton label={t('account.addMember')} icon="account-plus" onPress={() => router.push('/account/add-member')} />}
 
       <View style={styles.footer}>
-        <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+        <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant, flexShrink: 1 }}>
           {t('account.signedInAs', { phone: account.data.phone })}
         </Text>
         <Button
@@ -212,7 +212,7 @@ function MemberRow({ member, isMe, color, showStatus, onPress }: { member: Famil
 const styles = StyleSheet.create({
   card: { borderRadius: radius.card, overflow: 'hidden', padding: 22, gap: 6 },
   watermark: { position: 'absolute', right: -24, bottom: -24 },
-  cardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
+  cardTop: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 4 },
   soft: { color: 'rgba(255,255,255,0.8)' },
   code: {
     marginTop: 12,
@@ -234,6 +234,6 @@ const styles = StyleSheet.create({
   name: { flexShrink: 1 },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
   you: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 999 },
-  status: { alignSelf: 'flex-start', marginTop: 4 },
+  status: { alignSelf: 'flex-start', maxWidth: '100%', marginTop: 4 },
   footer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 },
 });

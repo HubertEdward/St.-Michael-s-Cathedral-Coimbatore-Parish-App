@@ -18,7 +18,7 @@ In the code, the same items are marked `TO CONFIRM`.
 
 From the parish website (page dated June 2025):
 
-- [ ] Sunday: 5:15, 6:30, 8:00 AM and 5:30 PM
+- [ ] Sunday: 6:30, 8:00 AM and 5:30 PM (the website's 5:15 AM Mass is no longer held, 17 Nov 2026)
 - [ ] Monday–Saturday: 6:15 AM
 - [ ] Tuesday–Saturday: 6:30 PM
 - [ ] Monday 6:30 PM at the cemetery (is there also a 6:30 PM Mass in the cathedral on Monday?)

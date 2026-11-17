@@ -75,7 +75,9 @@ export function GradientButton({ label, icon, onPress, loading, disabled }: Prop
 
 const styles = StyleSheet.create({
   button: {
-    height: 58,
+    minHeight: 58,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
     borderRadius: radius.button,
     overflow: 'hidden',
     alignItems: 'center',
@@ -88,6 +90,6 @@ const styles = StyleSheet.create({
   },
   dim: { opacity: 0.6 },
   shine: { position: 'absolute', top: -10, bottom: -10, width: 90 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  label: { color: '#FFFFFF', fontWeight: '700' },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 10, maxWidth: '100%' },
+  label: { color: '#FFFFFF', fontWeight: '700', flexShrink: 1, textAlign: 'center' },
 });

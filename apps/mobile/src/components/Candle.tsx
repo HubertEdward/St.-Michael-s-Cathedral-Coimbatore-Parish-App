@@ -59,25 +59,28 @@ export function Candle() {
   return (
     <View style={styles.card}>
       <LinearGradient colors={['#120507', '#2A0C10', '#3D1218']} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} style={StyleSheet.absoluteFill} />
-      <View style={styles.scene}>
-        {lit && <Glow />}
-        {justLit && <Burst size={180} />}
-        <View style={styles.candleColumn}>
-          {lit ? <Animated.View entering={ZoomIn.springify().damping(9)}><Flame /></Animated.View> : <View style={styles.flameSpace} />}
-          <View style={styles.wick} />
-          <LinearGradient colors={['#FFF8EA', '#F1E2C2', '#D9C49A']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.wax} />
+      <View style={styles.top}>
+        <View style={styles.scene}>
+          {lit && <Glow />}
+          {justLit && <Burst size={180} />}
+          <View style={styles.candleColumn}>
+            {lit ? <Animated.View entering={ZoomIn.springify().damping(9)}><Flame /></Animated.View> : <View style={styles.flameSpace} />}
+            <View style={styles.wick} />
+            <LinearGradient colors={['#FFF8EA', '#F1E2C2', '#D9C49A']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.wax} />
+          </View>
+        </View>
+        <View style={styles.text}>
+          <Eyebrow color={gold}>{t('candle.eyebrow')}</Eyebrow>
+          <Display size={28} color="#FFFFFF">
+            {lit ? t('candle.litTitle') : t('candle.title')}
+          </Display>
+          <Text variant="bodyMedium" style={styles.soft}>
+            {lit ? t('candle.litBody', { time: until }) : t('candle.body')}
+          </Text>
         </View>
       </View>
-      <View style={styles.text}>
-        <Eyebrow color={gold}>{t('candle.eyebrow')}</Eyebrow>
-        <Display size={28} color="#FFFFFF">
-          {lit ? t('candle.litTitle') : t('candle.title')}
-        </Display>
-        <Text variant="bodyMedium" style={styles.soft}>
-          {lit ? t('candle.litBody', { time: until }) : t('candle.body')}
-        </Text>
-        {!lit && <GradientButton label={t('candle.light')} icon="fire" onPress={light} />}
-      </View>
+      {/* Full width under the candle: a single long Tamil word does not fit beside it. */}
+      {!lit && <GradientButton label={t('candle.light')} icon="fire" onPress={light} />}
     </View>
   );
 }
@@ -126,7 +129,8 @@ function Glow() {
 }
 
 const styles = StyleSheet.create({
-  card: { borderRadius: radius.card, overflow: 'hidden', flexDirection: 'row', alignItems: 'center', padding: 20, gap: 18, minHeight: 230 },
+  card: { borderRadius: radius.card, overflow: 'hidden', padding: 20, gap: 16, minHeight: 230, justifyContent: 'center' },
+  top: { flexDirection: 'row', alignItems: 'center', gap: 18 },
   scene: { width: 96, height: 190, alignItems: 'center', justifyContent: 'flex-end' },
   glow: { position: 'absolute', top: 2, width: 112, height: 112, alignItems: 'center', justifyContent: 'center' },
   ring: { position: 'absolute', borderRadius: 60, backgroundColor: '#FFB547' },

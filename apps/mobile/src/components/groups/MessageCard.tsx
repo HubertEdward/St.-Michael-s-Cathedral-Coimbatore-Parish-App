@@ -33,7 +33,7 @@ export function MessageCard({ message, groupName, unread }: Props) {
         ) : (
           <View style={styles.flex} />
         )}
-        <Text variant="labelMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+        <Text variant="labelMedium" style={[styles.when, { color: theme.colors.onSurfaceVariant }]}>
           {dayLabel(date)} · {formatTime(time, language)}
         </Text>
       </View>
@@ -49,4 +49,5 @@ const styles = StyleSheet.create({
   card: { gap: 6 },
   top: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   flex: { flex: 1 },
+  when: { flexShrink: 1, textAlign: 'right' },
 });

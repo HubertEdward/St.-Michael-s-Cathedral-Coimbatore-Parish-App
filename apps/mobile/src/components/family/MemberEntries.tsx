@@ -30,7 +30,7 @@ export function MemberEntries({ keepOne = false }: { keepOne?: boolean }) {
           <MemberFields prefix={`members.${index}.`} />
         </Panel>
       ))}
-      <Button mode="outlined" icon="account-plus" onPress={() => append(newMember)}>
+      <Button mode="outlined" icon="account-plus" labelStyle={{ flexShrink: 1 }} onPress={() => append(newMember)}>
         {fields.length === 0 ? t('account.addMember') : t('member.addAnother')}
       </Button>
     </>

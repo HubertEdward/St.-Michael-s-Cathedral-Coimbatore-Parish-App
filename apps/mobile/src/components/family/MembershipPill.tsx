@@ -18,7 +18,7 @@ export function MembershipPill({ status, onDark = false }: { status: FamilyStatu
   return (
     <View style={[styles.pill, { backgroundColor: onDark ? 'rgba(255,255,255,0.18)' : background }]}>
       <Icon source={icon} size={14} color={tint} />
-      <Text variant="labelMedium" style={{ color: tint }}>
+      <Text variant="labelMedium" style={[styles.label, { color: tint }]}>
         {t(`family.status.${status}`)}
       </Text>
     </View>
@@ -26,5 +26,6 @@ export function MembershipPill({ status, onDark = false }: { status: FamilyStatu
 }
 
 const styles = StyleSheet.create({
-  pill: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999, alignSelf: 'flex-start' },
+  pill: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999, alignSelf: 'flex-start', maxWidth: '100%' },
+  label: { flexShrink: 1 },
 });

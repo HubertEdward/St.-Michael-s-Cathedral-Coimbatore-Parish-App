@@ -116,7 +116,7 @@ function EventCard({ event }: { event: ParishEvent }) {
 
 const styles = StyleSheet.create({
   gap: { gap: 6 },
-  meta: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  meta: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8 },
   eventRow: { flexDirection: 'row', gap: 16, alignItems: 'center' },
   dateBlock: { width: 64, paddingVertical: 8, borderRadius: 12, alignItems: 'center' },
   eventText: { flex: 1, gap: 2 },

@@ -78,9 +78,8 @@ export default {
 
   sacraments: indianLatinRiteSacraments,
 
-  // TO CONFIRM: from the parish website (page dated June 2025)
+  // TO CONFIRM: from the parish website (page dated June 2025); no 5:15 AM Sunday Mass (parish, 2026-11-17)
   timetable: [
-    mass(0, '05:15'),
     mass(0, '06:30'),
     mass(0, '08:00'),
     mass(0, '17:30'),

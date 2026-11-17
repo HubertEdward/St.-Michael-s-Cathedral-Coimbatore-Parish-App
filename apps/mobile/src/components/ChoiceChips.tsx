@@ -21,7 +21,10 @@ export function ChoiceChips<T extends string>({ label, options, value, onChange,
         mode={selected ? 'flat' : 'outlined'}
         selected={selected}
         selectedColor={selected ? theme.colors.onPrimary : theme.colors.onSurface}
-        style={selected ? { backgroundColor: theme.colors.primary } : undefined}
+        // Paper keeps a chip's label on one line, so a long one (a Tamil Anbiyam name on a narrow phone) ends in "…".
+        style={[styles.chip, selected && { backgroundColor: theme.colors.primary }]}
+        textStyle={styles.label}
+        accessibilityLabel={option.label}
         onPress={() => onChange(option.value)}
         accessibilityRole="radio"
         accessibilityState={{ selected }}>
@@ -47,4 +50,6 @@ const styles = StyleSheet.create({
   block: { gap: 8 },
   row: { flexDirection: 'row', gap: 8 },
   wrap: { flexWrap: 'wrap' },
+  chip: { maxWidth: '100%' },
+  label: { flexShrink: 1 },
 });
