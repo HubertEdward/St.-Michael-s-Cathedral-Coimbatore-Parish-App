@@ -16,6 +16,7 @@ export const queryKeys = {
   family: ['family'],
   groups: ['groups'],
   messages: ['messages'],
+  settings: ['settings'],
 } as const;
 
 export const useServices = () => useQuery({ queryKey: queryKeys.services, queryFn: api.listServices });
@@ -34,6 +35,7 @@ export const useSubscriptions = () => useQuery({ queryKey: queryKeys.subscriptio
 export const useMySubscriptions = () =>
   useQuery({ queryKey: [...queryKeys.subscriptions, 'mine'], queryFn: api.listMySubscriptions });
 export const useRoster = () => useQuery({ queryKey: queryKeys.roster, queryFn: api.listRoster });
+export const useSettings = () => useQuery({ queryKey: queryKeys.settings, queryFn: api.getSettings });
 
 /** A mutation that refreshes the queries under `key`, and under each of `also` when the change shows there too. */
 function useChange<TArgs extends unknown[], TResult>(key: QueryKey, change: (...args: TArgs) => Promise<TResult>, ...also: QueryKey[]) {
@@ -51,6 +53,7 @@ export const useDeleteAnnouncement = () => useChange(queryKeys.announcements, ap
 export const useSaveEvent = () => useChange(queryKeys.events, api.saveEvent);
 export const useDeleteEvent = () => useChange(queryKeys.events, api.deleteEvent);
 export const useSubmitIntention = () => useChange(queryKeys.intentions, api.submitIntention);
+export const useUpdateSettings = () => useChange(queryKeys.settings, api.updateSettings);
 export const useSetIntentionStatus = () => useChange(queryKeys.intentions, api.setIntentionStatus);
 export const useSubmitCertificateRequest = () => useChange(queryKeys.certificates, api.submitCertificateRequest);
 export const useUpdateCertificateRequest = () => useChange(queryKeys.certificates, api.updateCertificateRequest);
@@ -71,7 +74,7 @@ export const useResetPin = () => useChange(queryKeys.family, api.resetPin);
 export const useIssuePinReset = () => useChange(queryKeys.family, api.issuePinReset);
 export const useRegisterFamily = () => useChange(queryKeys.family, api.registerFamily);
 export const useRequestToJoinFamily = () => useChange(queryKeys.family, api.requestToJoinFamily);
-export const useAddFamilyMember = () => useChange(queryKeys.family, api.addFamilyMember);
+export const useAddFamilyMembers = () => useChange(queryKeys.family, api.addFamilyMembers);
 export const useUpdateFamilyMember = () => useChange(queryKeys.family, api.updateFamilyMember);
 export const useSetFamilyStatus = () => useChange(queryKeys.family, api.setFamilyStatus);
 export const useSetMemberStatus = () => useChange(queryKeys.family, api.setMemberStatus);

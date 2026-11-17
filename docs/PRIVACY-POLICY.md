@@ -17,8 +17,8 @@ In this preview, everything is kept **on your phone only**:
 
 - your language and typing choices (Tamil typing on or off, the spellings you picked for words
   typed in English letters, the language to listen for when you speak);
-- if you sign in: your phone number and PIN, your family's register entry (family name, head of
-  family, address, chosen Anbiyam) and its members: each one's name and relationship to the head
+- if you sign in: your phone number and PIN, your family's register entry (the head of the
+  family, by whose name the family is known, the address and chosen Anbiyam) and its members: each one's name and relationship to the head
   of the family and, if given, their date of birth, education, what they do now (their class if
   studying; the sector, their work and a yearly income range if working) and the dates of their
   baptism, First Holy Communion, confirmation and marriage;

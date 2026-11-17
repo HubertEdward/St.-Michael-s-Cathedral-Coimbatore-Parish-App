@@ -104,6 +104,7 @@ export default function MyFamily() {
               member={member}
               isMe={member.id === me.id}
               color={avatarColors[index % avatarColors.length]}
+              showStatus={family.status === 'approved'}
               onPress={canEdit || member.id === me.id ? () => router.push(`/account/member/${member.id}`) : undefined}
             />
           </View>
@@ -159,7 +160,11 @@ function doing(t: TFunction, member: FamilyMember): string | undefined {
   return member.occupation && t(`member.occupations.${member.occupation}`);
 }
 
-function MemberRow({ member, isMe, color, onPress }: { member: FamilyMember; isMe: boolean; color: string; onPress?: () => void }) {
+/**
+ * One line per member: initials, name, relationship and what they do. Their own approval shows only once
+ * the family is approved; until then the whole family waits together.
+ */
+function MemberRow({ member, isMe, color, showStatus, onPress }: { member: FamilyMember; isMe: boolean; color: string; showStatus: boolean; onPress?: () => void }) {
   const { t } = useTranslation();
   const theme = useTheme();
   const initials = member.name
@@ -172,13 +177,15 @@ function MemberRow({ member, isMe, color, onPress }: { member: FamilyMember; isM
   return (
     <Tap onPress={onPress} disabled={!onPress} accessibilityLabel={member.name} style={styles.member}>
       <View style={[styles.avatar, { backgroundColor: color }]}>
-        <Text variant="titleMedium" style={styles.initials}>
+        <Text variant="titleSmall" style={styles.initials}>
           {initials}
         </Text>
       </View>
       <View style={styles.flex}>
         <View style={styles.nameRow}>
-          <Text variant="titleMedium">{member.name}</Text>
+          <Text variant="titleMedium" style={styles.name}>
+            {member.name}
+          </Text>
           {isMe && (
             <View style={[styles.you, { backgroundColor: theme.colors.primaryContainer }]}>
               <Text variant="labelSmall" style={{ color: theme.colors.onPrimaryContainer }}>
@@ -190,10 +197,13 @@ function MemberRow({ member, isMe, color, onPress }: { member: FamilyMember; isM
         <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
           {t(`family.relationship.${member.relationship}`)}
           {now ? ` · ${now}` : ''}
-          {member.addedBy ? ` · ${t('account.addedBy', { name: member.addedBy })}` : ''}
         </Text>
+        {showStatus && member.status !== 'approved' && (
+          <View style={styles.status}>
+            <MembershipPill status={member.status} />
+          </View>
+        )}
       </View>
-      {member.status !== 'approved' && <MembershipPill status={member.status} />}
       {onPress && <Icon source="chevron-right" size={22} color={theme.colors.onSurfaceVariant} />}
     </Tap>
   );
@@ -217,11 +227,13 @@ const styles = StyleSheet.create({
   },
   codeText: { color: '#FFFFFF', fontWeight: '700', letterSpacing: 2 },
   list: { gap: 0 },
-  member: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 12 },
-  avatar: { width: 46, height: 46, borderRadius: 23, alignItems: 'center', justifyContent: 'center' },
+  member: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10 },
+  avatar: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   initials: { color: '#FFFFFF', fontWeight: '700' },
-  flex: { flex: 1, gap: 2 },
+  flex: { flex: 1, minWidth: 0, gap: 2 },
+  name: { flexShrink: 1 },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
   you: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 999 },
+  status: { alignSelf: 'flex-start', marginTop: 4 },
   footer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 },
 });

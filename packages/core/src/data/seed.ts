@@ -15,6 +15,7 @@ import type {
   Officer,
   ParishEvent,
   ParishGroup,
+  ParishSettings,
   PinReset,
   RosterEntry,
   Service,
@@ -45,6 +46,7 @@ export interface ParishData {
   account: Account | null;
   /** Ids of the requests and subscriptions made in this parishioner app ("My requests"); Phase 2 replaces this with accounts. */
   mine: string[];
+  settings: ParishSettings;
 }
 
 function nextWeekday(from: string, day: Weekday): string {
@@ -173,22 +175,21 @@ export function createSeed(now: Date): ParishData {
   // Registered families in their Anbiyams; one new family asking to join the parish, one approved but
   // not yet placed in an Anbiyam, one removed after moving away; and two requests to join a family.
   const prefix = familyCodePrefix();
-  const family = (n: number, name: string, address: string, status: Family['status'], daysAgo: number, extra: Partial<Family> = {}): Family => ({
+  const family = (n: number, address: string, status: Family['status'], daysAgo: number, extra: Partial<Family> = {}): Family => ({
     id: `fam-${n}`,
     code: `${prefix}-${String(100 + n).padStart(4, '0')}`,
-    name,
     address,
     status,
     createdAt: parishTimeToIso(addDays(today, -daysAgo), '11:00'),
     ...extra,
   });
   const families: Family[] = [
-    family(1, 'Joseph family', '12 Raja Street, Coimbatore', 'approved', 400, { anbiyamId: 'anb-1' }),
-    family(2, 'Xavier family', '4 Oppanakara Street, Coimbatore', 'approved', 300, { anbiyamId: 'anb-2' }),
-    family(3, 'Fernandez family', '27 Big Bazaar Street, Coimbatore', 'approved', 200, { anbiyamId: 'anb-3' }),
-    family(4, 'Thomas family', '8 Variety Hall Road, Coimbatore', 'pending', 1, { preferredAnbiyamId: 'anb-2' }),
-    family(5, 'D’Souza family', '3 Town Hall Road, Coimbatore', 'approved', 6, { preferredAnbiyamId: 'anb-4' }),
-    family(6, 'Pereira family', '19 Prakasam Street, Coimbatore', 'removed', 900, {
+    family(1, '12 Raja Street, Coimbatore', 'approved', 400, { anbiyamId: 'anb-1' }),
+    family(2, '4 Oppanakara Street, Coimbatore', 'approved', 300, { anbiyamId: 'anb-2' }),
+    family(3, '27 Big Bazaar Street, Coimbatore', 'approved', 200, { anbiyamId: 'anb-3' }),
+    family(4, '8 Variety Hall Road, Coimbatore', 'pending', 1, { preferredAnbiyamId: 'anb-2' }),
+    family(5, '3 Town Hall Road, Coimbatore', 'approved', 6, { preferredAnbiyamId: 'anb-4' }),
+    family(6, '19 Prakasam Street, Coimbatore', 'removed', 900, {
       removal: { reason: 'movedAway', note: 'Moved to Chennai', on: addDays(today, -30) },
     }),
   ];
@@ -361,7 +362,7 @@ export function createSeed(now: Date): ParishData {
   // Copied, because the demo store edits its data in place.
   const services = parish.timetable.map((service) => ({ ...service }));
 
-  return { services, announcements, events, intentions, certificates, roster, subscriptions, families, members, groups, messages, lastRead: {}, logins, pinResets: [], account: null, mine: [] };
+  return { services, announcements, events, intentions, certificates, roster, subscriptions, families, members, groups, messages, lastRead: {}, logins, pinResets: [], account: null, mine: [], settings: { intentionCutoffMinutes: 60 } };
 }
 
 /** The PIN of every sample family member in the preview (Joseph Antony is +91 98430 20001). */

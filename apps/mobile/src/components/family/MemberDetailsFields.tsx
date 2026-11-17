@@ -10,7 +10,7 @@ import {
   type StudyClass,
 } from '@parish/core';
 import type { TFunction } from 'i18next';
-import { Controller, useFormContext, useWatch, type Path } from 'react-hook-form';
+import { Controller, useFormContext, useWatch } from 'react-hook-form';
 import { Text, useTheme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 
@@ -42,26 +42,27 @@ export const studyClassLabel = (t: TFunction, value: StudyClass) =>
 /**
  * The family register's questions about one person: date of birth, education and work, and the dates
  * of their sacraments. The class appears only for someone studying, and the work only for someone working.
- * Used inside a FormProvider whose values include MemberDetailsInput.
+ * Used inside a FormProvider whose values hold MemberDetailsInput at `prefix` (e.g. "members.2.") or at the top.
  */
-export function MemberDetailsFields() {
+export function MemberDetailsFields({ prefix = '' }: { prefix?: string }) {
   const { t } = useTranslation();
   const theme = useTheme();
-  const { control } = useFormContext<MemberDetailsInput>();
-  const [education, occupation, studyClass] = useWatch({ control, name: ['education', 'occupation', 'studyClass'] });
+  const { control } = useFormContext();
+  const at = (field: string) => `${prefix}${field}`;
+  const [education, occupation, studyClass] = useWatch({ control, name: [at('education'), at('occupation'), at('studyClass')] });
   const degree = education === 'diploma' || education === 'graduate' || education === 'postgraduate' || education === 'doctorate';
 
-  const chips = <N extends Path<MemberDetailsInput>>(name: N, label: string, options: { value: string; label: string }[]) => (
+  const chips = (field: string, label: string, options: { value: string; label: string }[]) => (
     <Controller
       control={control}
-      name={name}
-      render={({ field }) => <ChoiceChips label={label} options={options} value={field.value as string | undefined} onChange={field.onChange} />}
+      name={at(field)}
+      render={({ field: { value, onChange } }) => <ChoiceChips label={label} options={options} value={value} onChange={onChange} />}
     />
   );
 
   return (
     <>
-      <DateField control={control} name="birthDate" label={t('account.birthDate')} />
+      <DateField control={control} name={at('birthDate')} label={t('account.birthDate')} />
 
       <Eyebrow style={{ marginTop: 8 }}>{t('member.educationAndWork')}</Eyebrow>
       {chips(
@@ -69,7 +70,7 @@ export function MemberDetailsFields() {
         t('member.education'),
         educationLevels.map((v) => ({ value: v, label: t(`member.educationLevels.${v}`) })),
       )}
-      {degree && <FormField control={control} name="qualification" label={t('member.qualification')} />}
+      {degree && <FormField control={control} name={at('qualification')} label={t('member.qualification')} />}
       {chips(
         'occupation',
         t('member.occupation'),
@@ -82,7 +83,7 @@ export function MemberDetailsFields() {
             t('member.studyClass'),
             studyClasses.map((v) => ({ value: v, label: v === 'preschool' || v === 'college' ? t(`member.classes.${v}`) : v })),
           )}
-          {studyClass === 'college' && <FormField control={control} name="course" label={t('member.course')} />}
+          {studyClass === 'college' && <FormField control={control} name={at('course')} label={t('member.course')} />}
         </>
       )}
       {occupation === 'working' && (
@@ -92,7 +93,7 @@ export function MemberDetailsFields() {
             t('member.workSector'),
             workSectors.map((v) => ({ value: v, label: t(`member.sectors.${v}`) })),
           )}
-          <FormField tamil control={control} name="job" label={t('member.job')} />
+          <FormField tamil control={control} name={at('job')} label={t('member.job')} />
           {chips(
             'yearlyIncome',
             t('member.income'),
@@ -106,7 +107,7 @@ export function MemberDetailsFields() {
         {t('member.sacramentsHint')}
       </Text>
       {recordedSacraments.map((kind) => (
-        <DateField key={kind} control={control} name={`sacraments.${kind}`} label={t(`certificate.kinds.${kind}`)} />
+        <DateField key={kind} control={control} name={at(`sacraments.${kind}`)} label={t(`certificate.kinds.${kind}`)} />
       ))}
     </>
   );

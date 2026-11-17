@@ -12,13 +12,14 @@ import { Screen } from '@/components/Screen';
 import { GradientButton } from '@/components/design/GradientButton';
 import { Eyebrow } from '@/components/design/Eyebrow';
 import { MemberDetailsFields, noDetails } from '@/components/family/MemberDetailsFields';
+import { MemberEntries } from '@/components/family/MemberEntries';
 import { SentForApproval } from '@/components/family/SentForApproval';
 import { translateError } from '@/components/translateError';
 import { useLocalized } from '@/i18n';
 
-const empty: FamilyInput = { familyName: '', headName: '', address: '', preferredAnbiyamId: '', ...noDetails };
+const empty: FamilyInput = { headName: '', address: '', preferredAnbiyamId: '', ...noDetails, members: [] };
 
-/** Ask the parish priest to take a new family into the parish, with the signed-in person as its head. */
+/** Ask the parish priest to take a new family into the parish, with the signed-in person as its head and the rest of the family. */
 export default function RegisterFamily() {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -36,7 +37,7 @@ export default function RegisterFamily() {
       <Text variant="bodyLarge" style={{ color: theme.colors.onSurfaceVariant }}>
         {t('account.registerIntro')}
       </Text>
-      <FormField tamil control={control} name="familyName" label={t('account.familyName')} hint={t('account.familyNameHint')} />
+      <FormField tamil control={control} name="headName" label={t('account.headName')} hint={t('account.headNameHint')} />
       <FormField tamil control={control} name="address" label={t('account.address')} multiline />
       {anbiyams.length > 0 && (
         <Controller
@@ -61,9 +62,13 @@ export default function RegisterFamily() {
       <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
         {t('member.detailsIntro')}
       </Text>
-      <FormField tamil control={control} name="headName" label={t('account.headName')} />
       <FormProvider {...form}>
         <MemberDetailsFields />
+        <Eyebrow style={{ marginTop: 8 }}>{t('member.yourFamily')}</Eyebrow>
+        <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+          {t('member.yourFamilyHint')}
+        </Text>
+        <MemberEntries />
       </FormProvider>
       <GradientButton
         label={t('account.sendForApproval')}

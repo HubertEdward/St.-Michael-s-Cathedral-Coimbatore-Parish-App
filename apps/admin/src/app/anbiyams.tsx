@@ -35,7 +35,7 @@ export default function Anbiyams() {
             return (
               <Choice
                 key={f.id}
-                label={`${f.name} (${f.code}), ${f.address}${preferred ? `. The family suggested ${preferred.name.en}.` : ''}`}
+                label={`Family of ${f.name} (${f.code}), ${f.address}${preferred ? `. The family suggested ${preferred.name.en}.` : ''}`}
                 options={anbiyams.map((a) => ({ value: a.id, label: a.id === preferred?.id ? `${a.name.en} (suggested)` : a.name.en }))}
                 value={undefined}
                 onChange={(id) => assign.mutate([f.id, id])}

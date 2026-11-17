@@ -3,13 +3,15 @@ import {
   formatTime,
   intentionInputSchema,
   intentionTypes,
-  parishClock,
+  intentionsClock,
   upcomingServices,
   useServices,
+  useSettings,
   useSubmitIntention,
   type IntentionInput,
 } from '@parish/core';
 import { router } from 'expo-router';
+import type { TFunction } from 'i18next';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { View } from 'react-native';
@@ -29,11 +31,19 @@ import { useLanguage } from '@/i18n';
 
 const empty: IntentionInput = { type: 'thanksgiving', names: '', massDate: '', serviceId: '', requesterName: '', phone: '', note: '' };
 
+/** "Intentions close 1 hour before each Mass." in whole days, hours or minutes as the setting reads best. */
+function closesText(t: TFunction, minutes: number) {
+  if (minutes % 1440 === 0) return t('intention.closesDays', { count: minutes / 1440 });
+  if (minutes % 60 === 0) return t('intention.closesHours', { count: minutes / 60 });
+  return t('intention.closesMinutes', { count: minutes });
+}
+
 export default function IntentionRequest() {
   const { t } = useTranslation();
   const language = useLanguage();
   const dayLabel = useDayLabel();
   const services = useServices();
+  const settings = useSettings();
   const submit = useSubmitIntention();
   const [saved, setSaved] = useState(false);
   const { control, handleSubmit, watch, setValue, reset, formState } = useForm<IntentionInput>({
@@ -81,10 +91,13 @@ export default function IntentionRequest() {
 
       <QueryState query={services}>
         {(list) => {
-          const upcoming = upcomingServices(list, parishClock(), { days: 30, limit: 500 });
+          // Masses whose intentions have closed are not offered.
+          const cutoff = settings.data?.intentionCutoffMinutes ?? 0;
+          const upcoming = upcomingServices(list, intentionsClock(cutoff), { days: 30, limit: 500 });
           const dates = [...new Set(upcoming.map((u) => u.date))];
           return (
             <View style={{ gap: 12 }}>
+              {cutoff > 0 && <Text variant="bodyMedium">{closesText(t, cutoff)}</Text>}
               <Controller
                 control={control}
                 name="massDate"

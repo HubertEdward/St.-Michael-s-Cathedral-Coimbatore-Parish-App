@@ -6,6 +6,8 @@ const messages: Record<string, string> = {
   time: 'Use 24-hour time, e.g. 06:30.',
   massNotOnDate: 'That Mass is not held on the chosen date.',
   massOutOfRange: 'Choose a Mass within the next 90 days.',
+  intentionClosed: 'Intentions for that Mass have closed. Choose a later Mass.',
+  minutes: 'Enter whole minutes, from 0 up to 10080 (one week).',
   anbiyamHasFamilies: 'Families still belong to this Anbiyam. Move them to another Anbiyam first.',
 };
 

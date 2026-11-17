@@ -1,9 +1,9 @@
 // The only functions screens use to read and change parish data.
-// Thrown Error messages are codes the apps translate: 'massNotOnDate', 'massOutOfRange'.
+// Thrown Error messages are codes the apps translate: 'massNotOnDate', 'massOutOfRange', 'intentionClosed'.
 import { nextDebitOn } from '../giving';
 import { joinableKinds } from '../types';
 import { parishClock, parishTimeToIso } from '../parish';
-import { addDays, weekdayOf } from '../schedule';
+import { addDays, toMinutes, weekdayOf } from '../schedule';
 import type {
   Account,
   Announcement,
@@ -54,6 +54,9 @@ import {
   type FamilyInput,
   type JoinFamilyInput,
   type MemberInput,
+  membersInputSchema,
+  settingsInputSchema,
+  type SettingsInput,
   type MemberDetailsInput,
   type IntentionInput,
   type RosterInput,
@@ -147,7 +150,23 @@ export const saveEvent = (input: EventInput, id?: string) =>
 
 export const deleteEvent = (id: string) => write((d) => remove(d.events, id));
 
+// Settings
+
+export const getSettings = () => read((d) => d.settings);
+
+export const updateSettings = (input: SettingsInput) =>
+  write((d) => {
+    d.settings = settingsInputSchema.parse(input);
+    return d.settings;
+  });
+
 // Mass intentions
+
+/**
+ * The parish clock as it will read when intentions close: a Mass that has started by then no longer
+ * takes intentions. Intentions close the parish office's chosen number of minutes before each Mass.
+ */
+export const intentionsClock = (cutoffMinutes: number, now = new Date()) => parishClock(new Date(now.getTime() + cutoffMinutes * 60_000));
 
 export const listIntentions = () => read((d) => [...d.intentions].sort(newestFirst));
 
@@ -159,8 +178,10 @@ export const submitIntention = (input: IntentionInput) =>
       throw new Error('massNotOnDate');
     }
     const today = parishClock().date;
-    if (parsed.massDate < today || parsed.massDate > addDays(today, 90)) {
-      throw new Error('massOutOfRange');
+    if (parsed.massDate > addDays(today, 90)) throw new Error('massOutOfRange');
+    const closes = intentionsClock(d.settings.intentionCutoffMinutes);
+    if (parsed.massDate < closes.date || (parsed.massDate === closes.date && toMinutes(service.time) <= closes.minutes)) {
+      throw new Error('intentionClosed');
     }
     const intention: MassIntention = {
       id: newId(),
@@ -300,8 +321,11 @@ function memberDetails(input: MemberDetailsInput): MemberDetails {
 /** Approved members look after their family's entries; so does the head of a family still waiting to be approved. */
 const keepsFamily = (me: FamilyMember) => me.status === 'approved' || me.relationship === 'head';
 
+/** A family's name is its head's. */
+const headName = (d: ParishData, family: Family) => d.members.find((m) => m.familyId === family.id && m.relationship === 'head')?.name ?? '';
+
 function withMembers(d: ParishData, family: Family): FamilyWithMembers {
-  return { ...family, members: d.members.filter((m) => m.familyId === family.id && m.status !== 'declined') };
+  return { ...family, name: headName(d, family), members: d.members.filter((m) => m.familyId === family.id && m.status !== 'declined') };
 }
 
 export const getAccount = () => read((d): Account | null => d.account);
@@ -369,7 +393,7 @@ export const getMyFamily = () =>
     const family = me && d.families.find((f) => f.id === me.familyId);
     if (!me || !family) return null;
     const waitingToJoin = family.status === 'approved' && me.status !== 'approved';
-    if (waitingToJoin) return { family: { ...family, address: '', anbiyamId: undefined, members: [me] }, me, anbiyam: undefined };
+    if (waitingToJoin) return { family: { ...family, name: headName(d, family), address: '', anbiyamId: undefined, members: [me] }, me, anbiyam: undefined };
     return { family: withMembers(d, family), me, anbiyam: d.groups.find((g) => g.id === family.anbiyamId) };
   });
 
@@ -388,7 +412,19 @@ function signedInWithoutFamily(d: ParishData): Account {
   return d.account;
 }
 
-/** Registers a new family with the signed-in person as its head; the parish office approves it. */
+/** A family member someone adds, such as a child or an elder without their own phone; the parish office approves them. */
+const addedMember = (familyId: string, addedBy: string, input: MemberInput, now: string): FamilyMember => ({
+  id: newId(),
+  familyId,
+  name: input.name,
+  relationship: input.relationship === 'head' ? 'other' : input.relationship,
+  ...memberDetails(input),
+  status: 'pending',
+  addedBy,
+  createdAt: now,
+});
+
+/** Registers a new family, with the signed-in person as its head and the family members they list; the parish office approves it. */
 export const registerFamily = (input: FamilyInput) =>
   write((d) => {
     const account = signedInWithoutFamily(d);
@@ -398,7 +434,6 @@ export const registerFamily = (input: FamilyInput) =>
     const family: Family = {
       id: newId(),
       code: `${familyCodePrefix()}-${String(next).padStart(4, '0')}`,
-      name: parsed.familyName,
       address: parsed.address,
       preferredAnbiyamId: parsed.preferredAnbiyamId || undefined,
       status: 'pending',
@@ -415,6 +450,7 @@ export const registerFamily = (input: FamilyInput) =>
       status: 'pending',
       createdAt: now,
     });
+    d.members.push(...parsed.members.map((member) => addedMember(family.id, parsed.headName, member, now)));
     return family;
   });
 
@@ -439,23 +475,14 @@ export const requestToJoinFamily = (input: JoinFamilyInput) =>
     return request;
   });
 
-/** A member adds someone without their own phone, such as a child; the parish office approves it. */
-export const addFamilyMember = (input: MemberInput) =>
+/** A member adds one or more people to the family, such as children or elders without their own phone; the parish office approves them. */
+export const addFamilyMembers = (inputs: MemberInput[]) =>
   write((d) => {
     const me = myMembership(d);
     if (!me || !keepsFamily(me)) throw new Error('notSignedIn');
-    const parsed = memberInputSchema.parse(input);
-    const added: FamilyMember = {
-      id: newId(),
-      familyId: me.familyId,
-      name: parsed.name,
-      relationship: parsed.relationship,
-      ...memberDetails(parsed),
-      status: 'pending',
-      addedBy: me.name,
-      createdAt: new Date().toISOString(),
-    };
-    d.members.push(added);
+    const now = new Date().toISOString();
+    const added = membersInputSchema.parse(inputs).map((member) => addedMember(me.familyId, me.name, member, now));
+    d.members.push(...added);
     return added;
   });
 

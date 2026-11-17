@@ -320,7 +320,6 @@ function NewFamily({
 
 function JoinRequest({ family, member, onDecide }: { family: FamilyWithMembers; member: FamilyMember; onDecide: (status: MembershipStatus) => void }) {
   const theme = useTheme();
-  const head = family.members.find((m) => m.relationship === 'head');
   const how = member.addedBy ? `Added by ${member.addedBy}` : `Asked to join${member.phone ? ` from ${member.phone}` : ''}`;
   return (
     <Card mode="outlined">
@@ -332,7 +331,7 @@ function JoinRequest({ family, member, onDecide }: { family: FamilyWithMembers; 
       />
       <Card.Content style={styles.gap}>
         <Text variant="bodyMedium">
-          Wants to join the {family.name} ({family.code}){head ? `, head: ${head.name}` : ''}.
+          Wants to join the family of {family.name} ({family.code}).
         </Text>
         <MemberFacts member={member} />
         <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>

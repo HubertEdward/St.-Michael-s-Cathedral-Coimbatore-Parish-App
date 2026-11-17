@@ -28,6 +28,8 @@ export type ValidationCode =
   | 'time'
   | 'amountMin'
   | 'amountMax'
+  | 'tooMany'
+  | 'minutes'
   | 'pinFormat'
   | 'pinTooSimple'
   | 'pinMismatch'
@@ -159,14 +161,6 @@ export const memberDetailsSchema = z.object({
 });
 export type MemberDetailsInput = z.infer<typeof memberDetailsSchema>;
 
-/** A new family, with its head's own details. */
-export const familyInputSchema = memberDetailsSchema.extend({
-  familyName: required(100),
-  headName: required(100),
-  address: required(300),
-  preferredAnbiyamId: z.string().optional(),
-});
-export type FamilyInput = z.infer<typeof familyInputSchema>;
 
 export const joinFamilySchema = memberDetailsSchema.extend({
   code: z.string().trim().min(1, 'required').max(20, 'tooLong'),
@@ -181,6 +175,33 @@ export const memberInputSchema = memberDetailsSchema.extend({
   relationship: z.enum(relationships),
 });
 export type MemberInput = z.infer<typeof memberInputSchema>;
+
+/** Family members added together; a family registers or adds up to 20 people at a time. */
+export const membersInputSchema = z.array(memberInputSchema).max(20, 'tooMany');
+
+/** A new family, known by its head's name, with the head's own details and the rest of the family. */
+export const familyInputSchema = memberDetailsSchema.extend({
+  headName: required(100),
+  address: required(300),
+  preferredAnbiyamId: z.string().optional(),
+  members: membersInputSchema,
+});
+export type FamilyInput = z.infer<typeof familyInputSchema>;
+
+/** The parish office's settings. Intentions can close up to a week before the Mass. */
+export const settingsInputSchema = z.object({
+  // Typed in a text box, or stored as a number.
+  intentionCutoffMinutes: z.preprocess(
+    (value) => (typeof value === 'number' ? String(value) : value),
+    z
+      .string()
+      .trim()
+      .regex(/^\d{1,5}$/, 'minutes')
+      .transform(Number)
+      .refine((minutes) => minutes <= 7 * 24 * 60, 'minutes'),
+  ),
+});
+export type SettingsInput = z.input<typeof settingsInputSchema>;
 
 export const removalInputSchema = z.object({ reason: z.enum(removalReasons), note: optionalText });
 export type RemovalInput = z.infer<typeof removalInputSchema>;

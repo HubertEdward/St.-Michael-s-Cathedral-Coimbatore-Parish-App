@@ -210,7 +210,6 @@ export interface Family {
   id: string;
   /** Short code shown to the family, e.g. "SMC-0101", that others use to ask to join. */
   code: string;
-  name: string;
   address: string;
   /** The Anbiyam the parish office placed the family in; until then the family waits to be onboarded. */
   anbiyamId?: string;
@@ -281,7 +280,15 @@ export interface FamilyMember extends MemberDetails {
 }
 
 export interface FamilyWithMembers extends Family {
+  /** The head's name: the parish knows each family by its head. */
+  name: string;
   members: FamilyMember[];
+}
+
+/** Choices the parish office makes for the whole app. */
+export interface ParishSettings {
+  /** How many minutes before a Mass the app stops taking intentions for it. */
+  intentionCutoffMinutes: number;
 }
 
 /**
