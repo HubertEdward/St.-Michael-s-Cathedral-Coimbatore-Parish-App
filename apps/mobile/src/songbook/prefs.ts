@@ -2,13 +2,14 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSyncExternalStore } from 'react';
 
-const KEY = 'songs.prefs';
+const KEY = 'songs.saved';
 const RECENT = 30;
 
 interface Prefs {
-  favourites: number[];
-  /** Most recently opened first. */
-  recent: number[];
+  /** Song ids. */
+  favourites: string[];
+  /** Song ids, most recently opened first. */
+  recent: string[];
 }
 
 let prefs: Prefs = { favourites: [], recent: [] };
@@ -39,16 +40,16 @@ const subscribe = (listener: () => void) => {
 };
 
 // Changes wait for what is saved to load, so an early change never overwrites it.
-export async function toggleFavourite(number: number) {
+export async function toggleFavourite(id: string) {
   await load();
-  const favourites = prefs.favourites.includes(number) ? prefs.favourites.filter((n) => n !== number) : [number, ...prefs.favourites];
+  const favourites = prefs.favourites.includes(id) ? prefs.favourites.filter((x) => x !== id) : [id, ...prefs.favourites];
   save({ ...prefs, favourites });
 }
 
 /** Remembers that a song was opened, for the Recent list. */
-export async function songOpened(number: number) {
+export async function songOpened(id: string) {
   await load();
-  save({ ...prefs, recent: [number, ...prefs.recent.filter((n) => n !== number)].slice(0, RECENT) });
+  save({ ...prefs, recent: [id, ...prefs.recent.filter((x) => x !== id)].slice(0, RECENT) });
 }
 
 export function useSongPrefs(): Prefs {

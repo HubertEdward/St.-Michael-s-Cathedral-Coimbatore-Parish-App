@@ -1,6 +1,6 @@
-// The songbook travels inside the app, compressed (about 260 KB for 1.7 MB of text), and is unpacked once,
-// the first time it is opened. Nothing is downloaded, so it works anywhere, signal or not.
-import { songOccasions, type Song } from '@parish/core';
+// The songbooks travel inside the app, compressed (about a sixth of their size as text), and are unpacked once,
+// the first time the songbook is opened. Nothing is downloaded, so it works anywhere, signal or not.
+import { songBooks, songOccasions, type Song } from '@parish/core';
 import { useQuery } from '@tanstack/react-query';
 import { gunzipSync, strFromU8 } from 'fflate';
 
@@ -18,8 +18,15 @@ let unpacked: Song[] | undefined;
 /** Every song, unpacked on first use and then kept in memory. */
 export function songbook(): Song[] {
   if (!unpacked) {
-    const rows = JSON.parse(strFromU8(gunzipSync(base64Bytes(packed.gzip)))) as [number, string, number[], string[][]][];
-    unpacked = rows.map(([number, title, occasions, stanzas]) => ({ number, title, occasions: occasions.map((i) => songOccasions[i]), stanzas }));
+    const rows = JSON.parse(strFromU8(gunzipSync(base64Bytes(packed.gzip)))) as [number, number, string, number[], string[][]][];
+    unpacked = rows.map(([book, number, title, occasions, stanzas]) => ({
+      id: `${songBooks[book]}-${number}`,
+      book: songBooks[book],
+      number,
+      title,
+      occasions: occasions.map((i) => songOccasions[i]),
+      stanzas,
+    }));
   }
   return unpacked;
 }

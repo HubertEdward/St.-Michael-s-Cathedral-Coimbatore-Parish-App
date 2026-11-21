@@ -1,33 +1,78 @@
-// The songbook's sections, keyed by their page names on bibleintamil.com/iraialai, in the book's order.
-import type { SongOccasion } from '../../packages/core/src/types';
+// The two songbooks on bibleintamil.com: their sections (keyed by page names on the site, in the site's order)
+// and which of the app's occasions each one is.
+import type { SongBook, SongOccasion } from '../../packages/core/src/types';
 
-export const occasions = {
-  entrance: { en: 'Entrance', key: 'entrance' },
-  paslms: { en: 'Psalms', key: 'psalms' },
-  response: { en: 'Meditation', key: 'meditation' },
-  offertory: { en: 'Offertory', key: 'offertory' },
-  communion: { en: 'Communion', key: 'communion' },
-  thanks: { en: 'Thanksgiving', key: 'thanksgiving' },
-  matha: { en: 'Our Lady', key: 'mary' },
-  // The site's heading for this list says Infant Jesus, but it holds songs to many saints.
-  saints: { en: 'Saints', key: 'saints' },
-  holyspirit: { en: 'Charismatic', key: 'charismatic' },
-  adoration: { en: 'Adoration', key: 'adoration' },
-  recons: { en: 'Reconciliation', key: 'reconciliation' },
-  sheart: { en: 'Sacred Heart', key: 'sacredHeart' },
-  bajan: { en: 'Bhajans', key: 'bhajan' },
-  children: { en: 'Children', key: 'children' },
-  xmas: { en: 'Christmas', key: 'christmas' },
-  lent: { en: 'Lent', key: 'lent' },
-  fordead: { en: 'For the departed', key: 'departed' },
-  mass: { en: 'Mass settings', key: 'massSettings' },
-} as const satisfies Record<string, { en: string; key: SongOccasion }>;
+interface Book {
+  /** The book's folder on the site. */
+  path: string;
+  title: string;
+  /** Section page name → the app's occasion. */
+  sections: Record<string, SongOccasion>;
+  /**
+   * Song pages to read beyond those listed in the sections, if any: some songs are in no section's list
+   * (the site's "பல்வகை", miscellaneous, list is missing), and are marked as "other".
+   */
+  pages?: { from: number; to: number };
+}
 
-export type Occasion = keyof typeof occasions;
+export const books: Record<SongBook, Book> = {
+  iraialaihal: {
+    path: 'iraialai',
+    title: 'இறை அலைகள் – வழிபாட்டுப் பாடல்கள்',
+    sections: {
+      entrance: 'entrance',
+      paslms: 'psalms',
+      response: 'meditation',
+      offertory: 'offertory',
+      communion: 'communion',
+      thanks: 'thanksgiving',
+      matha: 'mary',
+      // The site's heading for this list says Infant Jesus, but it holds songs to many saints.
+      saints: 'saints',
+      holyspirit: 'charismatic',
+      adoration: 'adoration',
+      recons: 'reconciliation',
+      sheart: 'sacredHeart',
+      bajan: 'bhajan',
+      children: 'children',
+      xmas: 'christmas',
+      lent: 'lent',
+      fordead: 'departed',
+      mass: 'massSettings',
+    },
+  },
+  thirattu: {
+    path: 'songstext',
+    title: 'பாடல்கள் (bibleintamil.com)',
+    sections: {
+      mass: 'massSettings',
+      entrance: 'entrance',
+      response: 'meditation',
+      offertory: 'offertory',
+      communion: 'communion',
+      thanks: 'thanksgiving',
+      adoration: 'adoration',
+      bajan: 'bhajan',
+      matha: 'mary',
+      saints: 'saints',
+      holyspirit: 'holySpirit',
+      marriage: 'marriage',
+      priesthood: 'priesthood',
+      fordead: 'departed',
+      mercy: 'mercy',
+      pentecost: 'charismatic',
+      traditional: 'traditional',
+      lent: 'lent',
+      xmas: 'christmas',
+    },
+    pages: { from: 1, to: 1237 },
+  },
+};
 
-/** What fetch-iraialaihal writes and load-songs reads. */
+/** What fetch-songs writes for each book (../../Songs/<book>.json) and bundle-songs and load-songs read. */
 export interface SongFile {
+  book: SongBook;
   source: string;
   fetchedOn: string;
-  songs: { number: number; title: string; occasions: Occasion[]; stanzas: string[][] }[];
+  songs: { number: number; title: string; occasions: SongOccasion[]; stanzas: string[][] }[];
 }

@@ -36,27 +36,27 @@ function useTextSize() {
 
 /** One song: its words, verse by verse, in a size that can be read in church. */
 export default function SongScreen() {
-  const { number } = useLocalSearchParams<{ number: string }>();
+  const { id } = useLocalSearchParams<{ id: string }>();
   const { t } = useTranslation();
   const theme = useTheme();
   const songs = useSongs();
   const { size, smaller, larger } = useTextSize();
   const { favourites } = useSongPrefs();
-  const favourite = favourites.includes(Number(number));
+  const favourite = favourites.includes(id);
   // Opened songs make up the Recent list.
   useEffect(() => {
-    if (number) void songOpened(Number(number));
-  }, [number]);
+    if (id) void songOpened(id);
+  }, [id]);
 
   return (
     <Screen>
-      <Stack.Screen options={{ title: t('songs.number', { number }) }} />
       <QueryState query={songs}>
         {(all) => {
-          const song = all.find((s) => String(s.number) === number);
+          const song = all.find((s) => s.id === id);
           if (!song) return <Text variant="bodyLarge">{t('common.notFound')}</Text>;
           return (
             <>
+              <Stack.Screen options={{ title: t('songs.number', { book: t(`songs.book.${song.book}`), number: song.number }) }} />
               <Display size={30}>{song.title}</Display>
               <View style={styles.tags}>
                 {song.occasions.map((o) => (
@@ -69,7 +69,7 @@ export default function SongScreen() {
                   icon={favourite ? 'star' : 'star-outline'}
                   iconColor={theme.colors.primary}
                   accessibilityLabel={favourite ? t('songs.removeFavourite') : t('songs.addFavourite')}
-                  onPress={() => void toggleFavourite(song.number)}
+                  onPress={() => void toggleFavourite(song.id)}
                 />
                 <IconButton icon="format-font-size-decrease" accessibilityLabel={t('songs.smaller')} disabled={!smaller} onPress={smaller} />
                 <IconButton icon="format-font-size-increase" accessibilityLabel={t('songs.larger')} disabled={!larger} onPress={larger} />

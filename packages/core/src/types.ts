@@ -344,11 +344,24 @@ export const songOccasions = [
   'lent',
   'departed',
   'massSettings',
+  'holySpirit',
+  'marriage',
+  'priesthood',
+  'mercy',
+  'traditional',
+  'other',
 ] as const;
 export type SongOccasion = (typeof songOccasions)[number];
 
-/** A hymn from the parish songbook (இறை அலைகள்), numbered as in the printed book. */
+/** The songbooks: இறை அலைகள், and the song collection (திரட்டு) of bibleintamil.com. */
+export const songBooks = ['iraialaihal', 'thirattu'] as const;
+export type SongBook = (typeof songBooks)[number];
+
+/** A hymn from one of the songbooks, numbered as in that book. */
 export interface Song {
+  /** Unique across the books, e.g. "iraialaihal-890". */
+  id: string;
+  book: SongBook;
   number: number;
   /** The song's first line, as its title. */
   title: string;

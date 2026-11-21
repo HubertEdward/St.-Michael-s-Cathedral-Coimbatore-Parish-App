@@ -3,10 +3,12 @@ import {
   englishLetterOf,
   filterSongs,
   occasionCounts,
+  songBooks,
   songOccasions,
   tamilLetterOf,
   tamilLetters,
   type Song,
+  type SongBook,
   type SongFilter,
   type SongOccasion,
 } from '@parish/core';
@@ -24,7 +26,7 @@ type Letter = NonNullable<SongFilter['letter']>;
 
 /**
  * The songbook, all on the phone: search in Tamil or English letters or by number, and narrow it with any
- * mix of filters — favourites, recently opened, occasions, first letter, first line only — in book order,
+ * mix of filters — favourites, recently opened, book, occasions, first letter, first line only — in book order,
  * Tamil alphabetical order, or best match first.
  */
 export default function Songbook() {
@@ -34,6 +36,7 @@ export default function Songbook() {
   const { favourites, recent } = useSongPrefs();
   const [query, setQuery] = useState('');
   const [view, setView] = useState<Shown>('all');
+  const [book, setBook] = useState<SongBook>();
   const [occasions, setOccasions] = useState<SongOccasion[]>([]);
   const [letter, setLetter] = useState<Letter>();
   const [firstLineOnly, setFirstLineOnly] = useState(false);
@@ -52,19 +55,21 @@ export default function Songbook() {
             firstLineOnly,
             occasions,
             letter,
+            book,
             only: view === 'favourites' ? favourites : view === 'recent' ? recent : undefined,
             sort: order,
           })
         : [],
-    [all, query, firstLineOnly, occasions, letter, view, favourites, recent, order],
+    [all, query, firstLineOnly, occasions, letter, book, view, favourites, recent, order],
   );
   const favouriteSet = useMemo(() => new Set(favourites), [favourites]);
-  const filtered = view !== 'all' || occasions.length > 0 || !!letter || firstLineOnly || sort !== 'best';
+  const filtered = view !== 'all' || !!book || occasions.length > 0 || !!letter || firstLineOnly || sort !== 'best';
 
   if (!all) return <ActivityIndicator style={styles.loading} accessibilityLabel={t('common.loading')} />;
 
   const clearAll = () => {
     setView('all');
+    setBook(undefined);
     setOccasions([]);
     setLetter(undefined);
     setFirstLineOnly(false);
@@ -81,6 +86,12 @@ export default function Songbook() {
         <Choice selected={view === 'all'} onPress={() => setView('all')} label={t('songs.all')} />
         <Choice selected={view === 'favourites'} onPress={() => setView('favourites')} icon="star" label={`${t('songs.favourites')} ${favourites.length}`} />
         <Choice selected={view === 'recent'} onPress={() => setView('recent')} icon="history" label={`${t('songs.recent')} ${recent.length}`} />
+      </View>
+      <View style={styles.chips}>
+        <Choice selected={!book} onPress={() => setBook(undefined)} icon="book-multiple-outline" label={t('songs.allBooks')} />
+        {songBooks.map((b) => (
+          <Choice key={b} selected={book === b} onPress={() => setBook(b)} icon="book-open-variant" label={t(`songs.book.${b}`)} />
+        ))}
       </View>
       <View style={styles.chips}>
         <Choice
@@ -117,8 +128,8 @@ export default function Songbook() {
     <>
       <FlatList
         data={shown}
-        keyExtractor={(song) => String(song.number)}
-        renderItem={({ item }) => <SongRow song={item} favourite={favouriteSet.has(item.number)} />}
+        keyExtractor={(song) => song.id}
+        renderItem={({ item }) => <SongRow song={item} favourite={favouriteSet.has(item.id)} />}
         ListHeaderComponent={header}
         ListEmptyComponent={<Text variant="bodyLarge">{empty}</Text>}
         ListFooterComponent={

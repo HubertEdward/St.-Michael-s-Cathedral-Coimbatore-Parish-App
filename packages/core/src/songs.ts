@@ -1,5 +1,5 @@
-// Finding songs in the songbook: by Tamil or English-letter search, by first letter, by occasion.
-import type { Song, SongOccasion } from './types';
+// Finding songs in the songbooks: by Tamil or English-letter search, by first letter, by occasion, by book.
+import { songBooks, type Song, type SongBook, type SongOccasion } from './types.ts';
 
 const vowels: Record<string, string> = {
   அ: 'a', ஆ: 'aa', இ: 'i', ஈ: 'ee', உ: 'u', ஊ: 'oo', எ: 'e', ஏ: 'e', ஐ: 'ai', ஒ: 'o', ஓ: 'o', ஔ: 'au', ஃ: 'k',
@@ -77,7 +77,11 @@ function indexed(song: Song) {
 export function searchSongs(songs: Song[], query: string, { firstLineOnly = false } = {}): Song[] {
   const q = query.trim();
   if (!q) return songs;
-  if (/^\d+$/.test(q)) return songs.filter((s) => String(s.number).startsWith(String(Number(q))));
+  if (/^\d+$/.test(q)) {
+    // The song with that number in each book first, then those whose number starts with it.
+    const n = Number(q);
+    return [...songs.filter((s) => s.number === n), ...songs.filter((s) => s.number !== n && String(s.number).startsWith(String(n)))];
+  }
   const words = q.split(/\s+/).map((word) => ({ word, folded: fold(word) })).filter((w) => w.folded);
   if (words.length === 0) return [];
   const inTitle: Song[] = [];
@@ -169,19 +173,25 @@ export interface SongFilter {
   occasions?: readonly SongOccasion[];
   /** Songs whose first line starts with this letter. */
   letter?: { script: 'tamil' | 'english'; letter: string };
-  /** Only these songs, by number, kept in this order unless sorted (favourites, recently opened). */
-  only?: readonly number[];
-  /** Book order, Tamil alphabetical order, or (when left out) best match first for a search. */
+  /** Songs from this book only. */
+  book?: SongBook;
+  /** Only these songs, by id, kept in this order unless sorted (favourites, recently opened). */
+  only?: readonly string[];
+  /** Book order (இறை அலைகள் first), Tamil alphabetical order, or (when left out) best match first for a search. */
   sort?: 'number' | 'alphabet';
 }
+
+/** Book order: the books in turn, each by its numbers. */
+const bookOrder = (a: Song, b: Song) => songBooks.indexOf(a.book) - songBooks.indexOf(b.book) || a.number - b.number;
 
 /** The songbook narrowed and ordered by a filter. */
 export function filterSongs(songs: Song[], filter: SongFilter): Song[] {
   let list = songs;
   if (filter.only) {
-    const byNumber = new Map(songs.map((s) => [s.number, s]));
-    list = filter.only.map((n) => byNumber.get(n)).filter((s): s is Song => !!s);
+    const byId = new Map(songs.map((s) => [s.id, s]));
+    list = filter.only.map((id) => byId.get(id)).filter((s): s is Song => !!s);
   }
+  if (filter.book) list = list.filter((s) => s.book === filter.book);
   if (filter.occasions && filter.occasions.length > 0) {
     const wanted = filter.occasions;
     list = list.filter((s) => s.occasions.some((o) => wanted.includes(o)));
@@ -192,7 +202,7 @@ export function filterSongs(songs: Song[], filter: SongFilter): Song[] {
     list = list.filter((s) => letterOf(s) === letter);
   }
   if (filter.query?.trim()) list = searchSongs(list, filter.query, { firstLineOnly: filter.firstLineOnly });
-  if (filter.sort === 'number') return [...list].sort((a, b) => a.number - b.number);
-  if (filter.sort === 'alphabet') return [...list].sort((a, b) => compareTamil(a.title, b.title) || a.number - b.number);
+  if (filter.sort === 'number') return [...list].sort(bookOrder);
+  if (filter.sort === 'alphabet') return [...list].sort((a, b) => compareTamil(a.title, b.title) || bookOrder(a, b));
   return list;
 }

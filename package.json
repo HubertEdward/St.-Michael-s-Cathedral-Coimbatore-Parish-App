@@ -18,7 +18,7 @@
     "backend:samples": "tsx --require ./scripts/parish-node.cjs scripts/load-samples.ts",
     "backend:test": "tsx --test supabase/tests/rules.test.ts",
     "backend:env": "tsx scripts/local-env.ts",
-    "songs:fetch": "tsx scripts/songs/fetch-iraialaihal.ts",
+    "songs:fetch": "tsx scripts/songs/fetch-songs.ts",
     "backend:songs": "tsx scripts/songs/load-songs.ts",
     "songs:bundle": "tsx scripts/songs/bundle-songs.ts"
   },
