@@ -69,7 +69,6 @@ function RootStack() {
           <Stack.Screen name="sacraments/[id]" options={{ title: '' }} />
           <Stack.Screen name="prayers/[id]" options={{ title: '' }} />
           <Stack.Screen name="songs/index" options={{ title: t('songs.title') }} />
-          <Stack.Screen name="songs/browse" options={{ title: '' }} />
           <Stack.Screen name="songs/[number]" options={{ title: '' }} />
           <Stack.Screen name="announcement/[id]" options={{ title: t('news.announcements') }} />
           <Stack.Screen name="event/[id]" options={{ title: t('news.events') }} />

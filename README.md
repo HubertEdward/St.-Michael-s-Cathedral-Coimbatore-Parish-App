@@ -87,14 +87,21 @@ sent without an account: the app signs in anonymously, and creating an account l
 ### Songbook
 
 The songbook is "இறை அலைகள் – வழிபாட்டுப் பாடல்கள்", compiled by Fr. S. Agilan SDB, who allowed the parish to use
-its songs (email, 17 November 2026); each song belongs to its composer. This repo is public, so the lyrics are not
-in it: a script copies them once from bibleintamil.com into a `Songs` folder beside the repo, and the loader puts
-them in the database. The phone keeps a copy, so songs open in church without a signal.
+its songs (email, 17 November 2026); each song belongs to its composer. All 1,201 songs travel inside the
+parishioner app, gzipped (about 260 KB for 1.7 MB of text), and are searched and filtered on the phone: nothing is
+downloaded, so they work anywhere. Favourites and recently opened songs are kept on the phone.
+
+This repo is public, so the lyrics are not in it. A script copies them once from bibleintamil.com into a `Songs`
+folder beside the repo, and another packs them into `apps/mobile/src/songbook/songbook.data.js`, which git ignores.
+Run both before building the app on a new computer:
 
 ```bash
 npm run songs:fetch       # one-time copy into ../../Songs (slow on purpose: one page every half second, kept for reuse)
-npm run backend:songs     # loads ../../Songs/iraialaihal.json into the database
+npm run songs:bundle      # packs ../../Songs/iraialaihal.json into the app
 ```
+
+`Songs/songs-to-check.md` lists the songs whose text the site garbled, to correct from the printed book. When the
+songbook moves to the central database, `npm run backend:songs` loads the same file into its `songs` table.
 
 With the samples loaded, the office app's parish priest is 98430 30001 and the office staff member is 98430 30002;
 the parishioner app's approved family is 98430 20001. All use PIN 246810. New members of the office team sign in

@@ -1,5 +1,4 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useSongs } from '@parish/core';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Linking, StyleSheet, View } from 'react-native';
@@ -10,6 +9,8 @@ import { QueryState } from '@/components/QueryState';
 import { Screen } from '@/components/Screen';
 import { Display } from '@/components/design/Display';
 import { Panel } from '@/components/design/Panel';
+import { songOpened, toggleFavourite, useSongPrefs } from '@/songbook/prefs';
+import { useSongs } from '@/songbook/songbook';
 
 /** Fr. Agilan's own app has each song's audio and music notation. */
 const IRAIALAIHAL_APP = 'https://play.google.com/store/apps/details?id=com.iraialaigal.strackit';
@@ -40,6 +41,12 @@ export default function SongScreen() {
   const theme = useTheme();
   const songs = useSongs();
   const { size, smaller, larger } = useTextSize();
+  const { favourites } = useSongPrefs();
+  const favourite = favourites.includes(Number(number));
+  // Opened songs make up the Recent list.
+  useEffect(() => {
+    if (number) void songOpened(Number(number));
+  }, [number]);
 
   return (
     <Screen>
@@ -58,6 +65,12 @@ export default function SongScreen() {
                   </Chip>
                 ))}
                 <View style={styles.flex} />
+                <IconButton
+                  icon={favourite ? 'star' : 'star-outline'}
+                  iconColor={theme.colors.primary}
+                  accessibilityLabel={favourite ? t('songs.removeFavourite') : t('songs.addFavourite')}
+                  onPress={() => void toggleFavourite(song.number)}
+                />
                 <IconButton icon="format-font-size-decrease" accessibilityLabel={t('songs.smaller')} disabled={!smaller} onPress={smaller} />
                 <IconButton icon="format-font-size-increase" accessibilityLabel={t('songs.larger')} disabled={!larger} onPress={larger} />
               </View>

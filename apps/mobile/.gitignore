@@ -4,3 +4,5 @@
 
 expo-env.d.ts
 # @end expo-cli
+# The songbook, packed by npm run songs:bundle. Never committed: the repo is public and the lyrics belong to their composers.
+src/songbook/songbook.data.js

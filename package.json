@@ -19,7 +19,8 @@
     "backend:test": "tsx --test supabase/tests/rules.test.ts",
     "backend:env": "tsx scripts/local-env.ts",
     "songs:fetch": "tsx scripts/songs/fetch-iraialaihal.ts",
-    "backend:songs": "tsx scripts/songs/load-songs.ts"
+    "backend:songs": "tsx scripts/songs/load-songs.ts",
+    "songs:bundle": "tsx scripts/songs/bundle-songs.ts"
   },
   "devDependencies": {
     "supabase": "2.122.1",

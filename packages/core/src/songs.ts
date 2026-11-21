@@ -74,7 +74,7 @@ function indexed(song: Song) {
  * Songs matching a search in Tamil or English letters, or by number: those whose first line has every word
  * come first, then those with every word somewhere in the song, in any order.
  */
-export function searchSongs(songs: Song[], query: string): Song[] {
+export function searchSongs(songs: Song[], query: string, { firstLineOnly = false } = {}): Song[] {
   const q = query.trim();
   if (!q) return songs;
   if (/^\d+$/.test(q)) return songs.filter((s) => String(s.number).startsWith(String(Number(q))));
@@ -85,7 +85,7 @@ export function searchSongs(songs: Song[], query: string): Song[] {
   for (const song of songs) {
     const entry = indexed(song);
     if (words.every((w) => entry.title.includes(w.folded) || song.title.includes(w.word))) inTitle.push(song);
-    else if (words.every((w) => entry.text.includes(w.folded) || entry.tamil.includes(w.word))) inText.push(song);
+    else if (!firstLineOnly && words.every((w) => entry.text.includes(w.folded) || entry.tamil.includes(w.word))) inText.push(song);
   }
   // A first line that starts with the search, then one with it as a phrase, then the rest.
   const phrase = fold(q);
@@ -126,4 +126,73 @@ export function occasionCounts(songs: Song[]): Map<SongOccasion, number> {
   const counts = new Map<SongOccasion, number>();
   for (const song of songs) for (const o of song.occasions) counts.set(o, (counts.get(o) ?? 0) + 1);
   return counts;
+}
+
+/** Vowel signs in dictionary order; a consonant with the pulli (க்) comes before the bare one (க). */
+const signOrder = ['்', '', 'ா', 'ி', 'ீ', 'ு', 'ூ', 'ெ', 'ே', 'ை', 'ொ', 'ோ', 'ௌ'];
+const letterRank = new Map<string, number>(tamilLetters.map((letter, i) => [letter, i]));
+
+/**
+ * A key that sorts Tamil in dictionary order (அ ஆ … க ங ச … ற ன), which Unicode's order does not:
+ * letter by letter, each as its consonant or vowel, then its vowel sign.
+ */
+export function tamilSortKey(text: string): string {
+  const chars = [...text.trim()];
+  let key = '';
+  for (let i = 0; i < chars.length; i++) {
+    const rank = letterRank.get(chars[i]);
+    if (rank === undefined) {
+      if (signOrder.includes(chars[i])) continue;
+      // Anything else (a space, a digit, Latin) sorts after Tamil letters, in its own order.
+      key += String.fromCharCode(0x2000 + (chars[i].codePointAt(0) ?? 0) % 0xd000);
+      continue;
+    }
+    const sign = signOrder.indexOf(chars[i + 1] ?? '');
+    key += String.fromCharCode(0x100 + rank * 16 + (sign === -1 ? 1 : sign));
+  }
+  return key;
+}
+
+export const compareTamil = (a: string, b: string) => {
+  const ka = tamilSortKey(a);
+  const kb = tamilSortKey(b);
+  return ka < kb ? -1 : ka > kb ? 1 : 0;
+};
+
+/** Ways to narrow the songbook; every filter given must hold. */
+export interface SongFilter {
+  /** Words in Tamil or English letters, or a song number. */
+  query?: string;
+  /** Search only the first lines, not the whole songs. */
+  firstLineOnly?: boolean;
+  /** Songs for any of these occasions. */
+  occasions?: readonly SongOccasion[];
+  /** Songs whose first line starts with this letter. */
+  letter?: { script: 'tamil' | 'english'; letter: string };
+  /** Only these songs, by number, kept in this order unless sorted (favourites, recently opened). */
+  only?: readonly number[];
+  /** Book order, Tamil alphabetical order, or (when left out) best match first for a search. */
+  sort?: 'number' | 'alphabet';
+}
+
+/** The songbook narrowed and ordered by a filter. */
+export function filterSongs(songs: Song[], filter: SongFilter): Song[] {
+  let list = songs;
+  if (filter.only) {
+    const byNumber = new Map(songs.map((s) => [s.number, s]));
+    list = filter.only.map((n) => byNumber.get(n)).filter((s): s is Song => !!s);
+  }
+  if (filter.occasions && filter.occasions.length > 0) {
+    const wanted = filter.occasions;
+    list = list.filter((s) => s.occasions.some((o) => wanted.includes(o)));
+  }
+  if (filter.letter) {
+    const { script, letter } = filter.letter;
+    const letterOf = script === 'tamil' ? tamilLetterOf : englishLetterOf;
+    list = list.filter((s) => letterOf(s) === letter);
+  }
+  if (filter.query?.trim()) list = searchSongs(list, filter.query, { firstLineOnly: filter.firstLineOnly });
+  if (filter.sort === 'number') return [...list].sort((a, b) => a.number - b.number);
+  if (filter.sort === 'alphabet') return [...list].sort((a, b) => compareTamil(a.title, b.title) || a.number - b.number);
+  return list;
 }

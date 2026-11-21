@@ -3,8 +3,6 @@
 // the checks here only give the apps early, friendly errors.
 //
 // Thrown Error messages are codes the apps translate, e.g. 'massNotOnDate', 'notInParish', 'wrongPin'.
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
 import { nextDebitOn } from '../giving';
 import { parishClock } from '../parish';
 import type {
@@ -25,7 +23,6 @@ import type {
   RequestStatus,
   RosterEntry,
   Service,
-  Song,
   Subscription,
   SubscriptionStatus,
 } from '../types';
@@ -614,43 +611,3 @@ export const askToJoinGroup = async (groupId: string) => void (await rpc('ask_to
 /** An office-bearer (or the office) approves or declines a request to join. */
 export const answerJoinRequest = async (groupId: string, officerId: string, approve: boolean) =>
   void (await rpc('answer_join_request', { p_group: groupId, p_officer: officerId, p_approve: approve }));
-
-// The songbook ---------------------------------------------------------------------------------------------------------
-
-const SONGBOOK_KEY = 'songbook.v1';
-
-/** The songbook's version on the server: how many songs, and when it was last loaded. */
-async function songbookVersion(): Promise<string> {
-  const { data, count, error } = await table('songs').select('updated_at', { count: 'exact' }).order('updated_at', { ascending: false }).limit(1);
-  if (error) throw new Error(error.message);
-  return `${count ?? 0}:${(data?.[0]?.updated_at as string | undefined) ?? ''}`;
-}
-
-/** Every song, in pages: the server returns at most 1000 rows at a time. */
-async function downloadSongbook(): Promise<Song[]> {
-  const songs: Song[] = [];
-  for (let from = 0; ; from += 1000) {
-    const page = await run(table('songs').select('number, title, occasions, stanzas').order('number').range(from, from + 999));
-    songs.push(...(page as unknown as Song[]));
-    if (page.length < 1000) return songs;
-  }
-}
-
-/**
- * The whole songbook. The phone keeps a copy, so the songs open in church without a signal, and downloads
- * it again only when the songbook on the server has changed.
- */
-export async function listSongs(): Promise<Song[]> {
-  const saved = await AsyncStorage.getItem(SONGBOOK_KEY).catch(() => null);
-  const cached = saved ? (JSON.parse(saved) as { version: string; songs: Song[] }) : undefined;
-  try {
-    const version = await songbookVersion();
-    if (cached?.version === version) return cached.songs;
-    const songs = await downloadSongbook();
-    await AsyncStorage.setItem(SONGBOOK_KEY, JSON.stringify({ version, songs })).catch(() => undefined);
-    return songs;
-  } catch (error) {
-    if (cached) return cached.songs;
-    throw error;
-  }
-}
