@@ -323,3 +323,36 @@ export interface PinReset {
   code: string;
   expiresAt: string;
 }
+
+/** The sections of the songbook, in its order. */
+export const songOccasions = [
+  'entrance',
+  'psalms',
+  'meditation',
+  'offertory',
+  'communion',
+  'thanksgiving',
+  'mary',
+  'saints',
+  'charismatic',
+  'adoration',
+  'reconciliation',
+  'sacredHeart',
+  'bhajan',
+  'children',
+  'christmas',
+  'lent',
+  'departed',
+  'massSettings',
+] as const;
+export type SongOccasion = (typeof songOccasions)[number];
+
+/** A hymn from the parish songbook (இறை அலைகள்), numbered as in the printed book. */
+export interface Song {
+  number: number;
+  /** The song's first line, as its title. */
+  title: string;
+  occasions: SongOccasion[];
+  /** Each verse or refrain as its lines; "(2)" marks a line sung twice. */
+  stanzas: string[][];
+}

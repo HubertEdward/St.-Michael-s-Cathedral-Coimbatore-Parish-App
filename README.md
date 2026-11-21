@@ -84,6 +84,18 @@ People sign in with their phone number and a PIN; no SMS is sent. Supabase Auth 
 of a login named after the number (`packages/core/src/data/login.ts`). Requests such as Mass intentions can be
 sent without an account: the app signs in anonymously, and creating an account later keeps those requests.
 
+### Songbook
+
+The songbook is "இறை அலைகள் – வழிபாட்டுப் பாடல்கள்", compiled by Fr. S. Agilan SDB, who allowed the parish to use
+its songs (email, 17 November 2026); each song belongs to its composer. This repo is public, so the lyrics are not
+in it: a script copies them once from bibleintamil.com into a `Songs` folder beside the repo, and the loader puts
+them in the database. The phone keeps a copy, so songs open in church without a signal.
+
+```bash
+npm run songs:fetch       # one-time copy into ../../Songs (slow on purpose: one page every half second, kept for reuse)
+npm run backend:songs     # loads ../../Songs/iraialaihal.json into the database
+```
+
 With the samples loaded, the office app's parish priest is 98430 30001 and the office staff member is 98430 30002;
 the parishioner app's approved family is 98430 20001. All use PIN 246810. New members of the office team sign in
 the first time with a setup code the parish priest gives them.

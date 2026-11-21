@@ -5,6 +5,7 @@ export * from './profile';
 export * from './parish';
 export * from './schedule';
 export * from './giving';
+export * from './songs';
 export * from './validation';
 export * from './content/prayers';
 export * from './data/api';

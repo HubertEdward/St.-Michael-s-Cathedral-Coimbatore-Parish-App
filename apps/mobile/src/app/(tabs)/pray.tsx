@@ -14,7 +14,7 @@ import { SectionTitle } from '@/components/design/SectionTitle';
 import { Tap } from '@/components/design/Tap';
 import { useLanguage, useLocalized } from '@/i18n';
 
-/** The prayer corner: today's Rosary bead by bead, a candle to light, and the prayers. */
+/** The prayer corner: today's Rosary bead by bead, a candle to light, the songbook and the prayers. */
 export default function Pray() {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -32,6 +32,18 @@ export default function Pray() {
       subtitle={t('pray.subtitle')}>
       <RosaryCounter rosary={rosary} />
       <Candle />
+      <Panel style={styles.list}>
+        <Tap onPress={() => router.push('/songs')} style={styles.row} accessibilityLabel={t('songs.title')}>
+          <IconBadge icon="music-clef-treble" size={40} color={theme.colors.primary} background={theme.colors.primaryContainer} />
+          <View style={styles.title}>
+            <Text variant="titleMedium">{t('songs.title')}</Text>
+            <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+              {t('songs.subtitle')}
+            </Text>
+          </View>
+          <Icon source="chevron-right" size={22} color={theme.colors.onSurfaceVariant} />
+        </Tap>
+      </Panel>
       <SectionTitle title={t('more.prayers')} />
       <Panel style={styles.list}>
         {prayers.map((p, index) => (

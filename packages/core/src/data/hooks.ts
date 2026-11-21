@@ -16,6 +16,7 @@ export const queryKeys = {
   messages: ['messages'],
   settings: ['settings'],
   office: ['office'],
+  songs: ['songs'],
 } as const;
 
 export const useServices = () => useQuery({ queryKey: queryKeys.services, queryFn: api.listServices });
@@ -35,6 +36,8 @@ export const useMySubscriptions = () =>
   useQuery({ queryKey: [...queryKeys.subscriptions, 'mine'], queryFn: api.listMySubscriptions });
 export const useRoster = () => useQuery({ queryKey: queryKeys.roster, queryFn: api.listRoster });
 export const useSettings = () => useQuery({ queryKey: queryKeys.settings, queryFn: api.getSettings });
+// The songbook changes rarely, and the phone keeps a copy; checking once an hour is plenty.
+export const useSongs = () => useQuery({ queryKey: queryKeys.songs, queryFn: api.listSongs, staleTime: 3_600_000 });
 
 /** A mutation that refreshes the queries under `key`, and under each of `also` when the change shows there too. */
 function useChange<TArgs extends unknown[], TResult>(key: QueryKey, change: (...args: TArgs) => Promise<TResult>, ...also: QueryKey[]) {
